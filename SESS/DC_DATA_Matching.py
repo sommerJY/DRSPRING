@@ -68,7 +68,8 @@ DC_DATA_filter2 = DC_DATA_filter.drop_duplicates()
 DC_DATA_filter3 = DC_DATA_filter2[DC_DATA_filter2.drug_col_id>0]
 DC_DATA_filter4 = DC_DATA_filter3[DC_DATA_filter3.drug_row_id>0]
 DC_DATA_filter4.cell_line_id # unique 295
-
+# 아 근데 나중에 알아버림. 여기에 {<class 'NoneType'>, <class 'int'>, <class 'float'>}
+# 섞여있음 
 
 
 
@@ -155,8 +156,9 @@ CCLE_sample_info = pd.read_csv('/st06/jiyeonH/13.DD_SESS/CCLE.0222/sample_info.c
 
 
 # LINCS_DATA
+# 원래 그냥 smiles -> cid 는 unique 28059
 BETA_BIND = pd.read_csv("/st06/jiyeonH/11.TOX/MY_TRIAL_5/BETA_DATA_for_SS_df.978.csv")
-BETA_SELEC_SIG = pd.read_csv('/st06/jiyeonH/11.TOX/MY_TRIAL_5/SIG_INFO.220405') # cell 58가지 
+BETA_SELEC_SIG = pd.read_csv('/st06/jiyeonH/11.TOX/MY_TRIAL_5/SIG_INFO.220405') # cell 58가지, 129116, cid  25589
 BETA_CP_info = pd.read_table('/st06/jiyeonH/11.TOX/LINCS/L_2020/compoundinfo_beta.txt')
 BETA_CEL_info = pd.read_table('/st06/jiyeonH/11.TOX/LINCS/L_2020/cellinfo_beta.txt')
 BETA_SIG_info = pd.read_table('/st06/jiyeonH/11.TOX/LINCS/L_2020/siginfo_beta.txt', low_memory = False)
@@ -202,7 +204,9 @@ CELLO_DC_BETA_2 = pd.merge(CELLO_DC_BETA_1, BETA_CID_CELLO_SIG, on = ['drug_col_
 
 FILTER = [a for a in range(CELLO_DC_BETA_2.shape[0]) if (type(CELLO_DC_BETA_2.BETA_sig_id_x[a]) == str) & (type(CELLO_DC_BETA_2.BETA_sig_id_y[a]) == str)]
 CELLO_DC_BETA = CELLO_DC_BETA_2.loc[FILTER] # 11742
-CELLO_DC_BETA[['BETA_sig_id_x','BETA_sig_id_y','DrugCombCello']].drop_duplicates() # 9271
+FILTER2 = [True if type(a)==float else False for a in CELLO_DC_BETA.synergy_loewe]
+CELLO_DC_BETA = CELLO_DC_BETA.loc[FILTER2] # 11701
+CELLO_DC_BETA[['BETA_sig_id_x','BETA_sig_id_y','DrugCombCello']].drop_duplicates() # 9230
 CELLO_DC_BETA_cids = list(set(list(CELLO_DC_BETA.drug_row_cid) + list(CELLO_DC_BETA.drug_col_cid))) # 176 
 
 
@@ -380,9 +384,161 @@ set(BD_in_CELLO_DC_BETA[BD_in_CELLO_DC_BETA.ENTREZ.isin(BETA_lm_genes.gene_id)][
 
 
 
-##################
+################## GRAPH examples 
+# (1) SRING_PPI - has score 
 
-GRAPH examples 
+PPI_N_PATH = '/st06/jiyeonH/00.STRING_v.11.5/'
+PPI_11_5_raw = pd.read_csv(PPI_N_PATH+'9606.protein.links.v11.5.txt', sep = ' ')
+PPI_11_5_info = pd.read_csv(PPI_N_PATH+'9606.protein.info.v11.5.txt', sep = '\t')
+PPI_alias_info = pd.read_csv(PPI_N_PATH+'9606.protein.aliases.v11.5.txt', sep = '\t')
+
+
+PPI_11_5_info_filter_1 = PPI_11_5_info[PPI_11_5_info.preferred_name.isin(BETA_lm_genes.gene_symbol)]
+check_done = BETA_lm_genes[BETA_lm_genes.gene_symbol.isin(PPI_11_5_info.preferred_name)==True]
+check_alias = BETA_lm_genes[BETA_lm_genes.gene_symbol.isin(PPI_11_5_info.preferred_name)==False]
+
+# alias check
+mini_check = []
+
+for GG in list(check_alias.gene_symbol) :
+	tmp_ali = PPI_alias_info[PPI_alias_info.alias == GG]
+	tmp_ali_PID = list(set(tmp_ali['#string_protein_id']))
+	if len(tmp_ali_PID) == 1 :
+		PID = tmp_ali_PID[0]
+		if (PID in PPI_11_5_info_filter_1['#string_protein_id']) == False :
+			mini_check.append((GG, PID))
+		else : 
+			print("already in it : {}".fotmat(GG))
+	else:
+		print("multiple PID : {}".fotmat(GG))
+
+PPI_11_5_info_filter_2 = copy.deepcopy(PPI_11_5_info_filter_1)
+
+for mini in mini_check : 
+	mm = pd.DataFrame({'#string_protein_id' : [mini[1]] ,'preferred_name' : [mini[0]] })
+	PPI_11_5_info_filter_2 = pd.concat([PPI_11_5_info_filter_2, mm], axis = 0)
+
+
+check_done2 = pd.merge(check_done, PPI_11_5_info[['#string_protein_id','preferred_name']], left_on='gene_symbol', right_on='preferred_name', how= 'left')
+check_alias2 = copy.deepcopy(check_alias)
+check_alias2['#string_protein_id'] = [a[1] for a in mini_check]
+check_alias2['preferred_name'] = [a[0] for a in mini_check]
+
+PPI_11_5_info_filter_3 = pd.concat([check_done2,check_alias2])
+
+PPI_11_5_raw_1 = PPI_11_5_raw[PPI_11_5_raw.protein1.isin(PPI_11_5_info_filter_3['#string_protein_id'])]
+PPI_11_5_raw_2 = PPI_11_5_raw_1[PPI_11_5_raw_1.protein2.isin(PPI_11_5_info_filter_3['#string_protein_id'])] # 103758
+
+PPI_result_1 = pd.merge(PPI_11_5_raw_2, PPI_11_5_info_filter_3[['#string_protein_id', 'preferred_name']] , left_on = 'protein1', right_on = '#string_protein_id', how = 'left')
+PPI_result_2 = pd.merge(PPI_result_1, PPI_11_5_info_filter_3[['#string_protein_id', 'preferred_name']] , left_on = 'protein2', right_on = '#string_protein_id', how = 'left')
+
+PPI_result_3 = PPI_result_2[['preferred_name_x','preferred_name_y','combined_score']]
+PPI_result_35 = PPI_result_3[PPI_result_3.combined_score>=400]
+PPI_result_4 = PPI_result_35[['preferred_name_x','preferred_name_y']].drop_duplicates()
+
+G_mini_115 = nx.from_pandas_edgelist(PPI_result_4, 'preferred_name_x', 'preferred_name_y')
+A_mini_115 = nx.adjacency_matrix(G_mini_115) 
+A_tmp_mini_115 = A_mini_115.toarray()
+A_tmp_mini_115 = A_tmp_mini_115.astype(np.float32) ###################################### ADJ ! 
+
+G_115_mini_ORDER = list(G_mini_115.nodes) # 여기 순서로 앞으로 진행하기 # 400으로 자르면 952 개 
+
+
+
+# (2) SNU PPI - no score 
+
+SNU_PATH = '/st06/jiyeonH/11.TOX/SNU_PPI/'
+SNU_FILE = 'Human_TGN_f4_0.9_Source_20200625.csv'
+ENTREZ = 'gene_info'
+
+SNU_PPI = pd.read_csv(SNU_PATH+SNU_FILE) # 892,741
+ENTREZ_ID = pd.read_csv(SNU_PATH+ENTREZ, sep = '\t')
+SNU_PPI_IDS = set(list(SNU_PPI.X1) + list(SNU_PPI.X2)) 
+
+
+# 앙뜨레즈 테이블은 landmark 를 잘 보필하는가 
+ENTREZ_LINCS = ENTREZ_ID[ENTREZ_ID.GeneID.isin(list(BETA_lm_genes.gene_id))]
+
+ENTREZ_ID_FILTER = ENTREZ_LINCS[['GeneID','Symbol','Synonyms']] 
+
+SNU_PPI_1 = SNU_PPI[SNU_PPI.X1.isin(list(ENTREZ_ID_FILTER.GeneID))]
+SNU_PPI_2 = SNU_PPI_1[SNU_PPI_1.X2.isin(list(ENTREZ_ID_FILTER.GeneID))] # 이미 landmark filter
+
+SNU_PPI_3 = pd.merge(SNU_PPI_2, ENTREZ_ID_FILTER, left_on ='X1', right_on = 'GeneID', how ='left')
+SNU_PPI_4 = pd.merge(SNU_PPI_3, ENTREZ_ID_FILTER, left_on ='X2', right_on = 'GeneID', how ='left')
+
+SNU_PPI_5 = SNU_PPI_4[[ 'GeneID_x','GeneID_y', 'Symbol_x','Symbol_y' ]]
+SNU_PPI_5 = SNU_PPI_5.reset_index(drop=True)
+
+SNU_PPI_6 = SNU_PPI_5.drop_duplicates()
+SNU_PPI_6 = SNU_PPI_6.reset_index(drop=True)
+
+SNU_G_mini = nx.from_pandas_edgelist(SNU_PPI_6, 'GeneID_x', 'GeneID_y')
+
+MSSNG = ENTREZ_LINCS[ENTREZ_LINCS['GeneID'].isin(list(SNU_G_mini.nodes))==False]['GeneID']
+for nn in list(MSSNG):
+	SNU_G_mini.add_node(nn)
+
+SNU_G_A_mini = nx.adjacency_matrix(SNU_G_mini) 
+SNU_G_A_tmp_mini = SNU_G_A_mini.toarray()
+SNU_G_A_tmp_mini = SNU_G_A_tmp_mini.astype(np.float32) ######################### ADJ ! 
+
+SNU_GENE_ORDER_mini = list(SNU_G_mini.nodes) # 여기 순서로 앞으로 진행하기 
+
+
+
+
+# (3) IDEKER PPI 
+
+
+
+# check IDEKER 
+
+IDEKER_IAS = pd.read_csv('/st06/jiyeonH/13.DD_SESS/ideker/IAS_score.tsv',sep = '\t')
+IDEKER_TOT_GS = list(set(list(IDEKER_IAS['Protein 1'])+list(IDEKER_IAS['Protein 2']))) # 16840
+
+
+L_matching_list = pd.read_csv('/st06/jiyeonH/13.DD_SESS/ideker/L_12_string.csv', sep = '\t')
+
+IDEKER_IAS_L1 = IDEKER_IAS[IDEKER_IAS['Protein 1'].isin(L_matching_list.PPI_name)]
+IDEKER_IAS_L2 = IDEKER_IAS_L1[IDEKER_IAS_L1['Protein 2'].isin(L_matching_list.PPI_name)] # 20232
+
+ID_G = nx.from_pandas_edgelist(IDEKER_IAS_L2, 'Protein 1', 'Protein 2')
+
+
+MSSNG = L_matching_list[L_matching_list['PPI_name'].isin(list(ID_G.nodes))==False]['PPI_name']
+for nn in list(MSSNG):
+	ID_G.add_node(nn)
+
+
+ID_GENE_ORDER_mini = list(ID_G.nodes()) # 20232
+
+ID_ADJ = nx.adjacency_matrix(ID_G)
+ID_ADJ_tmp = torch.LongTensor(ID_ADJ.toarray())
+ID_ADJ_IDX = ID_ADJ_tmp.to_sparse().indices()  # [2, 40464]
+
+ID_WEIGHT = [] # len : 20232 -> 40464
+
+for i in range(ID_ADJ_IDX.shape[1]) :
+    A_index = ID_ADJ_IDX.T[i][0].item()
+    B_index = ID_ADJ_IDX.T[i][1].item()
+    nodeA = ID_GENE_ORDER_mini[A_index]
+    nodeB = ID_GENE_ORDER_mini[B_index]
+    tmpIAS_1 = IDEKER_IAS[(IDEKER_IAS['Protein 1']==nodeA )& (IDEKER_IAS['Protein 2']==nodeB)]
+    tmpIAS_2 = IDEKER_IAS[(IDEKER_IAS['Protein 2']==nodeA )& (IDEKER_IAS['Protein 1']==nodeB)]
+    SCORE = list(tmpIAS_1['Integrated score']) + list(tmpIAS_2['Integrated score'])
+    if len(SCORE) == 1 :
+        ID_WEIGHT.append(SCORE)
+    else :
+        print(i)
+        
+ID_WEIGHT.to_csv('')
+
+
+
+
+
+
 
 
 

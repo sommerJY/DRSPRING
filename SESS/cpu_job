@@ -1,0 +1,40 @@
+
+#!/bin/bash
+#SBATCH --job-name=TEST
+#SBATCH --mail-type=END,FAIL   
+#SBATCH --mail-user=jiyeon802@ewhain.net
+#SBATCH --partition=cpuonly
+#SBATCH --nodelist=bdata14
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=16
+#SBATCH --output=/home01/k006a01/logs/test_%j.log
+#SBATCH --error=/home01/k006a01/logs/test_%j.log
+
+echo "START"
+pwd; hostname; date
+
+echo "sourcing"
+source /home01/k006a01/.bashrc
+module load compilers/cuda/11.4
+
+
+echo "init conda"
+conda init
+conda activate MY_4
+# conda activate 하면 which python 했을때 내 python 나옴 
+
+echo "which python"
+which python
+
+echo "work"
+python /home01/k006a01/00.CODE/test.py
+
+date
+
+
+
+
+
+
+

@@ -33,31 +33,34 @@ import sys
 # performance_metrics
 # performance_metrics
 
-def pearson(y, pred):
-    pear = stats.pearsonr(y, pred)
-    pear_value = pear[0]
-    pear_p_val = pear[1]
-    print("Pearson correlation is {} and related p_value is {}".format(pear_value, pear_p_val))
-    return pear_value
-
-def spearman(y, pred):
-    spear = stats.spearmanr(y, pred)
-    spear_value = spear[0]
-    spear_p_val = spear[1]
-    print("Spearman correlation is {} and related p_value is {}".format(spear_value, spear_p_val))
-    return spear_value
-
-def mse(y, pred):
-    err = mean_squared_error(y, pred)
-    print("Mean squared error is {}".format(err))
-    return err
-
-def squared_error(y,pred):
-    errs = []
-    for i in range(y.shape[0]):
-        err = (y[i]-pred[i]) * (y[i]-pred[i])
-        errs.append(err)
-    return np.asarray(errs)
+class performance_metrics():
+    def __init__(self, y, pred):
+        super(performance_metrics, self).__init__()
+    def pearson(y, pred):
+        pear = stats.pearsonr(y, pred)
+        pear_value = pear[0]
+        pear_p_val = pear[1]
+        print("Pearson correlation is {} and related p_value is {}".format(pear_value, pear_p_val))
+        return pear_value
+    #
+    def spearman(y, pred):
+        spear = stats.spearmanr(y, pred)
+        spear_value = spear[0]
+        spear_p_val = spear[1]
+        print("Spearman correlation is {} and related p_value is {}".format(spear_value, spear_p_val))
+        return spear_value
+    #
+    def mse(y, pred):
+        err = mean_squared_error(y, pred)
+        print("Mean squared error is {}".format(err))
+        return err
+    #
+    def squared_error(y,pred):
+        errs = []
+        for i in range(y.shape[0]):
+            err = (y[i]-pred[i]) * (y[i]-pred[i])
+            errs.append(err)
+        return np.asarray(errs)
 
 
 
@@ -66,13 +69,18 @@ def squared_error(y,pred):
 # helper funcs 
 # helper funcs 
 # helper funcs 
+#train_data['drug1'], mean1, std1, mean2, std2, feat_filt = normalize(train1, norm=norm)
+#std1 = np.nanstd(train1, axis=0) # 541
+#feat_filt = std1!=0
+
+
 
 def normalize(X, means1=None, std1=None, means2=None, std2=None, 
 	feat_filt=None, norm='tanh_norm'):
     if std1 is None:
         std1 = np.nanstd(X, axis=0) # nan 무시하고 표준편차 구하기 
     if feat_filt is None:
-        feat_filt = std1!=0
+        feat_filt = std1!=0 # 아 feature filtering 이 들어가서 그렇구나 
     X = X[:,feat_filt]
     X = np.ascontiguousarray(X)
     if means1 is None:
@@ -101,11 +109,9 @@ from tensorflow import keras
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Dense, Dropout, Input, concatenate, BatchNormalization, Activation
 from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
-from helper_funcs import normalize, progress
+#from helper_funcs import normalize, progress
 
 
-
-MM_DATA , drug1_chem.csv , drug2_chem.csv
 
 
 def data_loader(drug1_chemicals, drug2_chemicals, cell_line_gex, comb_data_name):
@@ -122,13 +128,13 @@ def data_loader(drug1_chemicals, drug2_chemicals, cell_line_gex, comb_data_name)
     return chem1, chem2, cell_line, synergies
 
 
-MM_DATA = '/st06/jiyeonH/11.TOX/MY_TRIAL_5/01.Trial_Matchmaker/DrugCombinationData.tsv'
-drug1 = '/st06/jiyeonH/11.TOX/MY_TRIAL_5/01.Trial_Matchmaker/data/drug1_chem.csv'
-drug2 = '/st06/jiyeonH/11.TOX/MY_TRIAL_5/01.Trial_Matchmaker/data/drug2_chem.csv'
-CEL_gex = '/st06/jiyeonH/11.TOX/MY_TRIAL_5/01.Trial_Matchmaker/data/cell_line_gex.csv'
+trial_MM_DATA = '/st06/jiyeonH/11.TOX/MY_TRIAL_5/01.Trial_Matchmaker/DrugCombinationData.tsv'
+trial_drug1 = '/st06/jiyeonH/11.TOX/MY_TRIAL_5/01.Trial_Matchmaker/data/drug1_chem.csv'
+trial_drug2 = '/st06/jiyeonH/11.TOX/MY_TRIAL_5/01.Trial_Matchmaker/data/drug2_chem.csv'
+trial_CEL_gex = '/st06/jiyeonH/11.TOX/MY_TRIAL_5/01.Trial_Matchmaker/data/cell_line_gex.csv'
 
 
-chem1, chem2, cell_line, synergies = data_loader(drug1, drug2, CEL_gex, MM_DATA )
+trial_chem1, trial_chem2, trial_cell_line, trial_synergies = data_loader(trial_drug1, trial_drug2, trial_CEL_gex, trial_MM_DATA )
 # >>> chem1.shape
 # (286421, 541)
 # >>> chem2.shape
@@ -148,9 +154,10 @@ test_indx = '/st06/jiyeonH/11.TOX/MY_TRIAL_5/01.Trial_Matchmaker/data/test_inds.
 def prepare_data(chem1, chem2, cell_line, synergies, norm, 
 	train_ind_fname, val_ind_fname, test_ind_fname):
     print("Data normalization and preparation of train/validation/test data")
-    test_ind = list(np.loadtxt(test_ind_fname,dtype=np.int))
-    val_ind = list(np.loadtxt(val_ind_fname,dtype=np.int))
-    train_ind = list(np.loadtxt(train_ind_fname,dtype=np.int))
+    #
+    test_ind = list(np.loadtxt(test_ind_fname,dtype=np.int64)) # 171853
+    val_ind = list(np.loadtxt(val_ind_fname,dtype=np.int64)) # 57284
+    train_ind = list(np.loadtxt(train_ind_fname,dtype=np.int64)) # 57284
     #
     train_data = {}
     val_data = {}
@@ -158,7 +165,7 @@ def prepare_data(chem1, chem2, cell_line, synergies, norm,
     #
     # chem 1 이랑 2 를 붙인다고? 
     train1 = np.concatenate((chem1[train_ind,:],chem2[train_ind,:]),axis=0) # 엥 왜 
-    train_data['drug1'], mean1, std1, mean2, std2, feat_filt = normalize(train1, norm=norm)
+    train_data['drug1'], mean1, std1, mean2, std2, feat_filt = normalize(train1, norm=norm) # 424
     val_data['drug1'], mmean1, sstd1, mmean2, sstd2, feat_filtt = normalize(chem1[val_ind,:],mean1, std1, mean2, std2, feat_filt=feat_filt, norm=norm)
     test_data['drug1'], mean1, std1, mean2, std2, feat_filt = normalize(chem1[test_ind,:],mean1, std1, mean2, std2, feat_filt=feat_filt, norm=norm)
     #
@@ -190,14 +197,14 @@ def prepare_data(chem1, chem2, cell_line, synergies, norm,
 
 
 norm = 'tanh_norm'
-train_data, val_data, test_data = prepare_data(chem1, chem2, cell_line, synergies, norm,
+train_data, val_data, test_data = prepare_data(trial_chem1, trial_chem2, trial_cell_line, trial_synergies, norm,
                                             train_indx, val_indx, test_indx)
 
 # >>> train_data.keys()
 # dict_keys(['drug1', 'drug2', 'y'])
 
-
-
+train_data['drug1'].shape
+train_data['drug2'].shape
 
 
 
@@ -280,7 +287,7 @@ def generate_network(train, layers, inDrop, drop):
 
 
 
-MM_Model =generate_network(train_data, layers, inDrop, drop)
+trial_Model = generate_network(train_data, layers, inDrop, drop)
 
 
 def trainer(model, l_rate, train, val, epo, batch_size, earlyStop, modelName,weights):
@@ -391,7 +398,7 @@ train_data, val_data, test_data = MatchMaker.prepare_data(chem1, chem2, cell_lin
 
 
 
-model = trainer(MM_Model, l_rate, train_data, val_data, max_epoch, batch_size,
+model = trainer(trial_Model, l_rate, train_data, val_data, max_epoch, batch_size,
                                 earlyStop_patience, modelName,loss_weight)
 
 # 그냥 돌리면 돌아감 ->
@@ -405,8 +412,25 @@ if (args.train_test_mode == 1):
 # load the best model
 model.load_weights(modelName)
 
-# predict in Drug1, Drug2 order
-pred1 = MatchMaker.predict(model, [test_data['drug1'],test_data['drug2']])
+
+pred1 = model.predict([test_data['drug1'],test_data['drug2']])
+mse_value = performance_metrics.mse(test_data['y'], pred1)
+spearman_value = performance_metrics.spearman(test_data['y'], pred1)
+pearson_value = performance_metrics.pearson(test_data['y'], pred1)
+np.savetxt("ori_pred1.txt", np.asarray(pred1), delimiter=",")
+np.savetxt("ori_y_test.txt", np.asarray(test_data['y']), delimiter=",")
+pred2 = model.predict([test_data['drug2'],test_data['drug1']])
+pred = (pred1 + pred2) / 2
+
+
+
+
+
+
+
+
+#Original predict in Drug1, Drug2 order
+pred1 = model.predict(model, [test_data['drug1'],test_data['drug2']])
 mse_value = performance_metrics.mse(test_data['y'], pred1)
 spearman_value = performance_metrics.spearman(test_data['y'], pred1)
 pearson_value = performance_metrics.pearson(test_data['y'], pred1)
@@ -437,9 +461,9 @@ print(test_data['drug1'].shape)
 
 
 
+HISTORY = model.history.history
 
-
-
+plot_loss(HISTORY['loss'], HISTORY['val_loss'], '/st06/jiyeonH/11.TOX/MY_TRIAL_5/01.Trial_Matchmaker/my_trial_1', 'TS_ORIGINAL')
 
 
 
