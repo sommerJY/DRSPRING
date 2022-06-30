@@ -58,7 +58,7 @@ def normalize(X, means1=None, std1=None, means2=None, std2=None,
     if std1 is None:
         std1 = np.nanstd(X, axis=0) # nan 무시하고 표준편차 구하기 
     if feat_filt is None:
-        feat_filt = std1!=0
+        feat_filt = std1!=0 # std 0 인 feature 는 제거하겠다는 의미 
     X = X[:,feat_filt]
     X = np.ascontiguousarray(X)
     if means1 is None:
@@ -468,14 +468,6 @@ def original_to_torch(use_cuda=False):
                 return model
 
     #
-
-
-
-batch 따라서 weight 변하는거랑 OK 
-early stopping 한번만 확인해서 OK
-KISTI 서버에 넣어보기 OK 
-그러면 내일은 내내 DB 계획이랑 지금 브리핑 할 사항들 정리해서 알려드릴 수 있을것 같음 
-
 
 
 

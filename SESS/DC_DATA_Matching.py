@@ -6,7 +6,6 @@ import argparse
 from scipy import stats
 from sklearn.metrics import mean_squared_error
 import numpy as np
-import numpy as np
 import sys
 import json 
 
@@ -61,6 +60,7 @@ DC_tmp_DF2 = DC_tmp_DF.drop_duplicates()
 DC_tmp_DF2 = DC_tmp_DF2.sort_values('block_id')
 
 DC_tmp_DF2.to_csv('/st06/jiyeonH/13.DD_SESS/DrugComb.1.5/TOTAL_BLOCK.csv')
+DC_tmp_DF2=pd.read_csv('/st06/jiyeonH/13.DD_SESS/DrugComb.1.5/TOTAL_BLOCK.csv', low_memory=False)
 
 # 다시 필터링
 DC_DATA_filter = DC_tmp_DF2[['drug_row_id','drug_col_id','cell_line_id','synergy_loewe']]
@@ -108,12 +108,12 @@ for DD in range(1,len(DC_CELL)):
 	tmpdf = pd.DataFrame({k:[DC_CELL[DD][k]] for k in DC_CELL_K})
 	DC_CELL_DF = pd.concat([DC_CELL_DF, tmpdf], axis = 0)
 
-DC_CELL_DF.to_csv('/st06/jiyeonH/13.DD_SESS/DrugComb.1.5/cell_lines.csv')
+#DC_CELL_DF.to_csv('/st06/jiyeonH/13.DD_SESS/DrugComb.1.5/cell_lines.csv')
 
 DC_CELL_DF2 = DC_CELL_DF[['id','name','cellosaurus_accession', 'ccle_name']] # 751450
 DC_CELL_DF2.columns = ['cell_line_id', 'DC_cellname','DrugCombCello', 'DrugCombCCLE']
 
-
+ONLY_CELLO_CCLE = DC_CELL_DF[['cellosaurus_accession','ccle_name']].drop_duplicates()
 
 
 # check DC triads (DC drug, cell line data )
@@ -177,7 +177,7 @@ BETA_SELEC_SIG_wCell2 = BETA_SELEC_SIG_wCell2.drop_duplicates() # 129116
 cello_tt=[True if type(a)==str else False for a in list(BETA_SELEC_SIG_wCell2.cellosaurus_id)]
 BETA_CID_CELLO_SIG = BETA_SELEC_SIG_wCell2[cello_tt][['pubchem_cid','cellosaurus_id','sig_id']].drop_duplicates() # 111916
 beta_cid_cello_sig_tf = [ True if a>0 else False for a in list(BETA_CID_CELLO_SIG.pubchem_cid)]
-BETA_CID_CELLO_SIG = BETA_CID_CELLO_SIG[beta_cid_cello_sig_tf]
+BETA_CID_CELLO_SIG = BETA_CID_CELLO_SIG[beta_cid_cello_sig_tf] # 110555
 
 ccle_tt=[True if type(a)==str else False for a in list(BETA_SELEC_SIG_wCell2.ccle_name)]
 BETA_CID_CCLE_SIG = BETA_SELEC_SIG_wCell2[ccle_tt][['pubchem_cid','ccle_name','sig_id']].drop_duplicates() # 110620
@@ -190,29 +190,35 @@ BETA_CID_CCLE_SIG = BETA_CID_CCLE_SIG[beta_cid_ccle_sig_tf]
 
 # DrugComb & LINCS 비교
 # 한번만 다시 확인 LINCS A - LINCS B - DC_result - Cell
-DC_cello_final_dup
+DC_cello_final_dup # 730348
 DC_ccle_final_dup
 BETA_CID_CCLE_SIG
-BETA_CID_CELLO_SIG
+BETA_CID_CELLO_SIG # 110555
 
 # cello
 BETA_CID_CELLO_SIG.columns=['drug_row_cid', 'DrugCombCello', 'BETA_sig_id']
 CELLO_DC_BETA_1 = pd.merge(DC_cello_final_dup, BETA_CID_CELLO_SIG, on = ['drug_row_cid','DrugCombCello'], how = 'left') # 731051
+CELLO_DC_BETA_1 = pd.merge(DC_cello_final_dup, BETA_CID_CELLO_SIG, on = ['drug_row_cid','DrugCombCello'], how = 'inner') # 731051
+
 
 BETA_CID_CELLO_SIG.columns=['drug_col_cid', 'DrugCombCello', 'BETA_sig_id']
 CELLO_DC_BETA_2 = pd.merge(CELLO_DC_BETA_1, BETA_CID_CELLO_SIG, on = ['drug_col_cid','DrugCombCello'], how = 'left') # 731644
+CELLO_DC_BETA_2 = pd.merge(CELLO_DC_BETA_1, BETA_CID_CELLO_SIG, on = ['drug_col_cid','DrugCombCello'], how = 'inner') # 731644
+
 
 FILTER = [a for a in range(CELLO_DC_BETA_2.shape[0]) if (type(CELLO_DC_BETA_2.BETA_sig_id_x[a]) == str) & (type(CELLO_DC_BETA_2.BETA_sig_id_y[a]) == str)]
 CELLO_DC_BETA = CELLO_DC_BETA_2.loc[FILTER] # 11742
 FILTER2 = [True if type(a)==float else False for a in CELLO_DC_BETA.synergy_loewe]
-CELLO_DC_BETA = CELLO_DC_BETA.loc[FILTER2] # 11701
+CELLO_DC_BETA = CELLO_DC_BETA.loc[FILTER2] # 11742 ??? 
+FILTER3 = [True if np.isnan(a)==False else False for a in CELLO_DC_BETA.synergy_loewe]
+CELLO_DC_BETA = CELLO_DC_BETA.loc[FILTER3] # 11701 
 CELLO_DC_BETA[['BETA_sig_id_x','BETA_sig_id_y','DrugCombCello']].drop_duplicates() # 9230
 CELLO_DC_BETA_cids = list(set(list(CELLO_DC_BETA.drug_row_cid) + list(CELLO_DC_BETA.drug_col_cid))) # 176 
 
 
 # ccle 
 BETA_CID_CCLE_SIG.columns=['drug_row_cid', 'DrugCombCCLE', 'BETA_sig_id']
-CCLE_DC_BETA_1 = pd.merge(DC_ccle_final_dup, BETA_CID_CCLE_SIG, on = ['drug_row_cid','DrugCombCCLE'], how = 'left')
+CCLE_DC_BETA_1 = pd.merge(DC_ccle_final_dup, BETA_CID_CCLE_SIG, on = ['drug_row_cid','DrugCombCCLE'], how = 'left')# inner 로 해도 마지막 결과는 차이 없음 
 
 BETA_CID_CCLE_SIG.columns=['drug_col_cid', 'DrugCombCCLE', 'BETA_sig_id']
 CCLE_DC_BETA_2 = pd.merge(CCLE_DC_BETA_1, BETA_CID_CCLE_SIG, on = ['drug_col_cid','DrugCombCCLE'], how = 'left')
@@ -490,49 +496,61 @@ SNU_GENE_ORDER_mini = list(SNU_G_mini.nodes) # 여기 순서로 앞으로 진행
 
 # (3) IDEKER PPI 
 
-
-
 # check IDEKER 
 
 IDEKER_IAS = pd.read_csv('/st06/jiyeonH/13.DD_SESS/ideker/IAS_score.tsv',sep = '\t')
 IDEKER_TOT_GS = list(set(list(IDEKER_IAS['Protein 1'])+list(IDEKER_IAS['Protein 2']))) # 16840
-
 
 L_matching_list = pd.read_csv('/st06/jiyeonH/13.DD_SESS/ideker/L_12_string.csv', sep = '\t')
 
 IDEKER_IAS_L1 = IDEKER_IAS[IDEKER_IAS['Protein 1'].isin(L_matching_list.PPI_name)]
 IDEKER_IAS_L2 = IDEKER_IAS_L1[IDEKER_IAS_L1['Protein 2'].isin(L_matching_list.PPI_name)] # 20232
 
+len(set(list(IDEKER_IAS_L2['Protein 1']) + list(IDEKER_IAS_L2['Protein 2'])))
 ID_G = nx.from_pandas_edgelist(IDEKER_IAS_L2, 'Protein 1', 'Protein 2')
 
+ESSEN_NAMES = list(set(L_matching_list['PPI_name']))
 
-MSSNG = L_matching_list[L_matching_list['PPI_name'].isin(list(ID_G.nodes))==False]['PPI_name']
+MSSNG = [a for a in ESSEN_NAMES if a not in list(ID_G.nodes)]
+# MSSNG = L_matching_list[L_matching_list['PPI_name'].isin(list(ID_G.nodes))==False]['PPI_name']
 for nn in list(MSSNG):
 	ID_G.add_node(nn)
 
 
 ID_GENE_ORDER_mini = list(ID_G.nodes()) # 20232
-
 ID_ADJ = nx.adjacency_matrix(ID_G)
 ID_ADJ_tmp = torch.LongTensor(ID_ADJ.toarray())
 ID_ADJ_IDX = ID_ADJ_tmp.to_sparse().indices()  # [2, 40464]
-
 ID_WEIGHT = [] # len : 20232 -> 40464
 
-for i in range(ID_ADJ_IDX.shape[1]) :
-    A_index = ID_ADJ_IDX.T[i][0].item()
-    B_index = ID_ADJ_IDX.T[i][1].item()
-    nodeA = ID_GENE_ORDER_mini[A_index]
-    nodeB = ID_GENE_ORDER_mini[B_index]
-    tmpIAS_1 = IDEKER_IAS[(IDEKER_IAS['Protein 1']==nodeA )& (IDEKER_IAS['Protein 2']==nodeB)]
-    tmpIAS_2 = IDEKER_IAS[(IDEKER_IAS['Protein 2']==nodeA )& (IDEKER_IAS['Protein 1']==nodeB)]
-    SCORE = list(tmpIAS_1['Integrated score']) + list(tmpIAS_2['Integrated score'])
-    if len(SCORE) == 1 :
-        ID_WEIGHT.append(SCORE)
-    else :
-        print(i)
-        
-ID_WEIGHT.to_csv('')
+
+
+
+# weight 효과적으로 뽑아내는 방법? 
+그래야 GAT 랑 GCN 에 넣어줄 수 있는데 고민이네 
+
+
+ID_ADJ_IDX_T = pd.DataFrame(ID_ADJ_IDX.T.detach().tolist())
+ID_ADJ_IDX_T.columns = ['Protein 1','Protein 2']
+ID_ADJ_IDX_T['NodeA'] = [list(ID_GENE_ORDER_mini)[A] for A in list(ID_ADJ_IDX_T['Protein 1'])]
+ID_ADJ_IDX_T['NodeB'] = [list(ID_GENE_ORDER_mini)[B] for B in list(ID_ADJ_IDX_T['Protein 2'])]
+ID_ADJ_IDX_T['NAMESUM'] = ID_ADJ_IDX_T['NodeA'] +'__'+ID_ADJ_IDX_T['NodeB']
+
+IAS_FILTER = IDEKER_IAS[['Protein 1', 'Protein 2', 'Integrated score']]
+IAS_FILTER['NAMESUM_1'] = IAS_FILTER['Protein 1']+'__'+IAS_FILTER['Protein 2']
+IAS_FILTER['NAMESUM_2'] = IAS_FILTER['Protein 2']+'__'+IAS_FILTER['Protein 1']
+IAS_FILTER = IAS_FILTER[['NAMESUM_1','NAMESUM_2','Integrated score']]
+IAS_FILTER1= IAS_FILTER[['NAMESUM_1', 'Integrated score']]
+IAS_FILTER2= IAS_FILTER[['NAMESUM_2', 'Integrated score']]
+IAS_FILTER1.columns = ['NAMESUM', 'Integrated score']
+IAS_FILTER2.columns = ['NAMESUM', 'Integrated score']
+IAS_FILTER = pd.concat([IAS_FILTER1, IAS_FILTER2],axis = 0) 
+
+ID_WEIGHT = pd.merge(ID_ADJ_IDX_T, IAS_FILTER, on = 'NAMESUM', how = 'left' )
+
+
+ID_WEIGHT_SCORE = list(ID_WEIGHT['Integrated score'])
+
 
 
 

@@ -5,6 +5,7 @@ import os.path as osp
 from math import ceil
 import pandas as pd 
 import numpy as np
+import json
 import torch
 import torch.nn.functional as F
 from torch_geometric.datasets import TUDataset
@@ -71,31 +72,42 @@ np.random.seed(seed)
 
 
 
-JY_GRAPH =  
-JY_GRAPH_ORDER = SNU_GENE_ORDER_min
+# graph 마다 확인 
+ID_GENE_ORDER_mini = ID_G.nodes()
+IAS_PPI = nx.adjacency_matrix(ID_G)
 
+JY_GRAPH = ID_G
+JY_GRAPH_ORDER = ID_G.nodes()
+JY_ADJ = nx.adjacency_matrix(ID_G)
+
+JY_ADJ_tmp = torch.LongTensor(JY_ADJ.toarray())
+JY_ADJ_IDX = JY_ADJ_tmp.to_sparse().indices() 
+JY_IDX_WEIGHT = ID_WEIGHT_SCORE
+
+
+# DC set 확인 
 A_B_C_S = CELLO_DC_BETA.reset_index()
 A_B_C_S_SET = A_B_C_S[['BETA_sig_id_x','BETA_sig_id_y','DrugCombCello']].drop_duplicates()
 A_B_C_S_SET = A_B_C_S_SET.reset_index()
 
-# DrugA_SIG = 'LJP006_A375_24H:D08'
-# DrugB_SIG = 'LJP005_A375_24H:C16'
 
-BETA_ORDER =[list(BETA_lm_genes.gene_id).index(a) for a in JY_GRAPH_ORDER] 
-BETA_ORDER_DF = BETA_lm_genes.iloc[BETA_ORDER]
+# LINCS 확인 
+BETA_ORDER_pre =[list(L_matching_list.PPI_name).index(a) for a in JY_GRAPH_ORDER]
+BETA_ORDER_DF = L_matching_list.iloc[BETA_ORDER_pre] # 어차피 ref 다르고 같은 애들이라 괜춘 
+BETA_ORDER = list(BETA_ORDER_DF.entrez)
+
 
 def get_LINCS_data(DrugA_SIG, DrugB_SIG):
 	DrugA_EXP = BETA_BIND[['id',DrugA_SIG]]
 	DrugB_EXP = BETA_BIND[['id',DrugB_SIG]]
-	BIND_ORDER =[list(BETA_BIND.id).index(a) for a in BETA_ORDER_DF.gene_id] 
+	BIND_ORDER =[list(BETA_BIND.id).index(a) for a in BETA_ORDER_DF.entrez] 
 	DrugA_EXP_ORD = DrugA_EXP.iloc[BIND_ORDER]
 	DrugB_EXP_ORD = DrugB_EXP.iloc[BIND_ORDER]
 	#
 	ARR = np.array([list(DrugA_EXP_ORD[DrugA_SIG]), list(DrugB_EXP_ORD[DrugB_SIG])])
 	SUM = np.sum(ARR, axis = 0)
-	return DrugA_EXP_ORD, DrugB_EXP_ORD, SUM
+	return DrugA_EXP_ORD, DrugB_EXP_ORD, ARR.T, SUM
 
-# DrugA_EXP_ORD, DrugB_EXP_ORD = get_LINCS_data(DrugA_SIG,DrugB_SIG )
 
 def get_morgan(smiles):
 	result = []
@@ -106,7 +118,6 @@ def get_morgan(smiles):
 		tmp.append("NA")
 	return result[0]
 
-# bitsize = 256 
 
 def get_CHEMI_data(Drug_SIG, bitsize):
 	A_SM = BETA_SELEC_SIG[BETA_SELEC_SIG.sig_id == Drug_SIG]['canonical_smiles']
@@ -122,7 +133,6 @@ def get_CHEMI_data(Drug_SIG, bitsize):
 	#
 	return A_FP_LIST
 
-# A_FP_LIST, B_FP_LIST = get_CHEMI_data(DrugA_SIG, DrugB_SIG, 256)
 
 def get_synergy_data(DrugA_SIG, DrugB_SIG, Cell):
 	ABCS1 = A_B_C_S[A_B_C_S.BETA_sig_id_x == DrugA_SIG]
@@ -132,10 +142,15 @@ def get_synergy_data(DrugA_SIG, DrugB_SIG, Cell):
 	return synergy_score
 
 
-MY_chem1 = []
-MY_chem2 = []
-MY_exp = []
-MY_syn = []
+
+MY_chem_A = torch.empty(size=(A_B_C_S_SET.shape[0], 256))
+MY_chem_B= torch.empty(size=(A_B_C_S_SET.shape[0], 256))
+MY_exp_A = torch.empty(size=(A_B_C_S_SET.shape[0], 978))
+MY_exp_B = torch.empty(size=(A_B_C_S_SET.shape[0], 978))
+MY_exp_AB = torch.empty(size=(A_B_C_S_SET.shape[0], 978, 2))
+MY_syn =  torch.empty(size=(A_B_C_S_SET.shape[0],1))
+
+
 
 for IND in range(A_B_C_S_SET.shape[0]):
 	DrugA_SIG = A_B_C_S_SET.iloc[IND,]['BETA_sig_id_x']
@@ -146,32 +161,50 @@ for IND in range(A_B_C_S_SET.shape[0]):
 	DrugA_FP = [int(a) for a in get_CHEMI_data(DrugA_SIG, bitsize)]
 	DrugB_FP = [int(a) for a in get_CHEMI_data(DrugB_SIG, bitsize)]
 	#
-	_, _, LINCS = get_LINCS_data(DrugA_SIG, DrugB_SIG)
+	EXP_A, EXP_B, EXP_AB, LINCS = get_LINCS_data(DrugA_SIG, DrugB_SIG)
 	#
 	AB_SYN = get_synergy_data(DrugA_SIG, DrugB_SIG, Cell)
 	#
-	MY_chem1.append(DrugA_FP)
-	MY_chem2.append(DrugB_FP)
-	MY_exp.append(list(LINCS))
-	MY_syn.append(AB_SYN)
+	MY_chem_A[IND] = torch.Tensor(DrugA_FP)
+	MY_chem_B[IND] = torch.Tensor(DrugB_FP)
+	MY_exp_A[IND] = torch.Tensor(EXP_A.iloc[:,1])
+	MY_exp_B[IND] = torch.Tensor(EXP_B.iloc[:,1])
+	MY_exp_AB[IND] = torch.Tensor(EXP_AB).unsqueeze(0)
+	MY_syn[IND] = torch.Tensor([AB_SYN])
 
-	
-MY_chem1_tch = torch.tensor(np.array(MY_chem1))
-MY_chem2_tch = torch.tensor(np.array(MY_chem2))
-MY_exp_tch = torch.tensor(np.array(MY_exp))
+
+MY_chem_A_tch = torch.tensor(np.array(MY_chem_A))
+MY_chem_B_tch = torch.tensor(np.array(MY_chem_B))
+MY_exp_A_tch = torch.tensor(np.array(MY_exp_A))
+MY_exp_B_tch = torch.tensor(np.array(MY_exp_B))
+MY_exp_AB_tch = torch.tensor(np.array(MY_exp_AB))
 MY_syn_tch = torch.tensor(np.array(MY_syn))
 
-# np.save('/st06/jiyeonH/11.TOX/MY_TRIAL_5/01.Trial_Matchmaker/MY_chem1', MY_chem1)
-# np.save('/st06/jiyeonH/11.TOX/MY_TRIAL_5/01.Trial_Matchmaker/MY_chem2', MY_chem2)
-# np.save('/st06/jiyeonH/11.TOX/MY_TRIAL_5/01.Trial_Matchmaker/MY_exp', MY_exp)
-# np.save('/st06/jiyeonH/11.TOX/MY_TRIAL_5/01.Trial_Matchmaker/MY_syn', MY_syn)
-# MY_chem1 = np.load('/st06/jiyeonH/11.TOX/MY_TRIAL_5/01.Trial_Matchmaker/MY_chem1.npy')
-# MY_chem2 = np.load('/st06/jiyeonH/11.TOX/MY_TRIAL_5/01.Trial_Matchmaker/MY_chem2')
-# MY_exp = np.load('/st06/jiyeonH/11.TOX/MY_TRIAL_5/01.Trial_Matchmaker/MY_exp')
-# MY_syn = np.load('/st06/jiyeonH/11.TOX/MY_TRIAL_5/01.Trial_Matchmaker/MY_syn')
 
-
-# sklearn.model_selection.train_test_split()
+def normalize(X, means1=None, std1=None, means2=None, std2=None, 
+	feat_filt=None, norm='tanh_norm'):
+	if std1 is None:
+		std1 = np.nanstd(X, axis=0) # nan 무시하고 표준편차 구하기 
+	if feat_filt is None:
+		feat_filt = std1!=0
+	X = X[:,feat_filt]
+	X = np.ascontiguousarray(X)
+	if means1 is None:
+		means1 = np.mean(X, axis=0)
+	X = (X-means1)/std1[feat_filt]
+	if norm == 'norm':
+		return(X, means1, std1, feat_filt)
+	elif norm == 'tanh':
+		return(np.tanh(X), means1, std1, feat_filt)
+	elif norm == 'tanh_norm':
+		X = np.tanh(X)
+		if means2 is None:
+			means2 = np.mean(X, axis=0)
+		if std2 is None:
+			std2 = np.std(X, axis=0)
+		X = (X-means2)/std2
+		X[:,std2==0]=0
+		return(X, means1, std1, means2, std2, feat_filt)
 
 
 def prepare_data(MY_chem1_tch, MY_chem2_tch, MY_exp_tch, MY_syn_tch, norm ) :
@@ -328,33 +361,6 @@ class performance_metrics():
             errs.append(err)
         return np.asarray(errs)
 
-
-
-
-def normalize(X, means1=None, std1=None, means2=None, std2=None, 
-	feat_filt=None, norm='tanh_norm'):
-	if std1 is None:
-		std1 = np.nanstd(X, axis=0) # nan 무시하고 표준편차 구하기 
-	if feat_filt is None:
-		feat_filt = std1!=0
-	X = X[:,feat_filt]
-	X = np.ascontiguousarray(X)
-	if means1 is None:
-		means1 = np.mean(X, axis=0)
-	X = (X-means1)/std1[feat_filt]
-	if norm == 'norm':
-		return(X, means1, std1, feat_filt)
-	elif norm == 'tanh':
-		return(np.tanh(X), means1, std1, feat_filt)
-	elif norm == 'tanh_norm':
-		X = np.tanh(X)
-		if means2 is None:
-			means2 = np.mean(X, axis=0)
-		if std2 is None:
-			std2 = np.std(X, axis=0)
-		X = (X-means2)/std2
-		X[:,std2==0]=0
-		return(X, means1, std1, means2, std2, feat_filt)
 
 
 def save_ckp(state, is_best, checkpoint_path, best_model_path):
@@ -717,7 +723,7 @@ class MY_parallel_model(torch.nn.Module):
 			else : 
 				X = self.SNPs[L3](X)
 		return X
-	
+
 
 
 CONFIG={

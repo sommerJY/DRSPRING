@@ -85,7 +85,7 @@ for i in range(BETA_ALI.shape[0]):
 
 BETA_ALI = pd.to_csv('/st06/jiyeonH/13.DD_SESS/ideker/L_12_string.csv', sep = '\t')
 
-
+BETA_ALI = pd.read_csv('/st06/jiyeonH/13.DD_SESS/ideker/L_12_string.csv', sep = '\t')
 
 
 
