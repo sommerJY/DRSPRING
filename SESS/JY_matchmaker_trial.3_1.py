@@ -415,7 +415,7 @@ def get_targets(sig_id):
 
 
 def get_CHEM(sig_id, k):
-	maxNumAtoms
+	maxNumAtoms = 50
 	smiles = BETA_EXM2[BETA_EXM2.sig_id == sig_id]['canonical_smiles_re'].item()
 	iMol = Chem.MolFromSmiles(smiles.strip())
 	iAdjTmp = Chem.rdmolops.GetAdjacencyMatrix(iMol) 
@@ -503,7 +503,7 @@ MY_syn =  torch.empty(size=(100,1))
 
 
 
-for IND in range(100): #  A_B_C_S_SET.shape[0]
+for IND in range(A_B_C_S_SET.shape[0]): #  
 	DrugA_SIG = A_B_C_S_SET.iloc[IND,]['BETA_sig_id_x']
 	DrugB_SIG = A_B_C_S_SET.iloc[IND,]['BETA_sig_id_y']
 	Cell = A_B_C_S_SET.iloc[IND,]['DrugCombCello']
