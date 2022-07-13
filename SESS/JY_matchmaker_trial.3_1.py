@@ -76,7 +76,7 @@ np.random.seed(seed)
 
 WORK_PATH = 
 DC_PATH = 
-IDK_PATH = 
+IDK_PATH = '/st06/jiyeonH/13.DD_SESS/ideker/'
 LINCS_PATH = '/st06/jiyeonH/11.TOX/MY_TRIAL_5/' 
 TARGET_PATH = '/st06/jiyeonH/13.DD_SESS/merged_target/'
 
@@ -747,6 +747,12 @@ def plot_loss(train_loss, valid_loss, path, plotname):
 
 
 
+seed = 42
+random.seed(seed)
+torch.manual_seed(seed)
+np.random.seed(seed)
+
+
 norm = 'tanh_norm'
 train_data, val_data, test_data = prepare_data_GCN(MY_chem_A_feat, MY_chem_B_feat, MY_chem_A_adj, MY_chem_B_adj, MY_exp_A, MY_exp_B, MY_tgt_A, MY_tgt_B, MY_syn, norm)
 
@@ -1180,4 +1186,246 @@ def MAIN(ANAL_name, WORK_PATH, num_samples= 10, max_num_epochs=1000, grace_perio
 MAIN('22.07.06.PRJ01.TRIAL3_1_pre', WORK_PATH, 2, 2, 1, 32, 1)
 MAIN('22.07.06.PRJ01.TRIAL3_1', WORK_PATH, 100, 1000, 150, 32, 1)
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+##################### 결과 확인 ##################
+import pandas as pd 
+import matplotlib.pyplot as plt
+from ray.tune import ExperimentAnalysis
+import pickle
+import math
+import torch
+anal_df = ExperimentAnalysis("~/ray_results/22.07.06.PRJ01.TRIAL3_1")
+
+ANA_DF = anal_df.dataframe()
+ANA_ALL_DF = anal_df.trial_dataframes
+
+#ANA_DF.to_csv('/home01/k006a01/PRJ.01/TRIAL_3.1/RAY_ANA_DF.P01.3_1.csv')
+#import pickle
+#with open("/home01/k006a01/PRJ.01/TRIAL_3.1/RAY_ANA_ALL_DF.P01.3_1.pickle", "wb") as fp:
+#	pickle.dump(ANA_ALL_DF,fp) 
+
+
+PRJ_PATH = '/st06/jiyeonH/11.TOX/MY_TRIAL_GPU/PJ01.TRIAL.3_1/'
+#ANA_DF = pd.read_csv(PRJ_PATH+'RAY_ANA_DF.P01.3_1.csv')
+#with open(PRJ_PATH+'RAY_ANA_ALL_DF.P01.3_1.pickle', 'rb') as f:
+#	ANA_ALL_DF = pickle.load(f)
+
+list(ANA_DF.sort_values('ValLoss')['ValLoss'])[-1]
+DF_KEY = list(ANA_DF.sort_values('ValLoss')['logdir'])[0]
+DF_KEY
+# /home01/k006a01/ray_results/22.07.06.PRJ01.TRIAL3_1/RAY_MY_train_2292abdc_88_G_hiddim=512,G_layer=2,batch_size=128,dropout_1=0.2000,dropout_2=0.0100,epoch=1000,feat_size_0=64,feat_si_2022-07-11_19-34-58
+# M1_model.pth
+
+mini_df = ANA_ALL_DF[DF_KEY]
+plot_loss(list(mini_df.TrainLoss), list(mini_df.ValLoss), 
+PRJ_PATH, 'TRIAL_3_1.BEST.loss' )
+
+
+
+
+def jy_corrplot(PRED_list, Y_list, path, plotname ):
+	jplot = sns.jointplot(x=PRED_list, y=Y_list, ci=68, kind='reg')
+	pr,pp = stats.pearsonr(PRED_list, Y_list)
+	print("Pearson correlation is {} and related p_value is {}".format(pr, pp))
+	sr,sp = stats.spearmanr(PRED_list, Y_list)
+	print("Spearman correlation is {} and related p_value is {}".format(sr, sp))
+	jplot.ax_joint.annotate(f'$pearson = {pr:.3f}, spearman = {sr:.3f}$',xy=(min(PRED_list)+ 0.01, max(Y_list)- 0.01 ), ha='left', va='center',)
+	jplot.ax_joint.scatter(PRED_list, Y_list)
+	jplot.set_axis_labels(xlabel='Predicted', ylabel='Answer', size=15)
+	jplot.figure.savefig('{}/{}.corrplot.png'.format(path, plotname), bbox_inches = 'tight')
+
+
+
+
+(1) 마지막 모델 확인 
+
+MY_chem_A_feat = torch.load(PRJ_PATH+'0706.MY_chem_A_feat.pt')
+MY_chem_B_feat = torch.load(PRJ_PATH+'0706.MY_chem_B_feat.pt')
+MY_chem_A_adj = torch.load(PRJ_PATH+'0706.MY_chem_A_adj.pt')
+MY_chem_B_adj = torch.load(PRJ_PATH+'0706.MY_chem_B_adj.pt')
+MY_exp_A = torch.load(PRJ_PATH+'0706.MY_exp_A.pt')
+MY_exp_B = torch.load(PRJ_PATH+'0706.MY_exp_B.pt')
+MY_exp_AB = torch.load(PRJ_PATH+'0706.MY_exp_AB.pt')
+MY_tgt_A = torch.load(PRJ_PATH+'0706.MY_tgt_A.pt')
+MY_tgt_B = torch.load(PRJ_PATH+'0706.MY_tgt_B.pt')
+MY_syn = torch.load(PRJ_PATH+'0706.MY_syn.pt')
+
+
+TOPVAL_PATH = DF_KEY
+my_config = ANA_DF[ANA_DF.logdir==DF_KEY]
+
+G_layer = my_config['config/G_layer'].item()
+G_hiddim = my_config['config/G_hiddim'].item()
+dsn1_layers = [my_config['config/feat_size_0'].item(), my_config['config/feat_size_1'].item(), my_config['config/feat_size_2'].item()]
+dsn2_layers = [my_config['config/feat_size_0'].item(), my_config['config/feat_size_1'].item(), my_config['config/feat_size_2'].item()] 
+snp_layers = [my_config['config/feat_size_3'].item() , my_config['config/feat_size_4'].item()]
+inDrop = my_config['config/dropout_1'].item()
+Drop = my_config['config/dropout_2'].item()
+
+
+best_model = MY_expGCN_parallel_model(
+			G_layer, T_test.gcn_drug1_F.shape[-1] , G_hiddim,
+			G_layer, 2, G_hiddim,
+			dsn1_layers, dsn2_layers, snp_layers, 1,
+			inDrop, Drop
+			)
+			
+
+state_dict = torch.load(os.path.join(PRJ_PATH, "M1_model.pth"),map_location=torch.device('cpu'))
+best_model.load_state_dict(state_dict)
+
+T_test = ray.get(RAY_test)
+Test_loader = torch.utils.data.DataLoader(T_test, collate_fn = graph_collate_fn, batch_size = my_config['config/batch_size'].item(), shuffle =False)
+
+
+
+best_model.eval()
+test_loss = 0.0
+PRED_list = []
+Y_list = test_data['y'].squeeze().tolist()
+with torch.no_grad():
+	best_model.eval()
+	for batch_idx_t, (drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, adj_w, y) in enumerate(Test_loader):
+		expA = expA.view(-1,2)
+		expB = expB.view(-1,2)
+		output = best_model(drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, y) 
+		MSE = torch.nn.MSELoss()
+		loss = MSE(output, y)
+		test_loss = test_loss + loss.item()
+		outputs = output.squeeze().tolist()
+		PRED_list = PRED_list+outputs
+
+TEST_LOSS = test_loss/(batch_idx_t+1)
+print("Best model TEST loss: {}".format(TEST_LOSS))
+jy_corrplot(PRED_list, Y_list, PRJ_PATH,'3_1.M1_model' )
+
+
+
+(2) 중간 체크포인트 확인 
+
+cck_num =mini_df[mini_df.ValLoss==min(mini_df.ValLoss)].index.item()
+checkpoint = "/checkpoint_"+str(cck_num).zfill(6)
+TOPVAL_PATH = DF_KEY + checkpoint
+TOPVAL_PATH
+# /home01/k006a01/ray_results/22.07.06.PRJ01.TRIAL3_1/RAY_MY_train_2292abdc_88_G_hiddim=512,G_layer=2,batch_size=128,dropout_1=0.2000,dropout_2=0.0100,epoch=1000,feat_size_0=64,feat_si_2022-07-11_19-34-58/checkpoint_000473
+# M2_checkpoint
+min(mini_df.ValLoss)
+
+
+state_dict = torch.load(os.path.join(PRJ_PATH, "M2_checkpoint"),map_location=torch.device('cpu'))
+best_model.load_state_dict(state_dict[0])
+
+best_model.eval()
+test_loss = 0.0
+PRED_list = []
+Y_list = test_data['y'].squeeze().tolist()
+with torch.no_grad():
+	best_model.eval()
+	for batch_idx_t, (drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, adj_w, y) in enumerate(Test_loader):
+		expA = expA.view(-1,2)
+		expB = expB.view(-1,2)
+		output = best_model(drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, y) 
+		MSE = torch.nn.MSELoss()
+		loss = MSE(output, y)
+		test_loss = test_loss + loss.item()
+		outputs = output.squeeze().tolist()
+		PRED_list = PRED_list+outputs
+
+TEST_LOSS = test_loss/(batch_idx_t+1)
+print("Best model TEST loss: {}".format(TEST_LOSS))
+jy_corrplot(PRED_list, Y_list,PRJ_PATH,'3_1.M2_checkpoint' )
+
+
+
+# 최저를 찾으려면 
+import numpy as np
+
+TOT_min = np.Inf
+TOT_key = ""
+for key in ANA_ALL_DF.keys():
+	trial_min = min(ANA_ALL_DF[key]['ValLoss'])
+	if trial_min < TOT_min :
+		TOT_min = trial_min
+		TOT_key = key
+
+TOT_min
+TOT_key
+# /home01/k006a01/ray_results/22.07.06.PRJ01.TRIAL3_1/RAY_MY_train_f71154ee_41_G_hiddim=512,G_layer=2,batch_size=128,dropout_1=0.2000,dropout_2=0.0100,epoch=1000,feat_size_0=64,feat_si_2022-07-08_06-25-18
+
+
+mini_df = ANA_ALL_DF[TOT_key]
+plot_loss(list(mini_df.TrainLoss), list(mini_df.ValLoss), 
+PRJ_PATH, 'TRIAL_3_1.MIN.loss' )
+
+
+TOPVAL_PATH = TOT_key
+my_config = ANA_DF[ANA_DF.logdir==TOT_key]
+
+G_layer = my_config["config/G_layer"].item()
+G_hiddim = my_config["config/G_hiddim"].item()
+dsn1_layers = [my_config['config/feat_size_0'].item(), my_config['config/feat_size_1'].item(), my_config['config/feat_size_2'].item()]
+dsn2_layers = [my_config['config/feat_size_0'].item(), my_config['config/feat_size_1'].item(), my_config['config/feat_size_2'].item()] 
+snp_layers = [my_config['config/feat_size_3'].item() , my_config['config/feat_size_4'].item()]
+inDrop = my_config['config/dropout_1'].item()
+Drop = my_config['config/dropout_2'].item()
+
+best_model = MY_expGCN_parallel_model(
+			G_layer, T_test.gcn_drug1_F.shape[-1] , G_hiddim,
+			G_layer, 2, G_hiddim,
+			dsn1_layers, dsn2_layers, snp_layers, 1,
+			inDrop, Drop
+			)
+
+cck_num =mini_df[mini_df.ValLoss==min(mini_df.ValLoss)].index.item()
+checkpoint = "/checkpoint_"+str(cck_num).zfill(6)
+TOPVAL_PATH = TOT_key + checkpoint
+# /home01/k006a01/ray_results/22.07.06.PRJ01.TRIAL3_1/RAY_MY_train_f71154ee_41_G_hiddim=512,G_layer=2,batch_size=128,dropout_1=0.2000,dropout_2=0.0100,epoch=1000,feat_size_0=64,feat_si_2022-07-08_06-25-18/checkpoint_000288
+# M4_checkpoint
+
+state_dict = torch.load(os.path.join(PRJ_PATH, "M4_checkpoint"),map_location=torch.device('cpu'))
+best_model.load_state_dict(state_dict[0])
+
+T_test = ray.get(RAY_test)
+Test_loader = torch.utils.data.DataLoader(T_test, collate_fn = graph_collate_fn, batch_size = my_config['config/batch_size'].item(), shuffle =False)
+
+best_model.eval()
+test_loss = 0.0
+PRED_list = []
+Y_list = test_data['y'].squeeze().tolist()
+with torch.no_grad():
+	best_model.eval()
+	for batch_idx_t, (drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, adj_w, y) in enumerate(Test_loader):
+		expA = expA.view(-1,2)
+		expB = expB.view(-1,2)
+		output = best_model(drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, y)
+		MSE = torch.nn.MSELoss()
+		loss = MSE(output, y)
+		test_loss = test_loss + loss.item()
+		outputs = output.squeeze().tolist()
+		PRED_list = PRED_list+outputs
+
+TEST_LOSS = test_loss/(batch_idx_t+1)
+print("Best model TEST loss: {}".format(TEST_LOSS))
+jy_corrplot(PRED_list, Y_list,PRJ_PATH,'3_1.M4_checkpoint' )
 

@@ -67,6 +67,15 @@ random.seed(seed)
 torch.manual_seed(seed)
 np.random.seed(seed)
 
+
+WORK_PATH = '/st06/jiyeonH/11.TOX/MY_TRIAL_5/01.Trial_Matchmaker/my_trial_2_2/'
+DC_PATH = '/st06/jiyeonH/13.DD_SESS/DrugComb.1.5/'
+IDK_PATH = '/st06/jiyeonH/13.DD_SESS/ideker/'
+LINCS_PATH = '/st06/jiyeonH/11.TOX/MY_TRIAL_5/' 
+TARGET_PATH = '/st06/jiyeonH/13.DD_SESS/merged_target/'
+
+
+
 WORK_PATH='/home01/k006a01/PRJ.01/TRIAL_2.2'
 Tch_PATH='/home01/k006a01/PRJ.01/TRIAL_2'
 DC_PATH='/home01/k006a01/01.DATA/DrugComb/'
@@ -348,12 +357,13 @@ def get_synergy_data(DrugA_SIG, DrugB_SIG, Cell):
 #torch.save(MY_exp_AB, WORK_PATH+'0614.MY_exp_AB.pt')
 #torch.save(MY_syn, WORK_PATH+'0614.MY_syn.pt')
 
-MY_chem_A_tch = torch.load(Tch_PATH+'0614.MY_chem_A.pt')
-MY_chem_B_tch = torch.load(Tch_PATH+'0614.MY_chem_B.pt')
-MY_exp_A_tch = torch.load(Tch_PATH+'0614.MY_exp_A.pt')
-MY_exp_B_tch = torch.load(Tch_PATH+'0614.MY_exp_B.pt')
-MY_exp_AB_tch = torch.load(Tch_PATH+'0614.MY_exp_AB.pt')
-MY_syn_tch = torch.load(Tch_PATH+'0614.MY_syn.pt')
+Tch_PATH='/st06/jiyeonH/11.TOX/MY_TRIAL_GPU/PJ01.TRIAL.2_2/'
+MY_chem_A_tch = torch.load(Tch_PATH+'0623.MY_chem_A.pt')
+MY_chem_B_tch = torch.load(Tch_PATH+'0623.MY_chem_B.pt')
+MY_exp_A_tch = torch.load(Tch_PATH+'0623.MY_exp_A.pt')
+MY_exp_B_tch = torch.load(Tch_PATH+'0623.MY_exp_B.pt')
+MY_exp_AB_tch = torch.load(Tch_PATH+'0623.MY_exp_AB.pt')
+MY_syn_tch = torch.load(Tch_PATH+'0623.MY_syn.pt')
 
 print('input ok')
 
@@ -912,10 +922,22 @@ for batch_idx_t, (drug1, drug2, expA, expB, adj, adj_w, y) in enumerate(loaders[
 
 
 
-
 #############
 결과 확인 
 #############
+
+
+def jy_corrplot(PRED_list, Y_list, path, plotname ):
+	jplot = sns.jointplot(x=PRED_list, y=Y_list, ci=68, kind='reg')
+	pr,pp = stats.pearsonr(PRED_list, Y_list)
+	print("Pearson correlation is {} and related p_value is {}".format(pr, pp))
+	sr,sp = stats.spearmanr(PRED_list, Y_list)
+	print("Spearman correlation is {} and related p_value is {}".format(sr, sp))
+	jplot.ax_joint.annotate(f'$pearson = {pr:.3f}, spearman = {sr:.3f}$',xy=(min(PRED_list)+ 0.01, max(Y_list)- 0.01 ), ha='left', va='center',)
+	jplot.ax_joint.scatter(PRED_list, Y_list)
+	jplot.set_axis_labels(xlabel='Predicted', ylabel='Answer', size=15)
+	jplot.figure.savefig('{}/{}.corrplot.png'.format(path, plotname), bbox_inches = 'tight')
+
 
 from ray.tune import ExperimentAnalysis
 #anal_df = ExperimentAnalysis("~/ray_results/22.06.23.PRJ01.TRIAL2_2")
@@ -1105,6 +1127,8 @@ print("Best model TEST loss: {}".format(TEST_LOSS))
 result_pearson(PRED_list, Y_list)
 result_spearman(PRED_list, Y_list)
 
+PRJ_PATH = '/st06/jiyeonH/11.TOX/MY_TRIAL_GPU/PJ01.TRIAL.2_2/'
+jy_corrplot(PRED_list, Y_list, PRJ_PATH,'2_2.M1_model' )
 
 
 

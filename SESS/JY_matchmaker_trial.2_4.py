@@ -407,6 +407,7 @@ for IND in range(A_B_C_S_SET.shape[0]): #
 #torch.save(MY_tgt_B, WORK_PATH+'0627.MY_tgt_B.pt')
 #torch.save(MY_syn, WORK_PATH+'0627.MY_syn.pt')
 
+Tch_PATH ='/st06/jiyeonH/11.TOX/MY_TRIAL_GPU/PJ01.TRIAL.2_4/' 
 MY_chem_A_tch = torch.load(Tch_PATH+'0627.MY_chem_A.pt')
 MY_chem_B_tch = torch.load(Tch_PATH+'0627.MY_chem_B.pt')
 MY_exp_A_tch = torch.load(Tch_PATH+'0627.MY_exp_A.pt')
@@ -1041,6 +1042,7 @@ DF_KEY = list(ANA_DF.sort_values('ValLoss')['logdir'])[0]
 # /home01/k006a01/ray_results/22.06.27.PRJ01.TRIAL2_4/RAY_MY_train_20d79d42_15_G_hiddim=512,G_layer=4,batch_size=64,dropout_1=0.5000,dropout_2=0.2000,epoch=1000,feat_size_0=1024,feat_s_2022-06-28_20-34-54
 
 mini_df = ANA_ALL_DF[DF_KEY]
+
 plot_loss(list(mini_df.TrainLoss), list(mini_df.ValLoss), 
 PRJ_PATH, 'TRIAL_2_4.BEST.loss' )
 
@@ -1203,7 +1205,22 @@ print("Best model TEST loss: {}".format(TEST_LOSS))
 result_pearson(PRED_list, Y_list)
 result_spearman(PRED_list, Y_list)
 
+jy_corrplot(PRED_list, Y_list, PRJ_PATH,'2_4.M4_model' )
 
+
+
+
+
+def jy_corrplot(PRED_list, Y_list, path, plotname ):
+	jplot = sns.jointplot(x=PRED_list, y=Y_list, ci=68, kind='reg')
+	pr,pp = stats.pearsonr(PRED_list, Y_list)
+	print("Pearson correlation is {} and related p_value is {}".format(pr, pp))
+	sr,sp = stats.spearmanr(PRED_list, Y_list)
+	print("Spearman correlation is {} and related p_value is {}".format(sr, sp))
+	jplot.ax_joint.annotate(f'$pearson = {pr:.3f}, spearman = {sr:.3f}$',xy=(min(PRED_list)+ 0.01, max(Y_list)- 0.01 ), ha='left', va='center',)
+	jplot.ax_joint.scatter(PRED_list, Y_list)
+	jplot.set_axis_labels(xlabel='Predicted', ylabel='Answer', size=15)
+	jplot.figure.savefig('{}/{}.corrplot.png'.format(path, plotname), bbox_inches = 'tight')
 
 
 
