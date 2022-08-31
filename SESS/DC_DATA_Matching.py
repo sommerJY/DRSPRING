@@ -451,7 +451,7 @@ G_115_mini_ORDER = list(G_mini_115.nodes) # 여기 순서로 앞으로 진행하
 
 
 
-# (2) SNU PPI - no score 
+# (2) SNU PPI - no score ()
 
 SNU_PATH = '/st06/jiyeonH/11.TOX/SNU_PPI/'
 SNU_FILE = 'Human_TGN_f4_0.9_Source_20200625.csv'
@@ -522,8 +522,6 @@ ID_ADJ = nx.adjacency_matrix(ID_G)
 ID_ADJ_tmp = torch.LongTensor(ID_ADJ.toarray())
 ID_ADJ_IDX = ID_ADJ_tmp.to_sparse().indices()  # [2, 40464]
 ID_WEIGHT = [] # len : 20232 -> 40464
-
-
 
 
 # weight 효과적으로 뽑아내는 방법? 

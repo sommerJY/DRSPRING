@@ -193,6 +193,28 @@ DC_cello_final_dup = DC_DATA7_4_cello[['drug_row_cid','drug_col_cid','DrugCombCe
 
 
 
+print('DC and LINCS')
+BETA_CID_CELLO_SIG.columns=['pert_id', 'drug_row_cid', 'DrugCombCello', 'BETA_sig_id']
+CELLO_DC_BETA_1 = pd.merge(DC_cello_final_dup, BETA_CID_CELLO_SIG, on = ['drug_row_cid','DrugCombCello'], how = 'left') # 731051
+
+BETA_CID_CELLO_SIG.columns=['pert_id', 'drug_col_cid', 'DrugCombCello', 'BETA_sig_id']
+CELLO_DC_BETA_2 = pd.merge(CELLO_DC_BETA_1, BETA_CID_CELLO_SIG, on = ['drug_col_cid','DrugCombCello'], how = 'left') # 731644
+
+BETA_CID_CELLO_SIG.columns=['pert_id', 'pubchem_cid', 'cellosaurus_id', 'sig_id']
+
+FILTER = [a for a in range(CELLO_DC_BETA_2.shape[0]) if (type(CELLO_DC_BETA_2.BETA_sig_id_x[a]) == str) & (type(CELLO_DC_BETA_2.BETA_sig_id_y[a]) == str)]
+CELLO_DC_BETA = CELLO_DC_BETA_2.loc[FILTER] # 11742
+FILTER2 = [True if type(a)==float else False for a in CELLO_DC_BETA.synergy_loewe]
+CELLO_DC_BETA = CELLO_DC_BETA.loc[FILTER2] # 11742 ??? 
+FILTER3 = [True if np.isnan(a)==False else False for a in CELLO_DC_BETA.synergy_loewe]
+CELLO_DC_BETA = CELLO_DC_BETA.loc[FILTER3] # 11701 
+CELLO_DC_BETA[['BETA_sig_id_x','BETA_sig_id_y','DrugCombCello']].drop_duplicates() # 9230
+CELLO_DC_BETA_cids = list(set(list(CELLO_DC_BETA.drug_row_cid) + list(CELLO_DC_BETA.drug_col_cid))) # 176 
+
+
+
+
+
 #
 print('check val data')
 
@@ -244,7 +266,17 @@ new_check1 = [ str(New_Set['ANCHOR_PubCHEM'][a]) + '_' + str(New_Set['LIBRARY_Pu
 #new_check2 = [ str(New_Set['LIBRARY_PubCHEM'][a]) + '_' + str(New_Set['ANCHOR_PubCHEM'][a]) + '_' + str(New_Set['cellosaurus_accession'][a]) for a in range(99429)]
 #new_check = list(set(new_check1+new_check2))
 
-len(set(new_check1)-set(original_check)) # 98256 개의 여집합 
+# cid 기준 체크 
+original_check1 = [ str(ori_uniq['drug_row_cid'][a]) + '_' + str(ori_uniq['drug_col_cid'][a]) for a in range(563367)]
+original_check2 = [ str(ori_uniq['drug_col_cid'][a]) + '_' + str(ori_uniq['drug_row_cid'][a]) for a in range(563367)]
+original_check = list(set(original_check1+original_check2))
+New_Set = New_Set.reset_index(drop = True)
+new_check1 = [ str(New_Set['ANCHOR_PubCHEM'][a]) + '_' + str(New_Set['LIBRARY_PubCHEM'][a]) for a in range(99429)]
+
+
+
+len(set(new_check1)-set(original_check)) # 98256 개의 여집합 (cell 기준)
+
 
 
 # 그래서 이 새로운 애들은 얼마나 sig 가 붙을 수 있죠 
@@ -263,7 +295,33 @@ BETA_CID_CELLO_SIG.columns=['pert_id', 'pubchem_cid', 'cellosaurus_id', 'sig_id'
 
 FILTER = [a for a in range(New_Set_LINCS_2.shape[0]) if (type(New_Set_LINCS_2.BETA_sig_id_x[a]) == str) & (type(New_Set_LINCS_2.BETA_sig_id_y[a]) == str)]
 New_Set_LINCS_3 = New_Set_LINCS_2.loc[FILTER] # 2127
-# 
+New_Set_LINCS_3[['BETA_sig_id_x','BETA_sig_id_y']].drop_duplicates()
+
+
+
+
+
+# sig 차이 확인 
+ori_uniq = CELLO_DC_BETA[['BETA_sig_id_x','BETA_sig_id_y']].drop_duplicates()
+ori_uniq = ori_uniq.reset_index(drop = True)
+
+original_check1 = [ str(ori_uniq['BETA_sig_id_x'][a]) + '_' + str(ori_uniq['BETA_sig_id_y'][a]) for a in range(9230)]
+original_check2 = [ str(ori_uniq['BETA_sig_id_y'][a]) + '_' + str(ori_uniq['BETA_sig_id_x'][a]) for a in range(9230)]
+original_check = list(set(original_check1+original_check2))
+New_Set_check2 = New_Set_LINCS_3[['BETA_sig_id_x','BETA_sig_id_y']].drop_duplicates()
+New_Set_check3 = New_Set_check2.reset_index(drop = True)
+new_check2 = [ str(New_Set_check3['BETA_sig_id_x'][a]) + '_' + str(New_Set_check3['BETA_sig_id_y'][a]) for a in range(2127)]
+
+len(set(new_check2)-set(original_check)) # 1988 개의 여집합 (cell 기준)
+
+
+
+
+# 아니 그래서 얘네가 인정한 synergy 는 몇개임
+
+only_set = GDSC_data[['COMBI_ID','CELL_LINE_NAME']].drop_duplicates() # 108,259
+syn_set = GDSC_data[['COMBI_ID','CELL_LINE_NAME','Synergy']].drop_duplicates() # 113,000
+
 
 
 
