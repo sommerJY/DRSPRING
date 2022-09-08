@@ -1,4 +1,8 @@
 
+
+이걸 기반으로 
+
+
 import rdkit
 import os
 import os.path as osp
@@ -535,6 +539,9 @@ MY_Cell = torch.empty(size=(10, cell_one_hot.shape[1]))
 MY_tgt_A = torch.empty(size=(10, 978))
 MY_tgt_B = torch.empty(size=(10, 978))
 MY_syn =  torch.empty(size=(10,1))
+
+
+
 
 
 for IND in range(MY_chem_A_feat.shape[0]): #  
@@ -2099,7 +2106,7 @@ R_3_1 , R_3_2 = jy_corrplot(PRED_list, Y_list,PRJ_PATH,'P.3_7_1.{}.M4_checkpoint
 final_result()
 
 
-def final_result() :
+def final_result(R_1_V, R_1_T, R_1_1, R_1_2, R_2_V, R_2_T, R_2_1, R_2_2, R_3_V, R_3_T, R_3_1, R_3_2) :
 	print('---1---')
 	print('- Val MSE : {:.2f}'.format(R_1_V))
 	print('- Test MSE : {:.2f}'.format(R_1_T))

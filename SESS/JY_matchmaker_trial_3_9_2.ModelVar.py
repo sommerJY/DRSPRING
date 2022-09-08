@@ -1,6 +1,23 @@
 
 (2) GraphSAGE
 
+
+
+config["G_layer"], T_train.gcn_drug1_F.shape[-1] , config["G_hiddim"],
+config["G_layer"], 2 , config["G_hiddim"],
+dsn1_layers, dsn2_layers, snp_layers, cell_one_hot.shape[1], 1,
+inDrop, Drop
+
+G_layer_chem, G_indim_chem, G_hiddim_chem, G_layer_exp, G_indim_exp, G_hiddim_exp, layers_1, layers_2, layers_3, cell_dim ,out_dim, inDrop, drop
+
+
+
+
+
+MM_MODEL = MY_expGCN_parallel_model(G_layer_chem, G_indim_chem, G_hiddim_chem, G_layer_exp, G_indim_exp, G_hiddim_exp, layers_1, layers_2, layers_3, cell_dim ,out_dim, inDrop, drop)
+
+
+
 class MY_expGCN_parallel_model(torch.nn.Module):
 	def __init__(self, G_layer_chem, G_indim_chem, G_hiddim_chem, G_layer_exp, G_indim_exp, G_hiddim_exp, layers_1, layers_2, layers_3, cell_dim ,out_dim, inDrop, drop):
 		super(MY_expGCN_parallel_model, self).__init__()
@@ -235,7 +252,7 @@ def RAY_MY_train(config, checkpoint_dir=None):
 			## find the loss and update the model parameters accordingly
 			# clear the gradients of all optimized variables
 			optimizer.zero_grad()
-			output, Drug_A_W, Exp_A_W = MM_MODEL(drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, adj_w, y, cell)
+			output = MM_MODEL(drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, adj_w, y, cell)
 			wc = torch.Tensor(batch_cut_weight[batch_idx_t]).view(-1,1)
 			if torch.cuda.is_available():
 				wc = wc.cuda()
@@ -259,14 +276,11 @@ def RAY_MY_train(config, checkpoint_dir=None):
 			if use_cuda:
 				drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, adj_w, y, cell = drug1_f.cuda(), drug2_f.cuda(), drug1_a.cuda(), drug2_a.cuda(), expA.cuda(), expB.cuda(), adj.cuda(), adj_w.cuda(), y.cuda(), cell.cuda()
 			## update the average validation loss
-			output, Drug_A_W, Exp_A_W = MM_MODEL(drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, adj_w, y, cell)
+			output = MM_MODEL(drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, adj_w, y, cell)
 			MSE = torch.nn.MSELoss()
 			loss = MSE(output, y) # train 이 아니라서 weight 안넣어줌. 그냥 nn.MSE 넣어주기 
 			# update average validation loss 
 			valid_loss = valid_loss + loss.item()
-			with tune.checkpoint_dir(step = epoch) as checkpoint_dir:
-				np.savez(checkpoint_dir+"B_{}.Drug_A_W.npz".format(batch_idx_v), Drug_A_W)
-				np.savez(checkpoint_dir+"B_{}.Exp_A_W.npz".format(batch_idx_v), Exp_A_W)
 		#
 		# calculate average losses
 		TRAIN_LOSS = train_loss/(batch_idx_t+1)
@@ -302,7 +316,6 @@ def RAY_TEST_MODEL(my_config, model_path, model_name, PRJ_PATH, Trial_name, G_NA
 	#
 	G_layer = my_config['config/G_layer'].item()
 	G_hiddim = my_config['config/G_hiddim'].item()
-	G_head = my_config['config/G_head'].item()
 	dsn1_layers = [my_config['config/feat_size_0'].item(), my_config['config/feat_size_1'].item(), my_config['config/feat_size_2'].item()]
 	dsn2_layers = [my_config['config/feat_size_0'].item(), my_config['config/feat_size_1'].item(), my_config['config/feat_size_2'].item()] 
 	snp_layers = [my_config['config/feat_size_3'].item() , my_config['config/feat_size_4'].item()]
@@ -337,7 +350,7 @@ def RAY_TEST_MODEL(my_config, model_path, model_name, PRJ_PATH, Trial_name, G_NA
 			adj_w = adj_w.squeeze()
 			if use_cuda:
 				drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, adj_w, y, cell = drug1_f.cuda(), drug2_f.cuda(), drug1_a.cuda(), drug2_a.cuda(), expA.cuda(), expB.cuda(), adj.cuda(), adj_w.cuda(), y.cuda(), cell.cuda()
-			output, Drug_A_W, Exp_A_W = best_model(drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, adj_w, y, cell) 
+			output = best_model(drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, adj_w, y, cell) 
 			MSE = torch.nn.MSELoss()
 			loss = MSE(output, y)
 			test_loss = test_loss + loss.item()
@@ -528,6 +541,18 @@ loaders = {
 	'train' : torch.utils.data.DataLoader(T_train, batch_size = batch_size, 
 	collate_fn = graph_collate_fn, shuffle =False)
 			}
+
+
+for batch_idx_t, (drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, adj_w, y, cell) in enumerate(loaders['train']):
+	expA = expA.view(-1,2)
+	expB = expB.view(-1,2)
+	adj_w = adj_w.squeeze()
+	output = MM_MODEL(drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, adj_w, y, cell) 
+	MSE = torch.nn.MSELoss()
+	loss = MSE(output, y)
+
+
+
 
 
 for batch_idx_t, (drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, adj_w, y, cell) in enumerate(loaders['train']):
