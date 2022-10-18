@@ -190,7 +190,7 @@ DC_CELL_DF2.columns = ['cell_line_id', 'DC_cellname','DrugCombCello', 'DrugCombC
 
 
 # check DC triads (DC drug, cell line data )
-DC_DATA7_1 = pd.merge(DC_DATA6, DC_CELL_DF2 , on= 'cell_line_id', how = 'left')
+DC_DATA7_1 = pd.merge(DC_DATA6, DC_CELL_DF2 , on= 'cell_line_id', how = 'left') # synergy row
 DC_DATA7_2 = DC_DATA7_1[DC_DATA7_1.drug_row_cid>0]
 DC_DATA7_3 = DC_DATA7_2[DC_DATA7_2.drug_col_cid>0] # 735595
 cello_t=[True if type(a)==str else False for a in list(DC_DATA7_3.DrugCombCello)]
