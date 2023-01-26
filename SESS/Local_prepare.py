@@ -171,6 +171,9 @@ for DD in range(1,len(DC_DRUG)):
 
 DC_DRUG_DF['id_re'] = [float(a) for a in list(DC_DRUG_DF['id'])]
 
+
+
+
 # drug info merge to pubchem data (특히 smiles 아 여기 smiles 없는데..? )
 DC_DRUG_DF_FULL = pd.merge(DC_DRUG_DF, PUBCHEM_ALL , left_on = 'cid', right_on ='CID', how = 'left')
 
@@ -210,6 +213,9 @@ for DD in range(1,len(DC_CELL)):
 
 DC_CELL_DF2 = DC_CELL_DF[['id','name','cellosaurus_accession', 'ccle_name']] # 2319
 DC_CELL_DF2.columns = ['cell_line_id', 'DC_cellname','DrugCombCello', 'DrugCombCCLE']
+
+
+
 
 
 print("DC filtering")
@@ -426,6 +432,8 @@ BETA_ORDER_DF = L_matching_list.iloc[BETA_ORDER_pre] # 어차피 ref 다르고 �
 BETA_ORDER = list(BETA_ORDER_DF.entrez)
 
 
+
+
 # max atom check 
 DC_smiles = DC_DRUG_DF_FULL[['cid','CAN_SMILES','leng']].drop_duplicates()
 DC_smiles.columns = ['cid','canonical_smiles_re','leng']
@@ -435,7 +443,7 @@ L_smiles = BETA_MJ_edit[['SMILES_cid','canonical_smiles_re','leng']].drop_duplic
 L_smiles.columns = ['cid','canonical_smiles_re','leng']
 
 max_len = 100
-len_sm = pd.concat( [L_smiles, DC_smiles] )
+len_sm = pd.concat( [ L_smiles, DC_smiles ] )
 len_sm['leng'] = [int(a) if a !='error' else 0 for a in list(len_sm['leng']) ]
 len_sm = len_sm.drop_duplicates() # 31054
 
@@ -525,6 +533,23 @@ A_B_C_S_SET_COH = pd.merge(A_B_C_S_SET, DC_CELL_DF4[['DrugCombCello','DC_cellnam
 cell_one_hot = torch.nn.functional.one_hot(torch.Tensor(A_B_C_S_SET_COH['cell_onehot']).long())
 
 A_B_C_S_SET = copy.deepcopy(A_B_C_S_SET_COH)
+
+
+
+
+# another smiles merge 
+len_sm_100.columns = ['drug_row_cid','ROW_CAN_SMILES','ROW_SM_leng']
+ABCS_SM1 = pd.merge(A_B_C_S_SET, len_sm_100, on='drug_row_cid', how = 'left' )
+len_sm_100.columns = ['drug_col_cid','COL_CAN_SMILES','COL_SM_leng']
+ABCS_SM2 = pd.merge(ABCS_SM1, len_sm_100, on='drug_col_cid', how = 'left' )
+
+len_sm_100.columns = ['cid','canonical_smiles_re','leng']
+
+aa = list(ABCS_SM2['ROW_CAN_SMILES'])
+bb = list(ABCS_SM2['COL_CAN_SMILES'])
+cc = list(ABCS_SM2['DrugCombCello'])
+ABCS_SM2['SM_SM'] = [aa[i] + '___' + bb[i]+ '___' + cc[i] for i in range(ABCS_SM2.shape[0])]
+
 
 
 																				DC_CELL_DF3['tissue'] = [ '_'.join(a.split('_')[1:]) for a in list(DC_CELL_DF3['DrugCombCCLE'])]
@@ -656,7 +681,7 @@ MJ_entrez = list(JY1_MJ_2_MJB.index)
 JY2_MJ_2_MJB.index = MJ_entrez
 JY3_MJ_2_MJB.index = MJ_entrez
 
-MJ_2_MJB_DF = pd.concat([JY1_MJ_2_MJB,JY2_MJ_2_MJB,JY3_MJ_2_MJB], axis = 1)#########
+MJ_2_MJB_DF = pd.concat([JY1_MJ_2_MJB, JY2_MJ_2_MJB, JY3_MJ_2_MJB], axis = 1)#########
 MJ_2_MJB_DF = MJ_2_MJB_DF.T.drop_duplicates().T
 
 

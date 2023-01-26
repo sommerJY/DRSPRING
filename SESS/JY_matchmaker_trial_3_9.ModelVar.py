@@ -1500,6 +1500,13 @@ DF_KEY
 # get /home01/k006a01/ray_results/22.08.30.PRJ01.TRIAL3_9_1/RAY_MY_train_76aaf602_40_G_head=3,G_hiddim=32,G_layer=3,batch_size=64,dropout_1=0.2000,dropout_2=0.2000,epoch=1000,feat_size_0=512_2022-09-01_16-40-32/model.pth M1_model.pth
 
 
+
+
+
+
+
+
+
 TOPVAL_PATH = DF_KEY
 
 mini_df = ANA_ALL_DF[DF_KEY]

@@ -587,6 +587,9 @@ MY_syn =  torch.empty(size=(128,1))
 
 
 
+# A_B_C_S_SET.to_csv(WORK_PATH+'A_B_C_S_SET.csv', sep ='\t')
+
+
 for IND in range(MY_chem_A_feat.shape[0]): #  
 	DrugA_SIG = A_B_C_S_SET.iloc[IND,]['BETA_sig_id_x']
 	DrugB_SIG = A_B_C_S_SET.iloc[IND,]['BETA_sig_id_y']

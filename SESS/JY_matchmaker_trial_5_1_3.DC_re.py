@@ -331,6 +331,7 @@ MY_WEIGHT_SCORE = ID_WEIGHT_SCORE # SCORE
 
 
 # TARGET # 민지가 다시 올려준다고 함 
+TARGET_PATH = '/st06/jiyeonH/13.DD_SESS/merged_target/'
 
 TARGET_DB = pd.read_csv(TARGET_PATH+'combined_target.csv', low_memory=False)
 
@@ -725,12 +726,12 @@ def normalize(X, means1=None, std1=None, means2=None, std2=None,
 
 # normalizing 과정에 대한 고민 필요 ... GCN 이니까 상관 없지 않을까
 def prepare_data_GCN(MY_chem_A_feat, MY_chem_B_feat, MY_chem_A_adj, MY_chem_B_adj, MY_exp_A, MY_exp_B, MY_tgt_A, MY_tgt_B, MY_syn, MY_cell, norm ) :
-	chem_feat_A_train, chem_feat_A_tv, chem_feat_B_train, chem_feat_B_tv, chem_adj_A_train, chem_adj_A_tv, chem_adj_B_train, chem_adj_B_tv, exp_A_train, exp_A_tv, exp_B_train, exp_B_tv, tgt_A_train, tgt_A_tv, tgt_B_train, tgt_B_tv, syn_train, syn_tv, cell_train, cell_tv = sklearn.model_selection.train_test_split(
-			MY_chem_A_feat, MY_chem_B_feat, MY_chem_A_adj, MY_chem_B_adj, MY_exp_A, MY_exp_B, MY_tgt_A, MY_tgt_B, MY_syn, MY_Cell,
-			test_size= 0.2 , random_state=42 )
-	chem_feat_A_val, chem_feat_A_test, chem_feat_B_val, chem_feat_B_test, chem_adj_A_val, chem_adj_A_test, chem_adj_B_val, chem_adj_B_test, exp_A_val, exp_A_test, exp_B_val, exp_B_test, tgt_A_val, tgt_A_test, tgt_B_val, tgt_B_test, syn_val, syn_test, cell_val, cell_test  = sklearn.model_selection.train_test_split(
-			chem_feat_A_tv, chem_feat_B_tv, chem_adj_A_tv, chem_adj_B_tv, exp_A_tv, exp_B_tv, tgt_A_tv, tgt_B_tv, syn_tv, cell_tv,
-			test_size=0.5, random_state=42 )
+	#chem_feat_A_train, chem_feat_A_tv, chem_feat_B_train, chem_feat_B_tv, chem_adj_A_train, chem_adj_A_tv, chem_adj_B_train, chem_adj_B_tv, exp_A_train, exp_A_tv, exp_B_train, exp_B_tv, tgt_A_train, tgt_A_tv, tgt_B_train, tgt_B_tv, syn_train, syn_tv, cell_train, cell_tv = sklearn.model_selection.train_test_split(
+	#		MY_chem_A_feat, MY_chem_B_feat, MY_chem_A_adj, MY_chem_B_adj, MY_exp_A, MY_exp_B, MY_tgt_A, MY_tgt_B, MY_syn, MY_Cell,
+	#		test_size= 0.2 , random_state=42 )
+	#chem_feat_A_val, chem_feat_A_test, chem_feat_B_val, chem_feat_B_test, chem_adj_A_val, chem_adj_A_test, chem_adj_B_val, chem_adj_B_test, exp_A_val, exp_A_test, exp_B_val, exp_B_test, tgt_A_val, tgt_A_test, tgt_B_val, tgt_B_test, syn_val, syn_test, cell_val, cell_test  = sklearn.model_selection.train_test_split(
+	#		chem_feat_A_tv, chem_feat_B_tv, chem_adj_A_tv, chem_adj_B_tv, exp_A_tv, exp_B_tv, tgt_A_tv, tgt_B_tv, syn_tv, cell_tv,
+	#		test_size=0.5, random_state=42 )
 	#
 	train_data = {}
 	val_data = {}
@@ -892,6 +893,8 @@ seed = 42
 random.seed(seed)
 torch.manual_seed(seed)
 np.random.seed(seed)
+
+
 
 # gcn_drug1_F, gcn_drug2_F, gcn_drug1_ADJ, gcn_drug2_ADJ, gcn_exp_A, gcn_exp_B, gcn_tgt_A, gcn_tgt_B, gcn_adj, gcn_adj_weight, syn_ans, cell_info
 norm = 'tanh_norm'
@@ -1587,13 +1590,13 @@ def normalize(X, means1=None, std1=None, means2=None, std2=None,
 
 
 # normalizing 과정에 대한 고민 필요 ... GCN 이니까 상관 없지 않을까
-def prepare_data_GCN(MY_chem_A_feat, MY_chem_B_feat, MY_chem_A_adj, MY_chem_B_adj, MY_exp_A, MY_exp_B, MY_tgt_A, MY_tgt_B, MY_syn, MY_cell, norm ) :
-	chem_feat_A_train, chem_feat_A_tv, chem_feat_B_train, chem_feat_B_tv, chem_adj_A_train, chem_adj_A_tv, chem_adj_B_train, chem_adj_B_tv, exp_A_train, exp_A_tv, exp_B_train, exp_B_tv, tgt_A_train, tgt_A_tv, tgt_B_train, tgt_B_tv, syn_train, syn_tv, cell_train, cell_tv = sklearn.model_selection.train_test_split(
-			MY_chem_A_feat, MY_chem_B_feat, MY_chem_A_adj, MY_chem_B_adj, MY_exp_A, MY_exp_B, MY_tgt_A, MY_tgt_B, MY_syn, MY_Cell,
-			test_size= 0.2 , random_state=42 )
-	chem_feat_A_val, chem_feat_A_test, chem_feat_B_val, chem_feat_B_test, chem_adj_A_val, chem_adj_A_test, chem_adj_B_val, chem_adj_B_test, exp_A_val, exp_A_test, exp_B_val, exp_B_test, tgt_A_val, tgt_A_test, tgt_B_val, tgt_B_test, syn_val, syn_test, cell_val, cell_test  = sklearn.model_selection.train_test_split(
-			chem_feat_A_tv, chem_feat_B_tv, chem_adj_A_tv, chem_adj_B_tv, exp_A_tv, exp_B_tv, tgt_A_tv, tgt_B_tv, syn_tv, cell_tv,
-			test_size=0.5, random_state=42 )
+def prepare_data_GCN(MY_chem_A_feat, MY_chem_B_feat, MY_chem_A_adj, MY_chem_B_adj, MY_exp_A, MY_exp_B, MY_tgt_A, MY_tgt_B, MY_syn, MY_Cell, norm ) :
+	#chem_feat_A_train, chem_feat_A_tv, chem_feat_B_train, chem_feat_B_tv, chem_adj_A_train, chem_adj_A_tv, chem_adj_B_train, chem_adj_B_tv, exp_A_train, exp_A_tv, exp_B_train, exp_B_tv, tgt_A_train, tgt_A_tv, tgt_B_train, tgt_B_tv, syn_train, syn_tv, cell_train, cell_tv = sklearn.model_selection.train_test_split(
+	#		MY_chem_A_feat, MY_chem_B_feat, MY_chem_A_adj, MY_chem_B_adj, MY_exp_A, MY_exp_B, MY_tgt_A, MY_tgt_B, MY_syn, MY_Cell,
+	#		test_size= 0.2 , random_state=42 )
+	#chem_feat_A_val, chem_feat_A_test, chem_feat_B_val, chem_feat_B_test, chem_adj_A_val, chem_adj_A_test, chem_adj_B_val, chem_adj_B_test, exp_A_val, exp_A_test, exp_B_val, exp_B_test, tgt_A_val, tgt_A_test, tgt_B_val, tgt_B_test, syn_val, syn_test, cell_val, cell_test  = sklearn.model_selection.train_test_split(
+	#		chem_feat_A_tv, chem_feat_B_tv, chem_adj_A_tv, chem_adj_B_tv, exp_A_tv, exp_B_tv, tgt_A_tv, tgt_B_tv, syn_tv, cell_tv,
+	#		test_size=0.5, random_state=42 )
 	#
 	train_data = {}
 	val_data = {}
@@ -1944,6 +1947,23 @@ MY_syn = torch.load(WORK_PATH+'0928.{}.MY_syn.pt'.format(G_NAME))
 
 
 
+# for_CAN_smiles = pd.read_csv(PC_PATH+'CID_SMILES.csv',sep = '\t', low_memory = False)
+# for_CAN_smiles = copy.deepcopy(PC_FILTER)
+#for_CAN_smiles = for_CAN_smiles[['CID','CAN_SMILES']]
+for_CAN_smiles.columns = ['drug_row_cid','ROW_CAN_SMILES']
+A_B_C_S_SM1 = pd.merge(A_B_C_S_SET_COH, for_CAN_smiles, on='drug_row_cid', how ='left' )
+for_CAN_smiles.columns = ['drug_col_cid','COL_CAN_SMILES']
+A_B_C_S_SM2 = pd.merge(A_B_C_S_SM1, for_CAN_smiles, on='drug_col_cid', how ='left' )
+for_CAN_smiles.columns = ['CID','CAN_SMILES']
+
+aa = list(A_B_C_S_SM2['ROW_CAN_SMILES'])
+bb = list(A_B_C_S_SM2['COL_CAN_SMILES'])
+cc = list(A_B_C_S_SM2['DrugCombCello'])
+A_B_C_S_SM2['SM_SM'] = [aa[i] + '___' + bb[i]+ '___' + cc[i] for i in range(A_B_C_S_SM2.shape[0])]
+
+A_B_C_S_SM3 = [aa[i] + '___' + bb[i]+ '___' + cc[i] for i in range(A_B_C_S_SM2.shape[0])]
+
+
 DC_PATH = '/st06/jiyeonH/13.DD_SESS/DrugComb.1.5/' 
 IDK_PATH = '/st06/jiyeonH/13.DD_SESS/ideker/' 
 LINCS_PATH = '/st06/jiyeonH/11.TOX/MY_TRIAL_5/' 
@@ -2015,10 +2035,25 @@ random.seed(seed)
 torch.manual_seed(seed)
 np.random.seed(seed)
 
+# gcn_drug1_F, gcn_drug2_F, gcn_drug1_ADJ, gcn_drug2_ADJ, gcn_exp_A, gcn_exp_B, gcn_tgt_A, gcn_tgt_B, gcn_adj, gcn_adj_weight, syn_ans, cell_info
+norm = 'tanh_norm'
+
+chem_feat_A_train, chem_feat_A_tv, chem_feat_B_train, chem_feat_B_tv, chem_adj_A_train, chem_adj_A_tv, chem_adj_B_train, chem_adj_B_tv, exp_A_train, exp_A_tv, exp_B_train, exp_B_tv, tgt_A_train, tgt_A_tv, tgt_B_train, tgt_B_tv, syn_train, syn_tv, cell_train, cell_tv, SM_t, SM_tv = sklearn.model_selection.train_test_split(
+		MY_chem_A_feat, MY_chem_B_feat, MY_chem_A_adj, MY_chem_B_adj, MY_exp_A, MY_exp_B, MY_tgt_A, MY_tgt_B, MY_syn, MY_Cell, A_B_C_S_SM3,
+		test_size= 0.2 , random_state=42 )
+chem_feat_A_val, chem_feat_A_test, chem_feat_B_val, chem_feat_B_test, chem_adj_A_val, chem_adj_A_test, chem_adj_B_val, chem_adj_B_test, exp_A_val, exp_A_test, exp_B_val, exp_B_test, tgt_A_val, tgt_A_test, tgt_B_val, tgt_B_test, syn_val, syn_test, cell_val, cell_test, SM_v, SM_test  = sklearn.model_selection.train_test_split(
+		chem_feat_A_tv, chem_feat_B_tv, chem_adj_A_tv, chem_adj_B_tv, exp_A_tv, exp_B_tv, tgt_A_tv, tgt_B_tv, syn_tv, cell_tv, SM_tv,
+		test_size=0.5, random_state=42 )
+
 
 norm = 'tanh_norm'
-train_data, val_data, test_data = prepare_data_GCN(MY_chem_A_feat, MY_chem_B_feat, MY_chem_A_adj, MY_chem_B_adj, MY_exp_A, MY_exp_B, MY_tgt_A, MY_tgt_B, MY_syn, MY_Cell, norm)
+train_data, val_data, test_data = prepare_data_GCN(MY_chem_A_feat, MY_chem_B_feat, MY_chem_A_adj, MY_chem_B_adj, MY_exp_A, MY_exp_B, MY_tgt_A, MY_tgt_B, MY_syn, MY_Cell, norm )
 
+
+
+rmv_ind = [a for a in range(len(SM_test)) if SM_test[a] in SM_t+SM_v]
+len(rmv_ind)
+selec_ind = [a for a in range(len(SM_test)) if a not in rmv_ind]
 
 
 
@@ -2060,6 +2095,15 @@ T_test = DATASET_GCN_W_FT(
 	JY_ADJ_IDX, JY_IDX_WEIGHT_T, 
 	torch.Tensor(test_data['y']),
 	torch.Tensor(test_data['cell']))
+
+T_test = DATASET_GCN_W_FT(
+	torch.Tensor(test_data['drug1_feat'][selec_ind]), torch.Tensor(test_data['drug2_feat'][selec_ind]), 
+	torch.Tensor(test_data['drug1_adj'][selec_ind]), torch.Tensor(test_data['drug2_adj'][selec_ind]),
+	test_data['EXP_A'][selec_ind], test_data['EXP_B'][selec_ind], 
+	test_data['TGT_A'][selec_ind], test_data['TGT_B'][selec_ind], 
+	JY_ADJ_IDX, JY_IDX_WEIGHT_T, 
+	torch.Tensor(test_data['y'][selec_ind]),
+	torch.Tensor(test_data['cell'][selec_ind]))
 
 RAY_train = ray.put(T_train)
 RAY_val = ray.put(T_val)
@@ -2263,3 +2307,56 @@ final_result(R_1_V, R_1_T, R_1_1, R_1_2, R_2_V, R_2_T, R_2_1, R_2_2, R_3_V, R_3_
 
 
 
+use_cuda =  False
+T_test = ray.get(RAY_test)
+Test_loader = torch.utils.data.DataLoader(T_test, batch_size = my_config['config/batch_size'].item(), collate_fn = graph_collate_fn, shuffle =False, num_workers=my_config['config/n_workers'].item())
+#
+G_layer = my_config['config/G_layer'].item()
+G_hiddim = my_config['config/G_hiddim'].item()
+dsn1_layers = [my_config['config/feat_size_0'].item(), my_config['config/feat_size_1'].item(), my_config['config/feat_size_2'].item()]
+dsn2_layers = [my_config['config/feat_size_0'].item(), my_config['config/feat_size_1'].item(), my_config['config/feat_size_2'].item()] 
+snp_layers = [my_config['config/feat_size_3'].item() , my_config['config/feat_size_4'].item()]
+inDrop = my_config['config/dropout_1'].item()
+Drop = my_config['config/dropout_2'].item()
+#       
+best_model = MY_expGCN_parallel_model(
+			G_layer, T_test.gcn_drug1_F.shape[-1] , G_hiddim,
+			G_layer, 2, G_hiddim,
+			dsn1_layers, dsn2_layers, snp_layers, 17, 1,
+			inDrop, Drop
+			)
+
+device = "cuda:0" if torch.cuda.is_available() else "cpu"
+if torch.cuda.is_available():
+	state_dict = torch.load(os.path.join(PRJ_PATH, 'M1_model.pth'))
+else:
+	state_dict = torch.load(os.path.join(PRJ_PATH, 'M1_model.pth'), map_location=torch.device('cpu'))
+#
+if type(state_dict) == tuple:
+	best_model.load_state_dict(state_dict[0])
+else : 
+	best_model.load_state_dict(state_dict)	#
+#
+# 
+best_model.eval()
+test_loss = 0.0
+PRED_list = []
+Y_list = []
+with torch.no_grad():
+	best_model.eval()
+	for batch_idx_t, (drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, adj_w, y, cell) in enumerate(Test_loader):
+		expA = expA.view(-1,2)
+		expB = expB.view(-1,2)
+		adj_w = adj_w.squeeze()
+		if use_cuda:
+			drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, adj_w, y, cell = drug1_f.cuda(), drug2_f.cuda(), drug1_a.cuda(), drug2_a.cuda(), expA.cuda(), expB.cuda(), adj.cuda(), adj_w.cuda(), y.cuda(), cell.cuda()
+		output = best_model(drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, adj_w, y, cell) 
+		MSE = torch.nn.MSELoss()
+		loss = MSE(output, y)
+		test_loss = test_loss + loss.item()
+		Y_list = Y_list + y.view(-1).tolist()
+		outputs = output.view(-1).tolist()
+		PRED_list = PRED_list+outputs
+TEST_LOSS = test_loss/(batch_idx_t+1)
+R__T = TEST_LOSS
+R__1 , R__2 = jy_corrplot(PRED_list, Y_list, PRJ_PATH,'P.{}.{}.{}_model_retest'.format(Trial_name, G_NAME, 'M1') )
