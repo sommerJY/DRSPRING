@@ -1,10 +1,8 @@
 
 
-# 정말 smiles 분리를 안해서 생긴 문제라면 
-# 코드를 다시 짜야함 
-# 이번엔 왠만하면 모든 EXP 다 포함해서 한 파일을 만들고 그랬으면 좋겠음 지연아 
-# 그럼 그냥 그중에서 index 순서만 따지면 되잖아 
-# BASAL EXP 추가하는 방법 같이 넣어주기 
+# 민지한테서 받은 
+#
+
 
 
 import rdkit
@@ -1015,6 +1013,7 @@ SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3_FULL/'
 SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M33_FULL/'
 SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M2_FULL/'
 SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V3_FULL/'
+SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V4_FULL/'
 
 
 PRJ_NAME = 'M1_MISS2_FULL'
@@ -1022,6 +1021,7 @@ PRJ_NAME = 'M3_MISS2_FULL'
 PRJ_NAME = 'M33_MISS2_FULL'
 PRJ_NAME = 'M2_MISS2_FULL'
 PRJ_NAME = 'M3V3_MISS2_FULL'
+PRJ_NAME = 'M3V4_MISS2_FULL'
 
 
 torch.save(MY_chem_A_feat_re, SAVE_PATH+'{}.MY_chem_A_feat.pt'.format(PRJ_NAME))
@@ -1084,17 +1084,17 @@ new_col = ['DepMap_ID']+for_gene2
 ccle_exp.columns = new_col
 
 
-ccle_cell_info = ccle_info[['DepMap_ID','RRID']]
-ccle_cell_info.columns = ['DepMap_ID','DrugCombCello']
-ccle_exp2 = pd.merge(ccle_exp, ccle_cell_info, on = 'DepMap_ID' , how='left')
-ccle_exp3 = ccle_exp2[['DepMap_ID','DrugCombCello']+BETA_ENTREZ_ORDER]
-ccle_cello_names = [a for a in ccle_exp3.DrugCombCello if type(a) == str]
+					ccle_cell_info = ccle_info[['DepMap_ID','RRID']]
+					ccle_cell_info.columns = ['DepMap_ID','DrugCombCello']
+					ccle_exp2 = pd.merge(ccle_exp, ccle_cell_info, on = 'DepMap_ID' , how='left')
+					ccle_exp3 = ccle_exp2[['DepMap_ID','DrugCombCello']+BETA_ENTREZ_ORDER]
+					ccle_cello_names = [a for a in ccle_exp3.DrugCombCello if type(a) == str]
 
 
-DC_CELL_DF_ids = set(DC_CELL_DF.cellosaurus_accession) # 1659
-ccle_cell_ids = set(ccle_cell_info.DrugCombCello) # 1672
-# DC_CELL_DF_ids - ccle_cell_ids = 205
-# ccle_cell_ids - DC_CELL_DF_ids = 218
+					DC_CELL_DF_ids = set(DC_CELL_DF.cellosaurus_accession) # 1659
+					ccle_cell_ids = set(ccle_cell_info.DrugCombCello) # 1672
+					# DC_CELL_DF_ids - ccle_cell_ids = 205
+					# ccle_cell_ids - DC_CELL_DF_ids = 218
 
 
 
