@@ -1,5 +1,7 @@
 
 
+have to check kisti code 
+
 import rdkit
 import os
 import os.path as osp
@@ -201,9 +203,9 @@ MY_syn = torch.load(SAVE_PATH+'{}.MY_syn.pt'.format(file_name))
 
 
 # A_B_C_S SET filter check
-WORK_NAME = 'WORK_7'
+# WORK_NAME = 'WORK_7'
 #WORK_NAME = 'WORK_8'
-#WORK_NAME = 'WORK_10'
+WORK_NAME = 'WORK_10'
 #WORK_NAME = 'WORK_11'
 
 
@@ -213,8 +215,8 @@ MISS_filter = ['AOBO','AXBO','AOBX','AXBX']
 
 
 A_B_C_S_SET = A_B_C_S_SET_ADD[A_B_C_S_SET_ADD.SYN_OX == 'O']
-A_B_C_S_SET = A_B_C_S_SET[A_B_C_S_SET.T2OX == 'O'] # old targets 
-## A_B_C_S_SET = A_B_C_S_SET[A_B_C_S_SET.T1OX == 'O'] # new targets 
+##A_B_C_S_SET = A_B_C_S_SET[A_B_C_S_SET.T2OX == 'O'] # old targets 
+A_B_C_S_SET = A_B_C_S_SET[A_B_C_S_SET.T1OX == 'O'] # new targets 
 A_B_C_S_SET = A_B_C_S_SET[A_B_C_S_SET.type.isin(MISS_filter)]
 
 
@@ -249,8 +251,8 @@ MY_chem_A_adj_RE = MY_chem_A_adj[data_ind]
 MY_chem_B_adj_RE = MY_chem_B_adj[data_ind]
 MY_g_EXP_A_RE = MY_g_EXP_A[data_ind]
 MY_g_EXP_B_RE = MY_g_EXP_B[data_ind]
-MY_Target_A = copy.deepcopy(MY_Target_2_A)[data_ind]
-MY_Target_B = copy.deepcopy(MY_Target_2_B)[data_ind]
+MY_Target_A = copy.deepcopy(MY_Target_1_A)[data_ind] ########## 1: NEW 
+MY_Target_B = copy.deepcopy(MY_Target_1_B)[data_ind] ############# 2: OLD
 MY_CellBase_RE = MY_CellBase[data_ind]
 MY_syn_RE = MY_syn[data_ind]
 
@@ -351,6 +353,7 @@ cell_one_hot = torch.nn.functional.one_hot(torch.Tensor(A_B_C_S_SET_COH2['cell_o
 
 
 
+ing -> check missing target set 
 
 
 
@@ -2272,8 +2275,8 @@ DC_DRUG_DF_FULL_filt2.to_csv(SAVE_PATH+'DC_ALL_7555_ORDER.csv')
 
 MJ_DIR = '/st06/jiyeonH/13.DD_SESS/01.PRJ2/'
 # M33 == M3V2
-MJ_request_ANS_for_train = pd.read_csv(MJ_DIR+'PRJ2_EXP_fugcn_versa2_1.csv') # train 에서 활용해서 주는거
-MJ_request_ANS_FULL = pd.read_csv(MJ_DIR+'PRJ2ver2_EXP_fugcn_versa2_1.csv') # 내가 요청한 전부 
+MJ_request_ANS_for_train = pd.read_csv(MJ_DIR+'PRJ2_EXP_fugcn_versa2_1.csv')
+MJ_request_ANS_FULL = pd.read_csv(MJ_DIR+'PRJ2ver2_EXP_fugcn_versa2_1.csv')
 
 set(MJ_request_ANS_FULL.columns) - set(MJ_request_ANS_for_train.columns)
 set(MJ_request_ANS_for_train.columns) - set(MJ_request_ANS_FULL.columns)
@@ -2325,7 +2328,7 @@ MJ_tup_df.to_csv(SAVE_PATH+'AVAIL_EXP_TOT.csv')
 
 
 여기는 WORK 7 이라서 OLD TARGET !!!!!!!!!!!!!!!!
-
+-> 바꿔줘야함 10 으로 
 
 
 DC_TOT_CIDS = DC_DRUG_DF_FULL[['CID','leng']]

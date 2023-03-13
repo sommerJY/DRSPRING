@@ -185,7 +185,7 @@ DC_DATA_filter5 = pd.merge(DC_DATA_filter4, DC_CELL_DF2[['cell_line_id','DrugCom
 
 
 
-# 그래서 drugcomb 에서 일단 사용된 내용들 CID 기준 
+# 그래서 drugcomb 에서 일단 사용된 내용들 CID 기준 - CELLO 
 DC_DATA_filter6 = DC_DATA_filter5[DC_DATA_filter5.DrugCombCello.isin(avail_cell_list)]
 
 good_ind = [a for a in range(DC_DRUG_DF_FULL.shape[0]) if type(DC_DRUG_DF_FULL.CAN_SMILES[a]) == str ]
@@ -234,6 +234,7 @@ IN_DC_pairs = IN_DC_pairs_1 + IN_DC_pairs_2 # 239,044
 # set(ADD_CHECK) - set(IN_DC_pairs) 안들어간거 없음 ! 
 
 
+# 사용하는 cell line 별로 저장해줘야하는구나 
 c = 'CVCL_0031' # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 this_list = [(a,b,c) for a,b in DC_pairs]
@@ -268,4 +269,22 @@ aaa = list(product(DC_FULL_CID, avail_cell_list))
 # save as json
 with open(CELVAL_PATH+'MJ_REQUEST_VER2.json', 'w') as f:
     json.dump(aaa,f)
+
+
+
+
+# open as json
+with open('/st06/jiyeonH/13.DD_SESS/01.PRJ2/'+'MJ_REQUEST_VER2.json', 'r') as f:
+    old_ver_check = json.load(f)
+
+
+# 이거 다시 만들어서 민지한테 요청해야하는지 잠깐 확인해야함 
+old_ver_check_cell_list = [a[1] for a in old_ver_check]
+old_ver_check_cell_list = set(old_ver_check_cell_list) 
+42
+'CVCL_0033', 'CVCL_7151', 'CVCL_0399', 'CVCL_0139', 'CVCL_1472', 'CVCL_0359', 'CVCL_2235', 'CVCL_1786', 'CVCL_0060', 'CVCL_0526', 'CVCL_1402', 'CVCL_0248', 'CVCL_0632', 'CVCL_0021', 'CVCL_0291', 'CVCL_0547', 'CVCL_A442', 'CVCL_1475', 'CVCL_0080', 'CVCL_0336', 'CVCL_0504', 'CVCL_0105', 'CVCL_3509', 'CVCL_0004', 'CVCL_0553', 'CVCL_1045', 'CVCL_0320', 'CVCL_0527', 'CVCL_0588', 'CVCL_0132', 'CVCL_0023', 'CVCL_0062', 'CVCL_0332', 'CVCL_1594', 'CVCL_0419', 'CVCL_1511', 'CVCL_0031', 'CVCL_0178', 'CVCL_0035', 'CVCL_0179', 'CVCL_1629', 'CVCL_0395'
+
+괜춘! avail_cell_list 은 다 이안에 들어있음. 그래도 매번 한번씩은 확인해줘 
+
+
 

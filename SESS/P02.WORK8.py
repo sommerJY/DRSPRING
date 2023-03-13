@@ -201,10 +201,10 @@ MY_syn = torch.load(SAVE_PATH+'{}.MY_syn.pt'.format(file_name))
 
 
 # A_B_C_S SET filter check
-WORK_NAME = 'WORK_7'
-#WORK_NAME = 'WORK_8'
-#WORK_NAME = 'WORK_10'
-#WORK_NAME = 'WORK_11'
+# WORK_NAME = 'WORK_7'
+WORK_NAME = 'WORK_8'
+# WORK_NAME = 'WORK_10'
+# WORK_NAME = 'WORK_11'
 
 
 #MISS_filter = ['AOBO']
@@ -318,8 +318,8 @@ C_df = C_df.sort_values('freq')
 
 # 그래서 결론적으로 cell one hot 은? 
 
-C_freq_filter = C_df[C_df.freq > 200] ############ WORK 7 ##############
-# C_freq_filter = C_df[C_df.freq > 500] ############ WORK 8 ##############
+# C_freq_filter = C_df[C_df.freq > 200] ############ WORK 7 ##############
+C_freq_filter = C_df[C_df.freq > 500] ############ WORK 8 ##############
 # C_freq_filter = C_df[C_df.freq > 1000] ############ WORK 9 ##############
 
 A_B_C_S_SET_COH = A_B_C_S_SET_COH[A_B_C_S_SET_COH.DC_cellname.isin(C_freq_filter.cell)]
@@ -1477,6 +1477,12 @@ MISS_NAME = 'MIS2'
 WORK_NAME = 'WORK_10'
 W_NAME = 'W10'
 
+WORK_DATE = '23.01.26'
+PRJ_NAME = 'M3V2'
+MISS_NAME = 'MIS2'
+WORK_NAME = 'WORK_11'
+W_NAME = 'W11'
+
 
 
 
@@ -1756,11 +1762,11 @@ R_4_V, R_4_T, R_4_1, R_4_2, R_5_V, R_5_T, R_5_1, R_5_2, R_6_V, R_6_T, R_6_1, R_6
 
 
 
-WORK_DATE = '23.01.16'
+# WORK_DATE = '23.01.16'
 PRJ_NAME = 'M3V2'
 MISS_NAME = 'MIS2'
-WORK_NAME = 'WORK_7'
-W_NAME = 'W7'
+WORK_NAME = 'WORK_8'
+W_NAME = 'W8'
 
 
 PRJ_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/{}_{}_{}/'.format(PRJ_NAME, MISS_NAME, W_NAME)
@@ -1811,6 +1817,8 @@ for key in ANA_ALL_DF.keys():
 		TOT_min = trial_min
 		TOT_key = key
 #
+#
+
 print('best val', flush=True)
 print(TOT_key, flush=True)
 mini_df = ANA_ALL_DF[TOT_key]
@@ -1865,7 +1873,8 @@ for key in ANA_ALL_DF.keys():
 	if trial_max > TOT_max :
 		TOT_max = trial_max
 		TOT_key = key
-#
+##
+
 print('best cor', flush=True)
 print(TOT_key, flush=True)
 mini_df = ANA_ALL_DF[TOT_key]
@@ -1887,15 +1896,11 @@ R_4_V, R_4_T, R_4_1, R_4_2, R_5_V, R_5_T, R_5_1, R_5_2, R_6_V, R_6_T, R_6_1, R_6
 
 
 
+###### BEST result to plot : model 3 
 ###### BEST result to plot 
 ###### BEST result to plot 
 ###### BEST result to plot 
 ###### BEST result to plot 
-###### BEST result to plot 
-
-
-
-### which one is the best model? 
 
 import numpy as np
 TOT_min = np.Inf
@@ -1906,6 +1911,8 @@ for key in ANA_ALL_DF.keys():
 		TOT_min = trial_min
 		TOT_key = key
 #
+#
+
 print('best val', flush=True)
 print(TOT_key, flush=True)
 mini_df = ANA_ALL_DF[TOT_key]
@@ -1964,13 +1971,13 @@ cell_S = []
 cell_num = []
 
 for cell in list(test_cell_df.DC_cellname) :
-	tmp_test_re = ABCS_test_re[ABCS_test_re.DC_cellname == cell]
-	cell_P_corr, _ = stats.pearsonr(tmp_test_re.ANS, tmp_test_re.PRED)
-	cell_S_corr, _ = stats.spearmanr(tmp_test_re.ANS, tmp_test_re.PRED)
-	cell_nums = tmp_test_re.shape[0]
-	cell_P.append(cell_P_corr)
-	cell_S.append(cell_S_corr)
-	cell_num.append(cell_nums)
+    tmp_test_re = ABCS_test_re[ABCS_test_re.DC_cellname == cell]
+    cell_P_corr, _ = stats.pearsonr(tmp_test_re.ANS, tmp_test_re.PRED)
+    cell_S_corr, _ = stats.spearmanr(tmp_test_re.ANS, tmp_test_re.PRED)
+    cell_nums = tmp_test_re.shape[0]
+    cell_P.append(cell_P_corr)
+    cell_S.append(cell_S_corr)
+    cell_num.append(cell_nums)
 
 
 test_cell_df['P_COR'] = cell_P
@@ -1978,7 +1985,8 @@ test_cell_df['S_COR'] = cell_S
 test_cell_df['cell_num'] = cell_num
 
 test_cell_df = pd.merge(test_cell_df, DC_CELL_info_filt[['DC_cellname','tissue']], on = 'DC_cellname', how = 'left'  )
-tissue_set = list(set(test_cell_df['tissue']))
+# tissue 다시 확인하고 색깔 매칭해야함. 데이터마다 약간 다름 
+tissue_set = ['CENTRAL_NERVOUS_SYSTEM', 'LUNG',  'HAEMATOPOIETIC_AND_LYMPHOID_TISSUE','BREAST','LARGE_INTESTINE', 'BONE',  'SKIN', 'PROSTATE',  'OVARY' ] # list(set(test_cell_df['tissue']))
 color_set = ["#FFA420","#826C34","#D36E70","#705335","#57A639","#434B4D","#C35831","#B32821","#FAD201","#20603D","#828282","#1E1E1E"]
 test_cell_df['tissue_oh'] = [color_set[tissue_set.index(a)] for a in list(test_cell_df['tissue'])]
 
@@ -2015,6 +2023,14 @@ plt.legend()
 plt.tight_layout()
 fig.savefig('{}/{}.png'.format(PRJ_PATH, 'test_cell_pearson'), bbox_inches = 'tight')
 plt.close()
+
+
+
+
+
+
+
+
 
 
 
@@ -2272,8 +2288,8 @@ DC_DRUG_DF_FULL_filt2.to_csv(SAVE_PATH+'DC_ALL_7555_ORDER.csv')
 
 MJ_DIR = '/st06/jiyeonH/13.DD_SESS/01.PRJ2/'
 # M33 == M3V2
-MJ_request_ANS_for_train = pd.read_csv(MJ_DIR+'PRJ2_EXP_fugcn_versa2_1.csv') # train 에서 활용해서 주는거
-MJ_request_ANS_FULL = pd.read_csv(MJ_DIR+'PRJ2ver2_EXP_fugcn_versa2_1.csv') # 내가 요청한 전부 
+MJ_request_ANS_for_train = pd.read_csv(MJ_DIR+'PRJ2_EXP_fugcn_versa2_1.csv')
+MJ_request_ANS_FULL = pd.read_csv(MJ_DIR+'PRJ2ver2_EXP_fugcn_versa2_1.csv')
 
 set(MJ_request_ANS_FULL.columns) - set(MJ_request_ANS_for_train.columns)
 set(MJ_request_ANS_for_train.columns) - set(MJ_request_ANS_FULL.columns)
@@ -2324,7 +2340,7 @@ MJ_tup_df.to_csv(SAVE_PATH+'AVAIL_EXP_TOT.csv')
 # 3) 그거에 맞게 Target 저장하기 
 
 
-여기는 WORK 7 이라서 OLD TARGET !!!!!!!!!!!!!!!!
+여기는 WORK 8 이라서 OLD TARGET !!!!!!!!!!!!!!!!
 
 
 
@@ -2572,7 +2588,9 @@ torch.save(L_TENSOR, SAVE_PATH+'AVAIL_LINCS_EXP_cell.pt')
 BETA_CID_CELLO_SIG_re_re.to_csv(SAVE_PATH+'AVAIL_LINCS_EXP_cell.csv')
 
 
-
-
+지금 하다 만거 : BETA BIND 에서 필터링 해서 저장해야하는거 까먹음 
+INT1 - 1 : cell line 별로 저장해주는중 
+INT1 - 2 : betabind 읽는중 
+INT2 : python 코드 깔끔하게 되는지 pred 실험해야함 
 
 

@@ -76,7 +76,8 @@ PRJ_NAME = 'M2_J3'
 PRJ_NAME = 'M3_J3'
 
 
-WORK_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M1_J1/'
+# WORK_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M1_J1/'
+# WORK_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M1_J1/'
 
 
 
