@@ -1,18 +1,11 @@
 
-# 0316
-#하던거 : __main__ 을 쓰는 형식으로 사용해야 argparse 가 제대로 작동할것 같음 
-#그래서 spawn 관련된거 다시 확인해봐야함 
-#근데 ip 를 나눠서 던지는거까지는 되는것 같은데
-#모델 하나에 대해서 실험 성공만 되면 ray 에 연결시키는것도 가능할듯? 
-#근데 굳이 그래야하나 싶기도 하고
-#hyperparameter 쓰지 않고 전체 데이터를 8gpu 에 learning 하는게 얼마나 걸리는지 확인을 좀 해봐야할것 같음 
-#data distribution 정도는 쓸줄 알아야 pytorch 에 GPU 쓸줄 안다고 볼 수 있을듯 #
-#근데 이러면 데이터 가져오는 코드를 어떻게 확인하지 
 
-# 0317
-# 그나마 nvidia-smi 에서 잡히는 코드 
-# 문제가 뭘까 왜 다 제대로 설정해주고 nvidia 에서도 먹는데 
-# train 내에서 아무것도 print 를 못할까 
+
+# 다른 reference 참고한거...
+# 내가보기엔 일단 dist init 시작할때 rank 주는 방법이 차이가 있는것 같은데
+# slurm 에서 그래서 ip 도 받아다가 쓰는데 뭐가 문젤꼬 
+# 주말엔... 해결봐야지....논문도.... 읽어야하고............. 
+# 아니 교수님 대체 뭘 디벨롭하라는거에여 
 
 
 
@@ -106,45 +99,43 @@ from layers import *
 
 
 
+def get_args_parser():
+	parser = argparse.ArgumentParser()
+	parser.add_argument('--nodes', default=1, type=int)
+	parser.add_argument('--rank', default=0, type=int,help="Node's order number in [0, num_of_nodes-1]")
+	parser.add_argument('--ip_address', type=str, required=True,help='ip address of the host node')
+	parser.add_argument('--ngpus', default=1, type=int, help='number of gpus per node')
+	parser.add_argument('--epochs', default=100, type=int, metavar='N',help='number of total epochs to run')
+	parser.add_argument('--gpu_ids', nargs="+", default=['0', '1', '2', '3'])
+	return parser
 
 
 
 
-
-
-def JY_train( gpu, args ) :
+def JY_train( rank, opts ) :
+	#
+	local_gpu_id = init_for_distribution(rank, opts)
+	#
 	NETWORK_PATH = '/home01/k020a01/01.Data/HumanNet/'
 	LINCS_PATH = '/home01/k020a01/01.Data/LINCS/'
 	DC_PATH = '/home01/k020a01/01.Data/DrugComb/'
 	PRJ_PATH ='/home01/k020a01/TEST'
 	#
-	args.gpu = gpu
-	print('gpu:',gpu)
-	#rank = args.local_ranks * args.ngpus+gpu
-	#rank = int(os.environ.get("SLURM_NODEID")) * args.ngpus + gpu
-	rank = int(os.environ['SLURM_PROCID'])
-	print('rank:', rank)
-	#
-	dist.init_process_group(
-		backend='nccl',
-		init_method='tcp://localhost:8888',
-		world_size=args.world_size,
-		rank=rank
-	)
-	#
-	torch.manual_seed(0) # node 들 사이에서의 randomness control
-	torch.cuda.set_device(args.gpu)
-	args.main = (args.rank == 0)
 	#
 	A_B_C_S_SET_SM, T_train_0, T_val_0, T_test_0, batch_cut_weight = prepare_input(
 		MJ_NAME = 'M3V4', WORK_DATE = '23.03.16', MISS_NAME = 'MIS2', file_name = 'M3V4ccle_MISS2_FULL', 
 		WORK_NAME = 'WORK_20', CELL_CUT = 200)
 	#
 	train_sampler = torch.utils.data.distributed.DistributedSampler(
-		T_train_0, num_replicas = args.world_size, rank = rank, seed=  24
+		T_train_0, num_replicas = args.world_size, rank = rank, seed=  24, shuffle = True
 	)
+	#val_sampler = torch.utils.data.distributed.DistributedSampler(
+	#	T_val_0, num_replicas = args.world_size, rank = rank, seed=  24
+	#)
+	#
 	train_loader = torch.utils.data.DataLoader(
-		T_train_0, batch_size=int(128/args.ngpus), collate_fn = graph_collate_fn, shuffle =False, num_workers=4,
+		T_train_0, batch_size=int(128/args.ngpus), 
+		collate_fn = graph_collate_fn, shuffle =False, num_workers = 4, # 가용 gpu * 4
 		pin_memory = True, sampler = train_sampler
 	)
 	#
@@ -163,14 +154,15 @@ def JY_train( gpu, args ) :
 		len(set(A_B_C_S_SET_SM.DrugCombCCLE)), 1,      # cell_dim ,out_dim,
 		inDrop, Drop      # inDrop, drop
 	)
-	model.cuda(args.gpu)
+	model.cuda(local_gpu_id)
 	model = torch.nn.parallel.DistributedDataParallel(
-		model, device_ids = [args.gpu], find_unused_parameters = True
-	)
+		model, device_ids = [local_gpu_id]	)
 	optimizer = torch.optim.Adam(model.parameters(), lr = 0.01 )
 	criterion = torch.nn.MSELoss()
-	for epoch in range(args.epochs) :
+	for epoch in range(opts.epoch) :
 		print("epoch : " + epoch, flush = True)
+		#
+		model.train()
 		train_loader.sampler.set_epoch(epoch)
 		running_loss = 0
 		last_loss = 0 
@@ -182,7 +174,7 @@ def JY_train( gpu, args ) :
 			expA = expA.view(-1,3)#### 다른점 
 			expB = expB.view(-1,3)#### 다른점 
 			adj_w = adj_w.squeeze()
-			drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, adj_w, y, cell = drug1_f.cuda(args.gpus), drug2_f.cuda(args.gpus), drug1_a.cuda(args.gpus), drug2_a.cuda(args.gpus), expA.cuda(args.gpus), expB.cuda(args.gpus), adj.cuda(args.gpus), adj_w.cuda(args.gpus), y.cuda(args.gpus), cell.cuda(args.gpus) 
+			drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, adj_w, y, cell = drug1_f.cuda(opts.rank), drug2_f.cuda(opts.rank), drug1_a.cuda(opts.rank), drug2_a.cuda(opts.rank), expA.cuda(opts.rank), expB.cuda(opts.rank), adj.cuda(opts.rank), adj_w.cuda(opts.rank), y.cuda(opts.rank), cell.cuda(opts.rank) 
 			optimizer.zero_grad()
 			output = model(drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, adj_w, cell, y)
 			loss = criterion(output, y)
@@ -196,32 +188,62 @@ def JY_train( gpu, args ) :
 		last_loss = running_loss / (batch_idx_t+1)
 		train_sc, _ = stats.spearmanr(pred_list, ans_list)
 		train_pc, _ = stats.pearsonr(pred_list, ans_list)
-		print("epoch : {}/{}, loss = {}".format(epoch+1, args.epochs, loss), flush = True)
-		if rank == 0 :
+		print("epoch : {}/{}, loss = {}".format(epoch+1, opts.epochs, loss), flush = True)
+		if opts.rank == 0 :
 			dict_model = {
 				'state_dict' : model.state_dict(),
 				'optimizer' : optimizer.state_dict(),
-				'epoch' : args.epochs,
+				'epoch' : opts.epochs,
 			}
-			torch.save(dict_model, PRJ_PATH+'/model.pth')
+			torch.save(dict_model, '{}/model.{}.pth'.format(PRJ_PATH, epoch))
+
+
+
+
+
+def init_for_distribution(rank, opts):
+	opts.rank = rank
+	local_gpu_id = int(os.environ.get("SLURM_NODEID")) * opts.ngpus + rank
+	torch.cuda.set_device(local_gpu_id)
+	if opts.rank is not None :
+		print("Use GPU: {} for training".format(local_gpu_id))
+	#
+	dist.init_process_group(
+		backend='nccl',
+		init_method='tcp://172.21.1.11:8888',
+		world_size=opts.world_size,
+		rank=opts.rank
+	)
+	torch.distributed.barrier() # 이게 왜 필요한건지 약간 음 .... 동기화를 위한거라는데... 
+	print(opts)
+	print('local_gpu_id : '+local_gpu_id, flush = True)
+	return local_gpu_id
+
+
+
 
 
 if __name__ == "__main__":
 	#
-	parser = argparse.ArgumentParser()
-	parser.add_argument('--nodes', default=1, type=int)
-	parser.add_argument('--local_ranks', default=0, type=int,help="Node's order number in [0, num_of_nodes-1]")
-	parser.add_argument('--ip_address', type=str, required=True,help='ip address of the host node')
-	parser.add_argument('--ngpus', default=1, type=int, help='number of gpus per node')
-	parser.add_argument('--epochs', default=100, type=int, metavar='N',help='number of total epochs to run')
-	args = parser.parse_args()
+	parser = get_args_parser()
+	opts = parser.parse_args()
 	#
-	args.world_size = args.ngpus * args.nodes
-	os.environ['MASTER_ADDR'] = args.ip_address
-	print('ip_address is :' + args.ip_address, flush = True)
+	print(opts)
+	opts.world_size = len(opts.gpu_ids)
+	opts.num_workers = len(opts.gpu_ids) * 4
+	os.environ['MASTER_ADDR'] = opts.ip_address
+	print('ip_address is :' + opts.ip_address, flush = True)
 	os.environ['MASTER_PORT'] = '8888'
-	os.environ['WORLD_SIZE'] = str(args.world_size)
+	os.environ['WORLD_SIZE'] = str(opts.world_size)
 	#
-	mp.spawn(JY_train, nprocs=args.ngpus, args=(args,))
+	mp.spawn(JY_train, nprocs=opts.world_size, args=(opts,), join = True)
+
+
+
+
+
+
+
+
 
 
