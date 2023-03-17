@@ -1086,17 +1086,17 @@ new_col = ['DepMap_ID']+for_gene2
 ccle_exp.columns = new_col
 
 
-					ccle_cell_info = ccle_info[['DepMap_ID','RRID']]
-					ccle_cell_info.columns = ['DepMap_ID','DrugCombCello']
-					ccle_exp2 = pd.merge(ccle_exp, ccle_cell_info, on = 'DepMap_ID' , how='left')
-					ccle_exp3 = ccle_exp2[['DepMap_ID','DrugCombCello']+BETA_ENTREZ_ORDER]
-					ccle_cello_names = [a for a in ccle_exp3.DrugCombCello if type(a) == str]
+ccle_cell_info = ccle_info[['DepMap_ID','RRID']]
+ccle_cell_info.columns = ['DepMap_ID','DrugCombCello']
+ccle_exp2 = pd.merge(ccle_exp, ccle_cell_info, on = 'DepMap_ID' , how='left')
+ccle_exp3 = ccle_exp2[['DepMap_ID','DrugCombCello']+BETA_ENTREZ_ORDER]
+ccle_cello_names = [a for a in ccle_exp3.DrugCombCello if type(a) == str]
 
 
-					DC_CELL_DF_ids = set(DC_CELL_DF.cellosaurus_accession) # 1659
-					ccle_cell_ids = set(ccle_cell_info.DrugCombCello) # 1672
-					# DC_CELL_DF_ids - ccle_cell_ids = 205
-					# ccle_cell_ids - DC_CELL_DF_ids = 218
+DC_CELL_DF_ids = set(DC_CELL_DF.cellosaurus_accession) # 1659
+ccle_cell_ids = set(ccle_cell_info.DrugCombCello) # 1672
+# DC_CELL_DF_ids - ccle_cell_ids = 205
+# ccle_cell_ids - DC_CELL_DF_ids = 218
 
 
 

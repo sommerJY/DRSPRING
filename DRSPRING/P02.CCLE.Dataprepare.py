@@ -8,6 +8,11 @@
 
 # 그러고 나서 이젠 또 CCLE 버전으로 바꿔서 해보기로 함 
 
+# 민지한테서 받은 PRJ2_EXP_ccle_fugcn_a3t2_16384 가 기준임 
+# 내꺼에서는 M3V4 로 통일 
+# DrugComb 말고 ccle 로 통일 
+
+
 
 
 
@@ -911,7 +916,8 @@ for IND in range(100): #  MY_chem_A_feat.shape[0]
 
 
 하는중! 
-근데 시너지 점수에 NaN 들어가는 애들 이유 뭔지 확인해보기 
+근데 시너지 점수에 NaN 들어가는 애들 이유 뭔지 확인해보기 -> 아니었음. 제대로 돌아갔음 
+
 
 selec_ind = A_B_C_S_SET_MJ.index.isin(Fail_ind)==False
 A_B_C_S_SET_MJ_FAFILT = A_B_C_S_SET_MJ[selec_ind]
@@ -965,4 +971,380 @@ A_B_C_S = copy.deepcopy(A_B_C_S)
                     Cell = 'CVCL_0132'
 
 
+
+
+
+
 CCLE_PATH = '/st06/jiyeonH/13.DD_SESS/CCLE.22Q1/'
+
+ccle_exp = pd.read_csv(CCLE_PATH+'CCLE_expression.csv', low_memory=False)
+# ccle_mut = pd.read_csv(CCLE_PATH+'CCLE_mutations.csv', low_memory=False)
+ccle_info= pd.read_csv(CCLE_PATH+'sample_info.csv', low_memory=False)
+
+
+# CCLE ver! 
+ccle_cell_info = ccle_info[['DepMap_ID','CCLE_Name']]
+ccle_cell_info.columns = ['DepMap_ID','DrugCombCCLE']
+ccle_exp2 = pd.merge(ccle_exp, ccle_cell_info, on = 'DepMap_ID' , how='left')
+ccle_exp3 = ccle_exp2[['DepMap_ID','DrugCombCCLE']+BETA_ENTREZ_ORDER]
+ccle_names = [a for a in ccle_exp3.DrugCombCCLE if type(a) == str]
+
+
+# 그냥 기본적인 정보 차이가 궁금 
+DC_CELL_DF_ids = set(DC_CELL_DF.ccle_name) # 1475
+ccle_cell_ids = set(ccle_cell_info.DrugCombCCLE) # 1827
+# DC_CELL_DF_ids - ccle_cell_ids = 13
+# ccle_cell_ids - DC_CELL_DF_ids = 365
+
+
+
+
+
+
+cell_basal_exp_list = []
+# give vector 
+for i in range(A_B_C_S_SET.shape[0]) :
+    if i%100 == 0 :
+        print(str(i)+'/'+str(A_B_C_S_SET.shape[0]) )
+        datetime.now()
+    ccle = A_B_C_S_SET.loc[i]['DrugCombCCLE']
+    if ccle in ccle_names : 
+        ccle_exp_df = ccle_exp3[ccle_exp3.DrugCombCCLE==ccle][BETA_ENTREZ_ORDER]
+        ccle_exp_vector = ccle_exp_df.values[0].tolist()
+        cell_basal_exp_list.append(ccle_exp_vector)
+    else : # 'TC32_BONE', 'DU145_PROSTATE' -> 0 으로 진행하게 됨. public expression 없음 참고해야함. 
+        ccle_exp_vector = [0]*978
+        cell_basal_exp_list.append(ccle_exp_vector)
+
+cell_base_tensor = torch.Tensor(cell_basal_exp_list)
+
+torch.save(cell_base_tensor, SAVE_PATH+'{}.MY_CellBase.pt'.format(PRJ_NAME))
+
+
+no_public_exp = list(set(A_B_C_S_SET['DrugCombCCLE']) - set(ccle_names))
+no_p_e_list = ['X' if cell in no_public_exp else 'O' for cell in list(A_B_C_S_SET_ADD.DrugCombCCLE)]
+
+A_B_C_S_SET_ADD = copy.deepcopy(A_B_C_S_SET)
+A_B_C_S_SET_ADD = A_B_C_S_SET_ADD.reset_index(drop = True)
+A_B_C_S_SET_ADD['Basal_Exp'] = no_p_e_list
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#### synergy score 일관성 체크 
+def get_synergy_data(DrugA_CID, DrugB_CID, Cell):
+    ABCS1 = A_B_C_S[A_B_C_S.drug_row_CID == DrugA_CID]
+    ABCS2 = ABCS1[ABCS1.drug_col_CID == DrugB_CID]
+    ABCS3 = ABCS2[ABCS2.DrugCombCCLE == Cell]
+    #
+    if len(set(ABCS3.synergy_loewe>0)) ==1 : # 일관성 확인 
+        OX = 'O'
+    else: 
+        OX = 'X'
+    synergy_score = np.median(ABCS3.synergy_loewe) # 원래는 무조건 median
+    return synergy_score, OX
+
+
+OX_list = []
+
+for IND in range(A_B_C_S_SET.shape[0]) :
+    if IND%100 == 0 :
+        print(str(IND)+'/'+str(A_B_C_S_SET.shape[0]) )
+        datetime.now()
+    CID_A = A_B_C_S_SET.iloc[IND,]['drug_row_CID']
+    CID_B = A_B_C_S_SET.iloc[IND,]['drug_col_CID']
+    Cell = A_B_C_S_SET.iloc[IND,]['DrugCombCCLE']
+    score, OX = get_synergy_data(CID_A, CID_B, Cell)
+    OX_list.append(OX)
+    
+
+A_B_C_S_SET_ADD['SYN_OX'] = OX_list
+
+
+
+
+
+
+
+
+A_B_C_S_SET_CIDS = list(set(list(A_B_C_S_SET_ADD.drug_row_CID)+list(A_B_C_S_SET_ADD.drug_col_CID)))
+gene_ids = list(BETA_ORDER_DF.gene_id)
+
+
+# TARGET (1)
+# TARGET (1)
+# TARGET (1)
+
+TARGET_PATH = '/st06/jiyeonH/13.DD_SESS/01.PRJ2/'
+TARGET_DB = pd.read_csv(TARGET_PATH+'TARGET_CID_ENTREZ.csv', sep ='\t', index_col = 0)
+
+TARGET_DB_RE = TARGET_DB[TARGET_DB.CID_RE.isin(A_B_C_S_SET_CIDS)]
+TARGET_DB_RE = TARGET_DB_RE[TARGET_DB_RE.ENTREZ_RE.isin(gene_ids)]
+
+
+
+
+
+# L_gene_symbol : 127501
+# PPI_name : 126185
+
+target_cids = list(set(TARGET_DB_RE.CID))
+gene_ids = list(BETA_ORDER_DF.gene_id)
+def get_targets(CID): # 이건 지금 필터링 한 경우임 #
+	if CID in target_cids:
+		tmp_df2 = TARGET_DB_RE[TARGET_DB_RE.CID == CID]
+		targets = list(set(tmp_df2.EntrezID))
+		vec = [1 if a in targets else 0 for a in gene_ids ]
+	else :
+		vec = [0] * 978
+	return vec
+
+
+
+
+TARGET_A = []
+TARGET_B = []
+
+for IND in range(A_B_C_S_SET_ADD.shape[0]) :
+    if IND%100 == 0 :
+        print(str(IND)+'/'+str(A_B_C_S_SET_ADD.shape[0]) )
+        datetime.now()
+    CID_A = A_B_C_S_SET_ADD.iloc[IND,]['drug_row_CID']
+    CID_B = A_B_C_S_SET_ADD.iloc[IND,]['drug_col_CID']
+    target_vec_A = get_targets(CID_A)
+    target_vec_B = get_targets(CID_B)
+    TARGET_A.append(target_vec_A)
+    TARGET_B.append(target_vec_B)
+    
+
+TARGET_A_TENSOR = torch.Tensor(TARGET_A)
+TARGET_B_TENSOR = torch.Tensor(TARGET_B)
+
+
+torch.save(TARGET_A_TENSOR, SAVE_PATH+'{}.MY_Target_1_A.pt'.format(PRJ_NAME))
+torch.save(TARGET_B_TENSOR, SAVE_PATH+'{}.MY_Target_1_B.pt'.format(PRJ_NAME))
+
+
+T1_OX_list = []
+
+for IND in range(A_B_C_S_SET_ADD.shape[0]) :
+    if IND%100 == 0 :
+        print(str(IND)+'/'+str(A_B_C_S_SET_ADD.shape[0]) )
+        datetime.now()
+    CID_A = A_B_C_S_SET_ADD.iloc[IND,]['drug_row_CID']
+    CID_B = A_B_C_S_SET_ADD.iloc[IND,]['drug_col_CID']
+    if (CID_A in target_cids) & (CID_B in target_cids) : 
+        T1_OX_list.append('O')
+    else : 
+        T1_OX_list.append('X')
+    
+
+A_B_C_S_SET_ADD['T1OX']=T1_OX_list
+
+
+
+
+
+# TARGET (2)
+# TARGET (2)
+# TARGET (2)
+
+OLD_TARGET_PATH = '/st06/jiyeonH/13.DD_SESS/merged_target/'
+IDK_PATH = '/st06/jiyeonH/13.DD_SESS/ideker/' 
+
+
+TARGET_DB_ori = pd.read_csv(OLD_TARGET_PATH+'combined_target.csv', low_memory=False, index_col = 0)
+TARGET_DB_ori.columns = ['CID','gene_symbol','DB']
+
+L_matching_list = pd.read_csv(IDK_PATH+'L_12_string.csv', sep = '\t')
+L_check = L_matching_list[['L_gene_symbol','entrez']]
+
+TARGET_DB_ori2 = pd.merge(TARGET_DB_ori, L_check, left_on = 'gene_symbol', right_on = 'L_gene_symbol', how = 'left')
+TARGET_DB_ori3 = TARGET_DB_ori2[TARGET_DB_ori2.entrez>0]
+
+TARGET_DB_ori3.columns= [ 'CID_RE','gene_symbol','DB','L_gene_symbol','EntrezID' ]
+TARGET_DB_ori3['CID'] = list(TARGET_DB_ori3.CID_RE)
+
+TARGET_DB = copy.deepcopy(TARGET_DB_ori3)
+
+
+TARGET_DB_RE = TARGET_DB[TARGET_DB.CID_RE.isin(A_B_C_S_SET_CIDS)]
+TARGET_DB_RE = TARGET_DB_RE[TARGET_DB_RE.EntrezID.isin(gene_ids)]
+
+
+
+
+# L_gene_symbol : 127501
+# PPI_name : 126185
+
+target_cids = list(set(TARGET_DB_RE.CID))
+gene_ids = list(BETA_ORDER_DF.gene_id)
+def get_targets(CID): # 이건 지금 필터링 한 경우임 #
+	if CID in target_cids:
+		tmp_df2 = TARGET_DB_RE[TARGET_DB_RE.CID == CID]
+		targets = list(set(tmp_df2.EntrezID))
+		vec = [1 if a in targets else 0 for a in gene_ids ]
+	else :
+		vec = [0] * 978
+	return vec
+
+
+TARGET_A = []
+TARGET_B = []
+
+for IND in range(A_B_C_S_SET_ADD.shape[0]) :
+    if IND%100 == 0 :
+        print(str(IND)+'/'+str(A_B_C_S_SET_ADD.shape[0]) )
+        datetime.now()
+    CID_A = A_B_C_S_SET_ADD.iloc[IND,]['drug_row_CID']
+    CID_B = A_B_C_S_SET_ADD.iloc[IND,]['drug_col_CID']
+    target_vec_A = get_targets(CID_A)
+    target_vec_B = get_targets(CID_B)
+    TARGET_A.append(target_vec_A)
+    TARGET_B.append(target_vec_B)
+    
+
+TARGET_A_TENSOR = torch.Tensor(TARGET_A)
+TARGET_B_TENSOR = torch.Tensor(TARGET_B)
+
+
+torch.save(TARGET_A_TENSOR, SAVE_PATH+'{}.MY_Target_2_A.pt'.format(PRJ_NAME))
+torch.save(TARGET_B_TENSOR, SAVE_PATH+'{}.MY_Target_2_B.pt'.format(PRJ_NAME))
+
+
+
+T2_OX_list = []
+
+for IND in range(A_B_C_S_SET_ADD.shape[0]) :
+    if IND%100 == 0 :
+        print(str(IND)+'/'+str(A_B_C_S_SET_ADD.shape[0]) )
+        datetime.now()
+    CID_A = A_B_C_S_SET_ADD.iloc[IND,]['drug_row_CID']
+    CID_B = A_B_C_S_SET_ADD.iloc[IND,]['drug_col_CID']
+    if (CID_A in target_cids) & (CID_B in target_cids) : 
+        T2_OX_list.append('O')
+    else : 
+        T2_OX_list.append('X')
+    
+
+A_B_C_S_SET_ADD['T2OX']=T2_OX_list
+
+
+
+
+
+
+
+
+
+
+# Tanimoto filter 
+
+ABCS_ori_CIDs = list(set(list(A_B_C_S.drug_row_CID) + list(A_B_C_S.drug_col_CID))) # 172 
+ABCS_FILT_CIDS = list(set(list(A_B_C_S_SET_ADD.drug_row_CID) + list(A_B_C_S_SET_ADD.drug_col_CID))) # 172 
+
+ABCS_ori_SMILEs = list(set(list(A_B_C_S.ROW_CAN_SMILES) + list(A_B_C_S.COL_CAN_SMILES))) # 171
+ABCS_FILT_SMILEs = list(set(list(A_B_C_S_SET_ADD.ROW_CAN_SMILES) + list(A_B_C_S_SET_ADD.COL_CAN_SMILES))) # 171 
+
+
+PC_check = for_CAN_smiles[for_CAN_smiles.CID.isin(ABCS_ori_CIDs)]
+
+
+
+def calculate_internal_pairwise_similarities(smiles_list) :
+	"""
+	Computes the pairwise similarities of the provided list of smiles against itself.
+		Symmetric matrix of pairwise similarities. Diagonal is set to zero.
+	"""
+	mols = [Chem.MolFromSmiles(x.strip()) for x in smiles_list]
+	fps = [Chem.RDKFingerprint(x) for x in mols]
+	nfps = len(fps)
+	#
+	similarities = np.zeros((nfps, nfps))
+	#
+	for i in range(1, nfps):
+		sims = DataStructs.BulkTanimotoSimilarity(fps[i], fps[:i])
+		similarities[i, :i] = sims
+		similarities[:i, i] = sims
+	return similarities 
+
+
+sim_matrix_order = list(PC_check.CAN_SMILES)
+sim_matrix = calculate_internal_pairwise_similarities(sim_matrix_order)
+
+
+row_means = []
+for i in range(sim_matrix.shape[0]):
+	indexes = [a for a in range(sim_matrix.shape[0])]
+	indexes.pop(i)
+	row_tmp = sim_matrix[i][indexes]
+	row_mean = np.mean(row_tmp)
+	row_means = row_means + [row_mean]
+
+
+means_df = pd.DataFrame({ 'CIDs' : list(PC_check.CID), 'MEAN' : row_means})
+means_df = means_df.sort_values('MEAN')
+means_df['cat']= 'MEAN'
+# means_df['filter']=['stay' if (a in cids_all) else 'nope' for a in list(means_df.CIDs)] 
+means_df['dot_col']= ['IN' if (a in ABCS_FILT_CIDS) else 'OUT' for a in list(means_df.CIDs)] 
+
+
+means_df['over0.1'] = ['IN' if a > 0.1  else 'OUT' for a in list(means_df.MEAN)] 
+means_df['over0.2'] = ['IN' if a > 0.2  else 'OUT' for a in list(means_df.MEAN)] 
+means_df['overQ'] = ['IN' if a > means_df.MEAN.describe()['25%']  else 'OUT' for a in list(means_df.MEAN)] 
+
+
+
+# check triads num
+
+row_cids = list(A_B_C_S_SET_ADD.drug_row_CID)
+col_cids = list(A_B_C_S_SET_ADD.drug_col_CID)
+
+tani_01 = list(means_df[(means_df['dot_col'] == 'IN') & (means_df['over0.1'] == 'IN') ]['CIDs'])
+tani_02 = list(means_df[(means_df['dot_col'] == 'IN') & (means_df['over0.2'] == 'IN') ]['CIDs'])
+tani_Q = list(means_df[(means_df['dot_col'] == 'IN') & (means_df['overQ'] == 'IN') ]['CIDs'])
+
+
+tani_01_result = []
+tani_02_result = []
+tani_Q_result = []
+for IND in range(A_B_C_S_SET_ADD.shape[0]) :
+    if IND%100 == 0 :
+        print(str(IND)+'/'+str(A_B_C_S_SET.shape[0]) )
+        datetime.now()
+    CID_A = A_B_C_S_SET.iloc[IND,]['drug_row_CID']
+    CID_B = A_B_C_S_SET.iloc[IND,]['drug_col_CID']
+    #
+    if (CID_A in tani_01) & (CID_B in tani_01):
+        tani_01_result.append('O')
+    else : 
+        tani_01_result.append('X')
+    #
+    if (CID_A in tani_02) & (CID_B in tani_02):
+        tani_02_result.append('O')
+    else : 
+        tani_02_result.append('X')
+        #
+    if (CID_A in tani_Q) & (CID_B in tani_Q):
+        tani_Q_result.append('O')
+    else : 
+        tani_Q_result.append('X')
+    
+
+A_B_C_S_SET_ADD['tani01'] = tani_01_result
+A_B_C_S_SET_ADD['tani_02'] = tani_02_result
+A_B_C_S_SET_ADD['tani_Q'] = tani_Q_result
+
+
+A_B_C_S_SET_ADD.to_csv(SAVE_PATH+'{}.A_B_C_S_SET_ADD.csv'.format(PRJ_NAME))
+
