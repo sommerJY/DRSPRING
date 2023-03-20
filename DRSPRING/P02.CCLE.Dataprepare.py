@@ -589,7 +589,7 @@ MY_WEIGHT_SCORE = ID_WEIGHT_SCORE # SCORE
 
 
 
-				# HS Drug pathway DB 활용
+				# HS 다른 pathway 사용 
 				print('NETWORK')
 				# HUMANNET 사용 
 
@@ -652,6 +652,68 @@ MY_WEIGHT_SCORE = ID_WEIGHT_SCORE # SCORE
 				MY_WEIGHT_SCORE = ID_WEIGHT_SCORE # SCORE
 
 
+
+
+
+
+				# HS Drug pathway Functional 활용
+				print('NETWORK')
+				hunet_dir = '/st06/jiyeonH/13.DD_SESS/HumanNetV3/'
+
+				hunet_gsp = pd.read_csv(hunet_dir+'HumanNet-FN.tsv', sep = '\t', header = None)
+				hunet_gsp.columns = ['G_A','G_B','SC']
+
+				BETA_GENE = pd.read_table('/st06/jiyeonH/11.TOX/LINCS/L_2020/geneinfo_beta.txt')
+				BETA_lm_genes = BETA_GENE[BETA_GENE.feature_space=='landmark'] # 978
+				BETA_lm_genes = BETA_lm_genes.reset_index()
+				lm_entrezs = list(BETA_lm_genes.gene_id)
+
+				hnet_L1 = hunet_gsp[hunet_gsp['G_A'].isin(BETA_lm_genes.gene_id)]
+				hnet_L2 = hnet_L1[hnet_L1['G_B'].isin(BETA_lm_genes.gene_id)] # 3885
+				hnet_L3 = hnet_L2[hnet_L2.SC >= 2.0]
+
+
+				len(set(list(hnet_L3['G_A']) + list(hnet_L3['G_B']))) # 611
+
+				ID_G = nx.from_pandas_edgelist(hnet_L3, 'G_A', 'G_B')
+
+				# MSSNG = [a for a in lm_entrezs if a not in list(ID_G.nodes)]
+
+				#for nn in list(MSSNG):
+				#	ID_G.add_node(nn)
+
+				# edge 
+				ID_GENE_ORDER_mini = list(ID_G.nodes()) # 978
+				ID_ADJ = nx.adjacency_matrix(ID_G)
+				ID_ADJ_tmp = torch.LongTensor(ID_ADJ.toarray())
+				ID_ADJ_IDX = ID_ADJ_tmp.to_sparse().indices()  # [2, 7742]
+				ID_WEIGHT = [] # len : 3871 -> 7742
+
+				# 원래는 edge score 있지만 일단은...
+				ID_WEIGHT_SCORE = [1 for a in range(ID_ADJ_IDX.shape[1])]
+
+
+				# 유전자 이름으로 붙이기 
+				LINCS_PATH = '/st06/jiyeonH/11.TOX/MY_TRIAL_5/' 
+				LINCS_gene_file = pd.read_csv(LINCS_PATH+'geneinfo_beta.txt', sep = '\t')
+				LINCS_978 = LINCS_gene_file[LINCS_gene_file.feature_space == 'landmark']
+				LINCS_978 = LINCS_978[['gene_id','gene_symbol']]
+				LINCS_978['new_node'] = [str(list(LINCS_978.gene_id)[i]) + "__" + list(LINCS_978.gene_symbol)[i] for i in range(978)]
+				LINCS_978 = LINCS_978.reset_index(drop=True)
+
+
+				new_node_names = []
+				for a in ID_G.nodes():
+					tmp_name = LINCS_978[LINCS_978.gene_id == a ]['gene_symbol'].item() # 6118
+					new_node_name = str(a) + '__' + tmp_name
+					new_node_names = new_node_names + [new_node_name]
+
+				mapping = {list(ID_G.nodes())[a]:new_node_names[a] for a in range(len(new_node_names))}
+
+				ID_G_RE = nx.relabel_nodes(ID_G, mapping)
+
+				MY_G = ID_G_RE 
+				MY_WEIGHT_SCORE = ID_WEIGHT_SCORE # SCORE
 
 
 
@@ -874,7 +936,8 @@ MJ_DIR = '/st06/jiyeonH/13.DD_SESS/01.PRJ2/'
 # MJ_request_ANS = pd.read_csv(MJ_DIR+'PRJ2_EXP_ccle_fugcn_a3t2_16384.csv') # M3V4 CCLEver 0310 
 
 MJ_request_ANS = pd.read_csv(MJ_DIR+'PRJ2_EXP_ccle_fugcn_hst1.csv') # M3V4 node 349
-
+MJ_request_ANS = pd.read_csv(MJ_DIR+'PRJ2_EXP_ccle_fugcn_a3t4.csv') # M3V4 node 978
+MJ_request_ANS = pd.read_csv(MJ_DIR+'PRJ2_EXP_ccle_fugcn_fnt1.csv') # M3V4 node 845
 
 
 
@@ -921,7 +984,9 @@ def get_MJ_data( CHECK ):
 		RES = MJ_DATA_re[CHECK]
 		OX = 'O'
 	else : 
-		RES = [0]*978
+		#RES = [0]*978
+		#RES = [0]*349
+		RES = [0]*845
 		OX = 'X'
 	return list(RES), OX
 
@@ -936,11 +1001,15 @@ MY_chem_A_feat = torch.empty(size=(A_B_C_S_SET_MJ.shape[0], max_len, 64))
 MY_chem_B_feat= torch.empty(size=(A_B_C_S_SET_MJ.shape[0], max_len, 64))
 MY_chem_A_adj = torch.empty(size=(A_B_C_S_SET_MJ.shape[0], max_len, max_len))
 MY_chem_B_adj= torch.empty(size=(A_B_C_S_SET_MJ.shape[0], max_len, max_len))
-MY_g_EXP_A = torch.empty(size=(A_B_C_S_SET_MJ.shape[0], 978, 1))
-MY_g_EXP_B = torch.empty(size=(A_B_C_S_SET_MJ.shape[0], 978, 1))
+#MY_g_EXP_A = torch.empty(size=(A_B_C_S_SET_MJ.shape[0], 978, 1))
+#MY_g_EXP_B = torch.empty(size=(A_B_C_S_SET_MJ.shape[0], 978, 1))
 MY_syn =  torch.empty(size=(A_B_C_S_SET_MJ.shape[0],1))
 
+#MY_g_EXP_A = torch.empty(size=(A_B_C_S_SET_MJ.shape[0], 349, 1))
+#MY_g_EXP_B = torch.empty(size=(A_B_C_S_SET_MJ.shape[0], 349, 1))
 
+MY_g_EXP_A = torch.empty(size=(A_B_C_S_SET_MJ.shape[0], 845, 1))
+MY_g_EXP_B = torch.empty(size=(A_B_C_S_SET_MJ.shape[0], 845, 1))
 
 
 
@@ -1014,10 +1083,15 @@ MY_syn_re = MY_syn[selec_ind]
 
 
 # SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V3_CCLE_FULL/'
-SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V4_CCLE_FULL/'
+# SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V4_CCLE_FULL/' wrong ver
+SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V4_349_FULL/' # small ver 
+SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V4_978_FULL/' # small ver 
+
 
 # PRJ_NAME = 'M3V3ccle_MISS2_FULL'
-PRJ_NAME = 'M3V4ccle_MISS2_FULL'
+# PRJ_NAME = 'M3V4ccle_MISS2_FULL'
+PRJ_NAME = 'M3V4_349_MISS2_FULL'
+PRJ_NAME = 'M3V4_978_MISS2_FULL'
 
 
 
@@ -1046,6 +1120,10 @@ A_B_C_S.to_csv(SAVE_PATH+'{}.A_B_C_S.csv'.format(PRJ_NAME))
 A_B_C_S_SET = copy.deepcopy(A_B_C_S_SET_MJ_FAFILT)
 A_B_C_S = copy.deepcopy(A_B_C_S)
 
+
+
+
+
                     sig_id = 'LJP009_A375_24H:O24'
                     DrugA_SIG = 'LJP009_A375_24H:O24'
                     DrugB_SIG = 'PBIOA016_A375_24H:D11'
@@ -1061,6 +1139,12 @@ A_B_C_S = copy.deepcopy(A_B_C_S)
 CCLE_PATH = '/st06/jiyeonH/13.DD_SESS/CCLE.22Q1/'
 
 ccle_exp = pd.read_csv(CCLE_PATH+'CCLE_expression.csv', low_memory=False)
+
+ccle_ori_col = list(ccle_exp.columns)
+ccle_new_col =['DepMap_ID'] + [int(a.split(')')[0].split('(')[1]) for a in ccle_ori_col[1:]]
+
+ccle_exp.columns = ccle_new_col
+
 # ccle_mut = pd.read_csv(CCLE_PATH+'CCLE_mutations.csv', low_memory=False)
 ccle_info= pd.read_csv(CCLE_PATH+'sample_info.csv', low_memory=False)
 
@@ -1082,7 +1166,7 @@ ccle_cell_ids = set(ccle_cell_info.DrugCombCCLE) # 1827
 
 
 
-
+# 978
 
 cell_basal_exp_list = []
 # give vector 
@@ -1098,6 +1182,26 @@ for i in range(A_B_C_S_SET.shape[0]) :
     else : # 'TC32_BONE', 'DU145_PROSTATE' -> 0 으로 진행하게 됨. public expression 없음 참고해야함. 
         ccle_exp_vector = [0]*978
         cell_basal_exp_list.append(ccle_exp_vector)
+
+								# 349 
+								cell_basal_exp_list = []
+								# give vector 
+								for i in range(A_B_C_S_SET.shape[0]) :
+									if i%100 == 0 :
+										print(str(i)+'/'+str(A_B_C_S_SET.shape[0]) )
+										datetime.now()
+									ccle = A_B_C_S_SET.loc[i]['DrugCombCCLE']
+									if ccle in ccle_names : 
+										ccle_exp_df = ccle_exp3[ccle_exp3.DrugCombCCLE==ccle][BETA_ENTREZ_ORDER]
+										ccle_exp_vector = ccle_exp_df.values[0].tolist()
+										cell_basal_exp_list.append(ccle_exp_vector)
+									else : # 'TC32_BONE', 'DU145_PROSTATE' -> 0 으로 진행하게 됨. public expression 없음 참고해야함. 
+										ccle_exp_vector = [0]*349
+										cell_basal_exp_list.append(ccle_exp_vector)
+
+
+
+
 
 cell_base_tensor = torch.Tensor(cell_basal_exp_list)
 
@@ -1180,7 +1284,7 @@ TARGET_DB_RE = TARGET_DB_RE[TARGET_DB_RE.ENTREZ_RE.isin(gene_ids)]
 
 # L_gene_symbol : 127501
 # PPI_name : 126185
-
+# 978
 target_cids = list(set(TARGET_DB_RE.CID))
 gene_ids = list(BETA_ORDER_DF.gene_id)
 def get_targets(CID): # 이건 지금 필터링 한 경우임 #
@@ -1191,6 +1295,21 @@ def get_targets(CID): # 이건 지금 필터링 한 경우임 #
 	else :
 		vec = [0] * 978
 	return vec
+
+
+					# L_gene_symbol : 127501
+					# PPI_name : 126185
+					# 349
+					target_cids = list(set(TARGET_DB_RE.CID))
+					gene_ids = list(BETA_ORDER_DF.gene_id)
+					def get_targets(CID): # 이건 지금 필터링 한 경우임 #
+						if CID in target_cids:
+							tmp_df2 = TARGET_DB_RE[TARGET_DB_RE.CID == CID]
+							targets = list(set(tmp_df2.EntrezID))
+							vec = [1 if a in targets else 0 for a in gene_ids ]
+						else :
+							vec = [0] * 349
+						return vec
 
 
 
@@ -1269,7 +1388,7 @@ TARGET_DB_RE = TARGET_DB_RE[TARGET_DB_RE.EntrezID.isin(gene_ids)]
 
 # L_gene_symbol : 127501
 # PPI_name : 126185
-
+# 978
 target_cids = list(set(TARGET_DB_RE.CID))
 gene_ids = list(BETA_ORDER_DF.gene_id)
 def get_targets(CID): # 이건 지금 필터링 한 경우임 #
@@ -1280,6 +1399,26 @@ def get_targets(CID): # 이건 지금 필터링 한 경우임 #
 	else :
 		vec = [0] * 978
 	return vec
+
+
+
+
+
+					# L_gene_symbol : 127501
+					# PPI_name : 126185
+					# 349
+					target_cids = list(set(TARGET_DB_RE.CID))
+					gene_ids = list(BETA_ORDER_DF.gene_id)
+					def get_targets(CID): # 이건 지금 필터링 한 경우임 #
+						if CID in target_cids:
+							tmp_df2 = TARGET_DB_RE[TARGET_DB_RE.CID == CID]
+							targets = list(set(tmp_df2.EntrezID))
+							vec = [1 if a in targets else 0 for a in gene_ids ]
+						else :
+							vec = [0] * 349
+						return vec
+
+
 
 
 TARGET_A = []

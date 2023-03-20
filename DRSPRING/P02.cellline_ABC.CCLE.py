@@ -78,24 +78,13 @@ PC_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/'
 
 
 
+
 # LOAD Cells 
 
-MJ_NAME = 'M3'
-MISS_NAME = 'MIS2'
+SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V4_349_FULL/'
 
-SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/{}_FULL/'.format(MJ_NAME)
-file_name = 'M3_MISS2_FULL'
+A_B_C_S_SET_ADD_EX = pd.read_csv(SAVE_PATH+'M3V4_349_MISS2_FULL.A_B_C_S_SET_ADD.csv', low_memory=False)
 
-A_B_C_S_SET_ADD = pd.read_csv(SAVE_PATH+'{}.A_B_C_S_SET_ADD.csv'.format(file_name), low_memory=False)
-
-avail_cell_list = list(set(A_B_C_S_SET_ADD.DrugCombCello))
-
-
-
-
-
-# DC drug but no combination data 
-# -> ranking please 
 
 
 # Drug Comb 데이터 가져오기 
@@ -119,7 +108,6 @@ DC_tmp_DF4 = DC_tmp_DF3[DC_tmp_DF3.cell_line_id>0].drop_duplicates() # 740884
 
 # DC_tmp_DF4[['drug_row_id_re','drug_col_id_re', 'cell_line_id', 'synergy_loewe']].drop_duplicates() # 740884
 # DC_tmp_DF4[['drug_row_id_re','drug_col_id_re', 'cell_line_id']].drop_duplicates() # 648516
-
 
 
 # Drug info 
@@ -181,12 +169,12 @@ len(list(set(list(DC_DATA_filter4.drug_row_id_re) + list(DC_DATA_filter4.drug_co
 
 DC_DATA_filter4 = DC_DATA_filter4.reset_index(drop = False)
 
-DC_DATA_filter5 = pd.merge(DC_DATA_filter4, DC_CELL_DF2[['cell_line_id','DrugCombCello']], on = 'cell_line_id', how ='left' )
+DC_DATA_filter5 = pd.merge(DC_DATA_filter4, DC_CELL_DF2[['cell_line_id','DrugCombCCLE']], on = 'cell_line_id', how ='left' )
 
 
 
-# 그래서 drugcomb 에서 일단 사용된 내용들 CID 기준 - CELLO 
-DC_DATA_filter6 = DC_DATA_filter5[DC_DATA_filter5.DrugCombCello.isin(avail_cell_list)]
+# 그래서 drugcomb 에서 일단 사용된 내용들 CID 기준 - CCLE 
+DC_DATA_filter6 = DC_DATA_filter5[DC_DATA_filter5.DrugCombCCLE.isin(avail_cell_list)]
 
 good_ind = [a for a in range(DC_DRUG_DF_FULL.shape[0]) if type(DC_DRUG_DF_FULL.CAN_SMILES[a]) == str ]
 DC_DRUG_DF_FULL_filt = DC_DRUG_DF_FULL.loc[good_ind]
@@ -205,9 +193,8 @@ DC_re_2 = pd.merge(DC_re_1, DC_DRUG_DF_FULL_cut, on = 'drug_col_id_re', how = 'l
 
 DC_DRUG_DF_FULL_cut.columns = ['id','CID','CAN_SMILES']
 
-DC_re_3 = DC_re_2[['ROW_CID','COL_CID','DrugCombCello']].drop_duplicates()
+DC_re_3 = DC_re_2[['ROW_CID','COL_CID','DrugCombCCLE']].drop_duplicates()
 DC_re_4 = DC_re_3.reset_index(drop = True)
-
 
 
 from itertools import combinations
@@ -220,34 +207,11 @@ DC_pairs = list(combinations(DC_all_cids, 2))
 # combination 으로 하면 66512180 -> 50 filter -> 30221425 그냥 unique 한 cid - cid 
 
 
-
 # 119522
-# 그러고 나서 DC 안에 있는 모든 CID - CID - Cello triads 조사
-IN_DC_pairs_1 = [(DC_re_4.ROW_CID[a] ,DC_re_4.COL_CID[a], DC_re_4.DrugCombCello[a]) for a in range(DC_re_4.shape[0])]
-IN_DC_pairs_2 = [(DC_re_4.COL_CID[a] ,DC_re_4.ROW_CID[a], DC_re_4.DrugCombCello[a]) for a in range(DC_re_4.shape[0])]
-IN_DC_pairs = IN_DC_pairs_1 + IN_DC_pairs_2 # 239,044
-
-# 혹시 내가 썼던 모델에 대한 파일에 관련된 애들은 빠져있나? 
-#ADD_CHECK_1 = [(A_B_C_S_SET_ADD.drug_row_CID[a] ,A_B_C_S_SET_ADD.drug_col_CID[a], A_B_C_S_SET_ADD.DrugCombCello[a]) for a in range(A_B_C_S_SET_ADD.shape[0])]
-#ADD_CHECK_2 = [(A_B_C_S_SET_ADD.drug_col_CID[a] ,A_B_C_S_SET_ADD.drug_row_CID[a], A_B_C_S_SET_ADD.DrugCombCello[a]) for a in range(A_B_C_S_SET_ADD.shape[0])]
-#ADD_CHECK = ADD_CHECK_1 + ADD_CHECK_2
-# set(ADD_CHECK) - set(IN_DC_pairs) 안들어간거 없음 ! 
-
-
-# 사용하는 cell line 별로 저장해줘야하는구나 
-c = 'CVCL_0031' # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-this_list = [(a,b,c) for a,b in DC_pairs]
-NOT_in_DC_pairs = set(this_list) - set(IN_DC_pairs)
-VAL_LIST = list(NOT_in_DC_pairs)
-
-CELVAL_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/FINAL_VALIDATION/CELLS_VAL/'
-
-import json
-
-# save as json
-with open(CELVAL_PATH+'{}.json'.format(c), 'w') as f:
-    json.dump(VAL_LIST,f)
+# 그러고 나서 DC 안에 있는 모든 CID - CID - ccle triads 조사
+IN_DC_pairs_1 = [(DC_re_4.ROW_CID[a] ,DC_re_4.COL_CID[a], DC_re_4.DrugCombCCLE[a]) for a in range(DC_re_4.shape[0])]
+IN_DC_pairs_2 = [(DC_re_4.COL_CID[a] ,DC_re_4.ROW_CID[a], DC_re_4.DrugCombCCLE[a]) for a in range(DC_re_4.shape[0])]
+IN_DC_pairs = IN_DC_pairs_1 + IN_DC_pairs_2 # 187734
 
 
 
@@ -260,32 +224,28 @@ DC_FULL_CID = [a for a in DC_DRUG_DF_FULL.CID if a > 0 ]
 
 avail_cell_list
 
-
 aa = product(DC_FULL_CID, avail_cell_list)
 aaa = list(product(DC_FULL_CID, avail_cell_list))
 
-
-
 # save as json
 
-with open(CELVAL_PATH+'MJ_REQUEST_VER2.CCLE.json', 'w') as f:
+with open('/st06/jiyeonH/13.DD_SESS/01.PRJ2/'+'MJ_REQUEST_VER2.CCLE1.json', 'w') as f:
     json.dump(aaa,f)
 
 
 
 
-# open as json
-with open('/st06/jiyeonH/13.DD_SESS/01.PRJ2/'+'MJ_REQUEST_VER2.json', 'r') as f:
-    old_ver_check = json.load(f)
+# 아예 가능한 모든 cell line 달라고 하면? 
+tot_cell_list_1 = list(set(DC_DATA_filter5.DrugCombCCLE))
+tot_cell_list_2 = tot_cell_list_1[1:]
+tot_cell_list_3 = [a for a in tot_cell_list_2 if a != 'NA']
+
+aa = product(DC_FULL_CID, tot_cell_list_3)
+aaa = list(product(DC_FULL_CID, tot_cell_list_3))
 
 
-# 이거 다시 만들어서 민지한테 요청해야하는지 잠깐 확인해야함 
-old_ver_check_cell_list = [a[1] for a in old_ver_check]
-old_ver_check_cell_list = set(old_ver_check_cell_list) 
-42
-'CVCL_0033', 'CVCL_7151', 'CVCL_0399', 'CVCL_0139', 'CVCL_1472', 'CVCL_0359', 'CVCL_2235', 'CVCL_1786', 'CVCL_0060', 'CVCL_0526', 'CVCL_1402', 'CVCL_0248', 'CVCL_0632', 'CVCL_0021', 'CVCL_0291', 'CVCL_0547', 'CVCL_A442', 'CVCL_1475', 'CVCL_0080', 'CVCL_0336', 'CVCL_0504', 'CVCL_0105', 'CVCL_3509', 'CVCL_0004', 'CVCL_0553', 'CVCL_1045', 'CVCL_0320', 'CVCL_0527', 'CVCL_0588', 'CVCL_0132', 'CVCL_0023', 'CVCL_0062', 'CVCL_0332', 'CVCL_1594', 'CVCL_0419', 'CVCL_1511', 'CVCL_0031', 'CVCL_0178', 'CVCL_0035', 'CVCL_0179', 'CVCL_1629', 'CVCL_0395'
+# save as json
 
-괜춘! avail_cell_list 은 다 이안에 들어있음. 그래도 매번 한번씩은 확인해줘 
-
-
+with open('/st06/jiyeonH/13.DD_SESS/01.PRJ2/'+'MJ_REQUEST_VER2.CCLE2.json', 'w') as f:
+    json.dump(aaa,f)
 
