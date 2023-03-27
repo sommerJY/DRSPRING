@@ -2152,6 +2152,17 @@ plt.close()
 test_cell_df
 
 
+
+
+
+
+
+
+
+
+
+
+
 ######## cell line rank check (from P02.cellline_ABC.py)
 
 avail_cell_list = list(set(A_B_C_S_SET_SM.DrugCombCello))
@@ -2202,6 +2213,9 @@ for DD in range(1,len(DC_CELL)):
 
 DC_CELL_DF2 = DC_CELL_DF[['id','name','cellosaurus_accession', 'ccle_name']] # 2319
 DC_CELL_DF2.columns = ['cell_line_id', 'DC_cellname','DrugCombCello', 'DrugCombCCLE']
+
+
+
 
 
 print("DC filtering")

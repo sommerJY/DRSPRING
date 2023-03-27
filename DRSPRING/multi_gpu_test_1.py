@@ -210,7 +210,7 @@ if __name__ == "__main__":
 	#
 	parser = argparse.ArgumentParser()
 	parser.add_argument('--nodes', default=1, type=int)
-	parser.add_argument('--local_ranks', default=0, type=int,help="Node's order number in [0, num_of_nodes-1]")
+	# parser.add_argument('--local_ranks', default=0, type=int,help="Node's order number in [0, num_of_nodes-1]")
 	parser.add_argument('--ip_address', type=str, required=True,help='ip address of the host node')
 	parser.add_argument('--ngpus', default=1, type=int, help='number of gpus per node')
 	parser.add_argument('--epochs', default=100, type=int, metavar='N',help='number of total epochs to run')
