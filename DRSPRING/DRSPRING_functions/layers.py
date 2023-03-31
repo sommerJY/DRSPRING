@@ -55,13 +55,13 @@ import random
 import shutil
 import math
 
-import ray
-from ray import tune
-from functools import partial
-from ray.tune.schedulers import ASHAScheduler
-from ray.tune import CLIReporter
-from ray.tune.suggest.optuna import OptunaSearch
-from ray.tune import ExperimentAnalysis
+#import ray
+#from ray import tune
+#from functools import partial
+#from ray.tune.schedulers import ASHAScheduler
+#from ray.tune import CLIReporter
+#from ray.tune.suggest.optuna import OptunaSearch
+#from ray.tune import ExperimentAnalysis
 
 import numpy as np
 from rdkit import Chem
@@ -191,28 +191,22 @@ class MY_expGCN_parallel_model(torch.nn.Module):
 		for conv in self.SNPs:
 			conv.reset_parameters()
 	#
-	def calc_batch_label (self, syn, feat) :
-		batchnum = syn.shape[0]
-		nodenum = feat.shape[0]/batchnum
-		Num = [a for a in range(batchnum)]
-		Rep = np.repeat(Num, nodenum)
-		batch_labels = torch.Tensor(Rep).long()
-		if torch.cuda.is_available():
-			batch_labels = batch_labels.cuda()
-		return batch_labels
-	#
-	def forward(self, Drug1_F, Drug2_F, Drug1_ADJ, Drug2_ADJ, EXP1, EXP2, EXP_ADJ, EXP_ADJ_WGT, cell, syn ):
-		Drug_batch_label = self.calc_batch_label(syn, Drug1_F)
-		Exp_batch_label = self.calc_batch_label(syn, EXP1)
-		#
+	def forward(self, Drug1_F, Drug2_F, Drug1_ADJ, Drug2_ADJ, EXP1, EXP2, EXP_ADJ, EXP_ADJ_WGT, cell, syn, Drug_batch_label, Exp_batch_label ):
 		for G_1_C in range(len(self.G_convs_1_chem)):
 			if G_1_C == len(self.G_convs_1_chem)-1 :
+				#print('innerfunc, gpu:{}, G_1_C : {}'.format(os.environ["LOCAL_RANK"], G_1_C))
 				Drug1_F = self.G_convs_1_chem[G_1_C](x=Drug1_F, edge_index=Drug1_ADJ)
 				Drug1_F = F.dropout(Drug1_F, p=self.inDrop, training=self.training)
+				#print('innerfunc, gpu:{}, Drug_batch_label : {}'.format(os.environ["LOCAL_RANK"], Drug_batch_label))
+				#print('innerfunc, gpu:{}, Feature : {}'.format(os.environ["LOCAL_RANK"], Drug1_F))
+				a = Drug1_F.get_device()
+				b = Drug_batch_label.get_device()
+				#print('Feature device : {}, batch device : {}'.format(a,b))
 				Drug1_F = self.pool(Drug1_F, Drug_batch_label )
 				Drug1_F = self.tanh(Drug1_F)
 				G_1_C_out = Drug1_F
 			else :
+				#print('innerfunc, gpu:{}, G_1_C : {}'.format(os.environ["LOCAL_RANK"], G_1_C))
 				Drug1_F = self.G_convs_1_chem[G_1_C](x=Drug1_F, edge_index=Drug1_ADJ)
 				Drug1_F = self.G_bns_1_chem[G_1_C](Drug1_F)
 				Drug1_F = F.elu(Drug1_F)

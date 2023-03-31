@@ -54,13 +54,13 @@ import random
 import shutil
 import math
 
-import ray
-from ray import tune
-from functools import partial
-from ray.tune.schedulers import ASHAScheduler
-from ray.tune import CLIReporter
-from ray.tune.suggest.optuna import OptunaSearch
-from ray.tune import ExperimentAnalysis
+#import ray
+#from ray import tune
+#from functools import partial
+#from ray.tune.schedulers import ASHAScheduler
+#from ray.tune import CLIReporter
+#from ray.tune.suggest.optuna import OptunaSearch
+#from ray.tune import ExperimentAnalysis
 
 import numpy as np
 from rdkit import Chem

@@ -241,10 +241,10 @@ def main_worker(gpu, ngpus_per_node, args):
 	#
 	train_loader = torch.utils.data.DataLoader( # collate 가 문제가 되는것 같음.... 흠... 
 		T_train_0,
-		batch_size=args.batch_size, shuffle=False, num_workers=args.workers, pin_memory=True,sampler=train_sampler)
+		batch_size=args.batch_size, shuffle=False, num_workers=args.workers, pin_memory=False,sampler=train_sampler)
 	val_loader = torch.utils.data.DataLoader(
 		T_val_0,
-		batch_size=args.batch_size, shuffle=False, num_workers=args.workers, pin_memory=True)
+		batch_size=args.batch_size, shuffle=False, num_workers=args.workers, pin_memory=False)
 	#
 	# # 내용2: model 정의
 	dsn1_layers = [128, 128, 128]

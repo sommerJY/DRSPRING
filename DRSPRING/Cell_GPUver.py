@@ -1,6 +1,4 @@
 
-
-
 import rdkit
 import os
 import sys
@@ -74,19 +72,25 @@ import os
 import pandas as pd
 
 
+#NETWORK_PATH = '/st06/jiyeonH/13.DD_SESS/HumanNetV3/'
+#LINCS_PATH = '/st06/jiyeonH/11.TOX/MY_TRIAL_5/' 
+#DC_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/'
+#TARGET_PATH = '/home01/k020a01/01.Data/TARGET/'
 
 
-DC_PATH = '/st06/jiyeonH/13.DD_SESS/DrugComb.1.5/'
-LINCS_PATH = '/st06/jiyeonH/11.TOX/MY_TRIAL_5/'
-TARGET_PATH = '/st06/jiyeonH/13.DD_SESS/01.PRJ2/'
-PC_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/'
+
+NETWORK_PATH = '/home01/k020a01/01.Data/HumanNet/'
+LINCS_PATH = '/home01/k020a01/01.Data/LINCS/'
+DC_PATH = '/home01/k020a01/01.Data/DrugComb/'
+TARGET_PATH = '/home01/k020a01/01.Data/TARGET/'
 
 
 
 print('NETWORK', flush = True)
 
-NETWORK_PATH = '/st06/jiyeonH/13.DD_SESS/HumanNetV3/'
+# NETWORK_PATH = '/st06/jiyeonH/13.DD_SESS/HumanNetV3/'
 
+# 349 
 hunet_gsp = pd.read_csv(NETWORK_PATH+'HS-DB.tsv', sep = '\t', header = None)
 hunet_gsp.columns = ['G_A','G_B','SC']
 
@@ -161,10 +165,6 @@ BETA_NEWNOD_ORDER = list(BETA_ORDER_DF.new_node)
 
 
 
-
-
-
-
 # ABCS check 
 
 MJ_NAME = 'M3V4'
@@ -174,7 +174,6 @@ SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V4_349_FULL/'
 
 file_name = 'M3V4_349_MISS2_FULL'
 A_B_C_S_SET_ADD = pd.read_csv(SAVE_PATH+'{}.A_B_C_S_SET_ADD.csv'.format(file_name), low_memory=False)
-
 
 
 
@@ -194,8 +193,8 @@ A_B_C_S_SET = A_B_C_S_SET[A_B_C_S_SET.T1OX == 'O'] # new targets
 A_B_C_S_SET = A_B_C_S_SET[A_B_C_S_SET.type.isin(MISS_filter)]
 
 
-
-CCLE_PATH = '/st06/jiyeonH/13.DD_SESS/CCLE.22Q1/'
+CCLE_PATH = '/home01/k020a01/01.Data/CCLE/'
+# CCLE_PATH = '/st06/jiyeonH/13.DD_SESS/CCLE.22Q1/'
 ccle_exp = pd.read_csv(CCLE_PATH+'CCLE_expression.csv', low_memory=False)
 ccle_info= pd.read_csv(CCLE_PATH+'sample_info.csv', low_memory=False)
 
@@ -216,7 +215,7 @@ A_B_C_S_SET = A_B_C_S_SET[A_B_C_S_SET.DrugCombCCLE.isin(ccle_cello_names)]
 
 
 # cell line vector 
-DC_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/'
+# DC_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/'
 DC_CELL_DF2 = pd.read_csv(DC_PATH+'DC_CELL_INFO.csv', sep = '\t')
 
 DC_CELL_info_filt = DC_CELL_DF2[DC_CELL_DF2.DrugCombCCLE.isin(A_B_C_S_SET.DrugCombCCLE)] # 38
@@ -256,6 +255,7 @@ cell_one_hot = torch.nn.functional.one_hot(torch.Tensor(A_B_C_S_SET_COH2['cell_o
 
 
 
+
 # 모델 가져오기 
 
 import pandas as pd
@@ -266,15 +266,6 @@ import pickle
 import math
 import torch
 import os
-
-
-
-WORK_DATE = '23.03.19'
-PRJ_NAME = 'M3V4'
-MISS_NAME = 'MIS2'
-WORK_NAME = 'WORK_20v1'
-W_NAME = 'W20v1' # 349
-
 
 
 
@@ -454,61 +445,41 @@ class MY_expGCN_parallel_model(torch.nn.Module):
 		return X
 
 
+WORK_DATE = '23.03.19'
+PRJ_NAME = 'M3V4'
+MISS_NAME = 'MIS2'
+WORK_NAME = 'WORK_20v1'
+W_NAME = 'W20v1' # 349
 
-PRJ_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/{}_{}_{}/'.format(PRJ_NAME, MISS_NAME, W_NAME)
+
+PRJ_PATH = '/home01/k020a01/02.VER3/{}_{}_{}/'.format(PRJ_NAME, MISS_NAME, W_NAME)
+# PRJ_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V4_MIS2_W20v1/'
 
 ANA_DF = pd.read_csv(PRJ_PATH+'RAY_ANA_DF.{}_{}_{}.csv'.format(MJ_NAME, MISS_NAME, W_NAME))
 with open(PRJ_PATH+'RAY_ANA_DF.{}_{}_{}.pickle'.format(MJ_NAME, MISS_NAME, W_NAME), 'rb') as f:
 		ANA_ALL_DF = pickle.load(f)
 
-TOPVAL_PATH = PRJ_PATH
 
 
 
 
-# which one is the best model? 
 
-import numpy as np
-TOT_max = -np.Inf
-TOT_key = ""
-for key in ANA_ALL_DF.keys():
-	trial_max = max(ANA_ALL_DF[key]['AV_V_SC'])
-	if trial_max > TOT_max :
-		TOT_max = trial_max
-		TOT_key = key
+
+
+
+# GPU 니까 놉 
+# TOPVAL_PATH = PRJ_PATH
+
+
+
+####################################################
+# 일단 추가 필요 파일들 
 #
-
-print('best cor', flush=True)
-print(TOT_key, flush=True)
-mini_df = ANA_ALL_DF[TOT_key]
-my_config = ANA_DF[ANA_DF.logdir==TOT_key]
-cck_num =mini_df[mini_df.AV_V_SC==max(mini_df.AV_V_SC)].index.item()
-checkpoint = "/checkpoint_"+str(cck_num).zfill(6)
-TOPCOR_PATH = TOT_key + checkpoint
-print('best cor check', flush=True)
-print(TOPCOR_PATH, flush=True)
-R_6_V = max(mini_df.AV_V_SC)
-
-
-#
-
-
-
-
-
-### put cell line!!!!!
-
-Cell_name = sys.argv[1]
-# Cell_name = 'CVCL_0553'
-# Cell_name = 'A549_LUNG'
-
+import os 
 
 CELVAL_PATH = PRJ_PATH + 'VAL/'
-
-with open(CELVAL_PATH+'{}.json'.format(Cell_name)) as f:
-   lst_check = [tuple(x) for x in json.load(f)]
-
-
+os.makedirs(CELVAL_PATH, exist_ok = True)
+# CELVAL_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V4_MIS2_W20v1.OLD/VAL/'
 
 all_chem_DF = pd.read_csv(CELVAL_PATH+'DC_ALL_7555_ORDER.csv')
 all_chem_feat_TS = torch.load(CELVAL_PATH+'DC_ALL.MY_chem_feat.pt')
@@ -522,13 +493,11 @@ def check_drug_f_ts(CID) :
 	return all_chem_feat_TS[INDEX], adj_proc
 
 
-# 여기서부터 실험이 안되고 있음 
 
 avail_LINCS_DF = pd.read_csv(CELVAL_PATH+'AVAIL_LINCS_EXP_cell.csv')
 avail_LINCS_TS = torch.load(CELVAL_PATH+'AVAIL_LINCS_EXP_cell.pt')
 avail_LINCS_DF['tuple'] = [(avail_LINCS_DF['CID'][a], avail_LINCS_DF['ccle_name'][a]) for a in range(avail_LINCS_DF.shape[0]) ]
 avail_LINCS_TPs = list(avail_LINCS_DF['tuple'])
-
 
 mj_exp_DF = pd.read_csv(CELVAL_PATH+'AVAIL_EXP_TOT.csv')
 mj_exp_TS = torch.load(CELVAL_PATH+'AVAIL_EXP_TOT.pt')
@@ -545,66 +514,73 @@ TPs_all = avail_LINCS_TPs + mj_exp_TPs
 TPs_all_2 = [str(a[0])+"__"+a[1] for a in TPs_all]
 
 
-tt_df = pd.DataFrame()
-tt_df['tuple'] = lst_check
-tt_df['cid1'] = [str(int(a[0])) for a in lst_check]
-tt_df['cid2'] = [str(int(a[1])) for a in lst_check]
-tt_df['cello'] = [a[2] for a in lst_check]
-
-tt_df['cid1_celo'] = tt_df.cid1 +'__' +tt_df.cello
-tt_df['cid2_celo'] = tt_df.cid2 +'__' +tt_df.cello
-
-tt_df_re1 = tt_df[tt_df.cid1_celo.isin(TPs_all_2)]
-tt_df_re2 = tt_df_re1[tt_df_re1.cid2_celo.isin(TPs_all_2)]
-
 
 
 
 # NEW targets 
 
-TARGET_PATH = '/st06/jiyeonH/13.DD_SESS/01.PRJ2/'
+# TARGET_PATH = '/st06/jiyeonH/13.DD_SESS/01.PRJ2/'
+
 TARGET_DB = pd.read_csv(TARGET_PATH+'TARGET_CID_ENTREZ.csv', sep ='\t', index_col = 0)
 
 
-tg_lists = [str(int(a)) for a in list(set(TARGET_DB.CID))]
-tt_df_re3 = tt_df_re2[tt_df_re2.cid1.isin(tg_lists)] # 5289702
-tt_df_re4 = tt_df_re3[tt_df_re3.cid2.isin(tg_lists)] # 2359767
-
-tt_df_re4 = tt_df_re4.reset_index(drop=True)
-
-tuple_list = tt_df_re4['tuple']
 
 
+                # LINCS 값을 우선시 하는 버전 (마치 MISS 2)
+                def check_exp_f_ts(CID, CELLO) :
+                    TUPLE = (int(CID), CELLO)
+                    # Gene EXP
+                    if TUPLE in avail_LINCS_TPs:
+                        L_index = avail_LINCS_DF[avail_LINCS_DF['tuple'] == TUPLE].index[0].item() # 이건 나중에 고쳐야해 
+                        EXP_vector = avail_LINCS_TS[L_index]
+                    elif TUPLE in mj_exp_TPs :
+                        M_index = mj_exp_DF[mj_exp_DF['tuple'] == TUPLE].index.item()
+                        EXP_vector = mj_exp_TS[M_index]
+                    else :
+                        print('error')
+                    #
+                    # TARGET 
+                    T_index = targets_DF[targets_DF['CID'] == CID].index.item()
+                    TG_vector = targets_TS[T_index]
+                    #
+                    # BASAL EXP 
+                    B_index = all_CellBase_DF[all_CellBase_DF.DrugCombCCLE == CELLO].index.item()
+                    B_vector = all_CellBase_TS[B_index]
+                    #
+                    #
+                    FEAT = torch.Tensor(np.array([ EXP_vector.squeeze().tolist() , TG_vector.squeeze().tolist(), B_vector.squeeze().tolist()]).T)
+                    return FEAT.view(-1,3)
 
 
-# target 없어도 데려가기 
 
-# CID = ROW_CID
-# CELLO = 'CVCL_0553'
 
-def check_exp_f_ts(CID, CELLO) :
-	TUPLE = (int(CID), CELLO)
-	# Gene EXP
-	if TUPLE in avail_LINCS_TPs:
-		L_index = avail_LINCS_DF[avail_LINCS_DF['tuple'] == TUPLE].index[0].item() # 이건 나중에 고쳐야해 
-		EXP_vector = avail_LINCS_TS[L_index]
-	elif TUPLE in mj_exp_TPs :
-		M_index = mj_exp_DF[mj_exp_DF['tuple'] == TUPLE].index.item()
-		EXP_vector = mj_exp_TS[M_index]
-	else :
-		print('error')
-	#
-	# TARGET 
-	T_index = targets_DF[targets_DF['CID'] == CID].index.item()
-	TG_vector = targets_TS[T_index]
-	#
-	# BASAL EXP 
-	B_index = all_CellBase_DF[all_CellBase_DF.DrugCombCCLE == CELLO].index.item()
-	B_vector = all_CellBase_TS[B_index]
-	#
-	#
-	FEAT = torch.Tensor(np.array([ EXP_vector.squeeze().tolist() , TG_vector.squeeze().tolist(), B_vector.squeeze().tolist()]).T)
-	return FEAT.view(-1,3)
+
+
+
+                    # MJ 값을 우선시 하는 버전 (마치 MISS 4)
+                    def check_exp_f_ts(CID, CELLO) :
+                        TUPLE = (int(CID), CELLO)
+                        # Gene EXP
+                        if TUPLE in avail_LINCS_TPs:
+                            L_index = avail_LINCS_DF[avail_LINCS_DF['tuple'] == TUPLE].index[0].item() # 이건 나중에 고쳐야해 
+                            EXP_vector = avail_LINCS_TS[L_index]
+                        elif TUPLE in mj_exp_TPs :
+                            M_index = mj_exp_DF[mj_exp_DF['tuple'] == TUPLE].index.item()
+                            EXP_vector = mj_exp_TS[M_index]
+                        else :
+                            print('error')
+                        #
+                        # TARGET 
+                        T_index = targets_DF[targets_DF['CID'] == CID].index.item()
+                        TG_vector = targets_TS[T_index]
+                        #
+                        # BASAL EXP 
+                        B_index = all_CellBase_DF[all_CellBase_DF.DrugCombCCLE == CELLO].index.item()
+                        B_vector = all_CellBase_TS[B_index]
+                        #
+                        #
+                        FEAT = torch.Tensor(np.array([ EXP_vector.squeeze().tolist() , TG_vector.squeeze().tolist(), B_vector.squeeze().tolist()]).T)
+                        return FEAT.view(-1,3)
 
 
 
@@ -614,109 +590,14 @@ def check_cell_oh(CELLO) :
 	return cell_vec
 
 
-CELL_PRED_DF = pd.DataFrame(columns = ['ROW_CID','COL_CID','CCLE','PRED_RES'])
 
-PRED_list = []
-
-# ROW_CID, COL_CID, CELLO = lst_test[0]
-
-use_cuda = False #  #   #  #  #  #True
-#
-G_chem_layer = my_config['config/G_chem_layer'].item()
-G_chem_hdim = my_config['config/G_chem_hdim'].item()
-G_exp_layer = my_config['config/G_exp_layer'].item()
-G_exp_hdim = my_config['config/G_exp_hdim'].item()
-dsn1_layers = [my_config['config/feat_size_0'].item(), my_config['config/feat_size_1'].item(), my_config['config/feat_size_2'].item()]
-dsn2_layers = [my_config['config/feat_size_0'].item(), my_config['config/feat_size_1'].item(), my_config['config/feat_size_2'].item()] 
-snp_layers = [my_config['config/feat_size_3'].item() , my_config['config/feat_size_4'].item()]
-inDrop = my_config['config/dropout_1'].item()
-Drop = my_config['config/dropout_2'].item()
-#       
-best_model_0 = MY_expGCN_parallel_model(
-			G_chem_layer, 64 , G_chem_hdim,
-			G_exp_layer, 3, G_exp_hdim,
-			dsn1_layers, dsn2_layers, snp_layers, 
-			cell_one_hot.shape[-1], 1,
-			inDrop, Drop
-			)
-best_model_1 = MY_expGCN_parallel_model(
-			G_chem_layer, 64 , G_chem_hdim,
-			G_exp_layer, 3, G_exp_hdim,
-			dsn1_layers, dsn2_layers, snp_layers, 
-			cell_one_hot.shape[-1], 1,
-			inDrop, Drop
-			)
-best_model_2 = MY_expGCN_parallel_model(
-			G_chem_layer, 64 , G_chem_hdim,
-			G_exp_layer, 3, G_exp_hdim,
-			dsn1_layers, dsn2_layers, snp_layers, 
-			cell_one_hot.shape[-1], 1,
-			inDrop, Drop
-			)
-best_model_3 = MY_expGCN_parallel_model(
-			G_chem_layer, 64 , G_chem_hdim,
-			G_exp_layer, 3, G_exp_hdim,
-			dsn1_layers, dsn2_layers, snp_layers, 
-			cell_one_hot.shape[-1], 1,
-			inDrop, Drop
-			)
-best_model_4 = MY_expGCN_parallel_model(
-			G_chem_layer, 64 , G_chem_hdim,
-			G_exp_layer, 3, G_exp_hdim,
-			dsn1_layers, dsn2_layers, snp_layers, 
-			cell_one_hot.shape[-1], 1,
-			inDrop, Drop
-			)
-# 
-
-device = "cuda:0" if torch.cuda.is_available() else "cpu"
-if torch.cuda.is_available():
-	state_dict_0 = torch.load(os.path.join(PRJ_PATH, "C4_CV_0_model.pth")) #### change ! 
-	state_dict_1 = torch.load(os.path.join(PRJ_PATH, "C4_CV_1_model.pth")) #### change ! 
-	state_dict_2 = torch.load(os.path.join(PRJ_PATH, "C4_CV_2_model.pth")) #### change ! 
-	state_dict_3 = torch.load(os.path.join(PRJ_PATH, "C4_CV_3_model.pth")) #### change ! 
-	state_dict_4 = torch.load(os.path.join(PRJ_PATH, "C4_CV_4_model.pth")) #### change ! 
-else:
-	state_dict_0 = torch.load(os.path.join(PRJ_PATH, "C4_CV_0_model.pth"), map_location=torch.device('cpu'))
-	state_dict_1 = torch.load(os.path.join(PRJ_PATH, "C4_CV_1_model.pth"), map_location=torch.device('cpu'))
-	state_dict_2 = torch.load(os.path.join(PRJ_PATH, "C4_CV_2_model.pth"), map_location=torch.device('cpu'))
-	state_dict_3 = torch.load(os.path.join(PRJ_PATH, "C4_CV_3_model.pth"), map_location=torch.device('cpu'))
-	state_dict_4 = torch.load(os.path.join(PRJ_PATH, "C4_CV_4_model.pth"), map_location=torch.device('cpu'))
-#
-
-
-
-print("state_dict_done", flush = True)
-if type(state_dict_0) == tuple:
-	best_model_0.load_state_dict(state_dict_0[0])
-	best_model_1.load_state_dict(state_dict_1[0])
-	best_model_2.load_state_dict(state_dict_2[0])
-	best_model_3.load_state_dict(state_dict_3[0])
-	best_model_4.load_state_dict(state_dict_4[0])
-else : 
-	best_model_0.load_state_dict(state_dict_0)
-	best_model_1.load_state_dict(state_dict_1)
-	best_model_2.load_state_dict(state_dict_2)
-	best_model_3.load_state_dict(state_dict_3)
-	best_model_4.load_state_dict(state_dict_4)
-
-
-print("state_load_done", flush = True)
-#
-#
-
-best_model_0.eval()
-best_model_1.eval()
-best_model_2.eval()
-best_model_3.eval()
-best_model_4.eval()
 
 
 
 class CellTest_Dataset(Dataset): 
-	def __init__(self):
+	def __init__(self, tuple_list):
 		self.tuple_list = tuple_list
-#
+    #
 	def __len__(self): 
 		return len(self.tuple_list)
 	def __getitem__(self, idx): 
@@ -801,59 +682,204 @@ def graph_collate_fn(batch):
 	return tup_list, drug1_f_new, drug2_f_new, drug1_adj_new, drug2_adj_new, expA_new, expB_new, exp_adj_new, exp_adj_w_new, cell_new, y_new
 
 
-dataset = CellTest_Dataset()
-dataloader = torch.utils.data.DataLoader(dataset, batch_size = 128, collate_fn = graph_collate_fn, shuffle = False, num_workers=12)
-
-
-CELL_PRED_DF = pd.DataFrame(columns = ['CV0','CV1','CV2','CV3','CV4', 'ROW_CID','COL_CID','CCLE','Y'])
-CELL_PRED_DF.to_csv(CELVAL_PATH+'PRED_{}.FINAL_ing.csv'.format(Cell_name), index=False)
-
-
-with torch.no_grad():
-	for batch_idx_t, (tup_list, drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, adj_w, cell, y) in enumerate(dataloader):
-		print("{} / {}".format(batch_idx_t, len(dataloader)) , flush = True)
-		print(datetime.now(), flush = True)
-		list_ROW_CID = [a[0] for a in tup_list]
-		list_COL_CID = [a[1] for a in tup_list]
-		list_CELLO = [a[2] for a in tup_list]
-		#
-		output_0= best_model_0(drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, adj_w.squeeze(), cell.squeeze(), y)
-		output_1= best_model_1(drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, adj_w.squeeze(), cell.squeeze(), y)
-		output_2= best_model_2(drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, adj_w.squeeze(), cell.squeeze(), y)
-		output_3= best_model_3(drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, adj_w.squeeze(), cell.squeeze(), y)
-		output_4= best_model_4(drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, adj_w.squeeze(), cell.squeeze(), y)
-		outputs_0 = output_0.squeeze().tolist() # [output.squeeze().item()]
-		outputs_1 = output_1.squeeze().tolist()
-		outputs_2 = output_2.squeeze().tolist()
-		outputs_3 = output_3.squeeze().tolist()
-		outputs_4 = output_4.squeeze().tolist()
-		#print(outputs)
-		#
-		tmp_df = pd.DataFrame({
-		'CV0': outputs_0,
-		'CV1': outputs_1,
-		'CV2': outputs_2,
-		'CV3': outputs_3,
-		'CV4': outputs_4,
-		'ROW_CID' : list_ROW_CID,
-		'COL_CID' : list_COL_CID,
-		'CCLE' : list_CELLO,
-		'Y' : y.squeeze().tolist()
-		})
-		CELL_PRED_DF = pd.concat([CELL_PRED_DF, tmp_df])
-		tmp_df.to_csv(CELVAL_PATH+'PRED_{}.FINAL_ing.csv'.format(Cell_name), mode='a', index=False, header = False)
-
-
-CELL_PRED_DF.to_csv(CELVAL_PATH+'PRED_{}.FINAL.csv'.format(Cell_name), index=False)
-
-
-	
-
-##CELL_PRED_DF.to_csv(CELVAL_PATH+'PRED_{}.FINAL.csv'.format(Cell_name), index=False)
 
 
 
 
+def Cell_Test(CELLO, MODEL_NAME, use_cuda = True) :
+    print(CELLO)
+    print(datetime.now(), flush = True)
+    #
+    with open(CELVAL_PATH+'{}.testtest.json'.format(CELLO)) as f: ######################### 바꿔야해 
+        lst_check = [tuple(x) for x in json.load(f)]
+    #
+    #
+    tt_df = pd.DataFrame()
+    tt_df['tuple'] = lst_check
+    tt_df['cid1'] = [str(int(a[0])) for a in lst_check]
+    tt_df['cid2'] = [str(int(a[1])) for a in lst_check]
+    tt_df['cello'] = [a[2] for a in lst_check]
+    #
+    tt_df['cid1_celo'] = tt_df.cid1 +'__' +tt_df.cello
+    tt_df['cid2_celo'] = tt_df.cid2 +'__' +tt_df.cello
+    #
+    tt_df_re1 = tt_df[tt_df.cid1_celo.isin(TPs_all_2)]
+    tt_df_re2 = tt_df_re1[tt_df_re1.cid2_celo.isin(TPs_all_2)]
+    #
+    tg_lists = [str(int(a)) for a in list(set(TARGET_DB.CID))]
+    tt_df_re3 = tt_df_re2[tt_df_re2.cid1.isin(tg_lists)] # 5289702
+    tt_df_re4 = tt_df_re3[tt_df_re3.cid2.isin(tg_lists)] # 2359767
+    #
+    tt_df_re4 = tt_df_re4.reset_index(drop=True)
+    #
+    tuple_list = tt_df_re4['tuple']
+    #
+    #
+    #
+    #
+    CELL_PRED_DF = pd.DataFrame(columns = ['ROW_CID','COL_CID','CCLE','PRED_RES'])
+    PRED_list = []
+    #
+    G_chem_layer = my_config['config/G_chem_layer'].item()
+    G_chem_hdim = my_config['config/G_chem_hdim'].item()
+    G_exp_layer = my_config['config/G_exp_layer'].item()
+    G_exp_hdim = my_config['config/G_exp_hdim'].item()
+    dsn1_layers = [my_config['config/feat_size_0'].item(), my_config['config/feat_size_1'].item(), my_config['config/feat_size_2'].item()]
+    dsn2_layers = [my_config['config/feat_size_0'].item(), my_config['config/feat_size_1'].item(), my_config['config/feat_size_2'].item()] 
+    snp_layers = [my_config['config/feat_size_3'].item() , my_config['config/feat_size_4'].item()]
+    inDrop = my_config['config/dropout_1'].item()
+    Drop = my_config['config/dropout_2'].item()
+    #      
+    # 만약에 이렇게 안하고 마지막에 한번 더 다시 돌리기로 하면 이렇게 할 필요 음슴 
+    # 이건 차후에 다시 final 모델 생기면 수정해도 될듯! 
+    #
+    best_model_0 = MY_expGCN_parallel_model(
+                G_chem_layer, 64 , G_chem_hdim,
+                G_exp_layer, 3, G_exp_hdim,
+                dsn1_layers, dsn2_layers, snp_layers, 
+                cell_one_hot.shape[-1], 1,
+                inDrop, Drop
+                )
+    best_model_1 = MY_expGCN_parallel_model(
+                G_chem_layer, 64 , G_chem_hdim,
+                G_exp_layer, 3, G_exp_hdim,
+                dsn1_layers, dsn2_layers, snp_layers, 
+                cell_one_hot.shape[-1], 1,
+                inDrop, Drop
+                )
+    best_model_2 = MY_expGCN_parallel_model(
+                G_chem_layer, 64 , G_chem_hdim,
+                G_exp_layer, 3, G_exp_hdim,
+                dsn1_layers, dsn2_layers, snp_layers, 
+                cell_one_hot.shape[-1], 1,
+                inDrop, Drop
+                )
+    best_model_3 = MY_expGCN_parallel_model(
+                G_chem_layer, 64 , G_chem_hdim,
+                G_exp_layer, 3, G_exp_hdim,
+                dsn1_layers, dsn2_layers, snp_layers, 
+                cell_one_hot.shape[-1], 1,
+                inDrop, Drop
+                )
+    best_model_4 = MY_expGCN_parallel_model(
+                G_chem_layer, 64 , G_chem_hdim,
+                G_exp_layer, 3, G_exp_hdim,
+                dsn1_layers, dsn2_layers, snp_layers, 
+                cell_one_hot.shape[-1], 1,
+                inDrop, Drop
+                )
+    # 
+    #
+    device = "cuda:0" if torch.cuda.is_available() else "cpu"
+    if torch.cuda.is_available():
+        state_dict_0 = torch.load(os.path.join(PRJ_PATH, "{}_CV_0_model.pth".format(MODEL_NAME))) #### change ! 
+        state_dict_1 = torch.load(os.path.join(PRJ_PATH, "{}_CV_1_model.pth".format(MODEL_NAME))) #### change ! 
+        state_dict_2 = torch.load(os.path.join(PRJ_PATH, "{}_CV_2_model.pth".format(MODEL_NAME))) #### change ! 
+        state_dict_3 = torch.load(os.path.join(PRJ_PATH, "{}_CV_3_model.pth".format(MODEL_NAME))) #### change ! 
+        state_dict_4 = torch.load(os.path.join(PRJ_PATH, "{}_CV_4_model.pth".format(MODEL_NAME))) #### change ! 
+    else:
+        state_dict_0 = torch.load(os.path.join(PRJ_PATH, "{}_CV_0_model.pth".format(MODEL_NAME)), map_location=torch.device('cpu'))
+        state_dict_1 = torch.load(os.path.join(PRJ_PATH, "{}_CV_1_model.pth".format(MODEL_NAME)), map_location=torch.device('cpu'))
+        state_dict_2 = torch.load(os.path.join(PRJ_PATH, "{}_CV_2_model.pth".format(MODEL_NAME)), map_location=torch.device('cpu'))
+        state_dict_3 = torch.load(os.path.join(PRJ_PATH, "{}_CV_3_model.pth".format(MODEL_NAME)), map_location=torch.device('cpu'))
+        state_dict_4 = torch.load(os.path.join(PRJ_PATH, "{}_CV_4_model.pth".format(MODEL_NAME)), map_location=torch.device('cpu'))
+    #
+    #
+    print("state_dict_done", flush = True)
+    if type(state_dict_0) == tuple:
+        best_model_0.load_state_dict(state_dict_0[0])
+        best_model_1.load_state_dict(state_dict_1[0])
+        best_model_2.load_state_dict(state_dict_2[0])
+        best_model_3.load_state_dict(state_dict_3[0])
+        best_model_4.load_state_dict(state_dict_4[0])
+    else : 
+        best_model_0.load_state_dict(state_dict_0)
+        best_model_1.load_state_dict(state_dict_1)
+        best_model_2.load_state_dict(state_dict_2)
+        best_model_3.load_state_dict(state_dict_3)
+        best_model_4.load_state_dict(state_dict_4)
+    #
+    print("state_load_done", flush = True)
+    #
+    best_model_0.eval()
+    best_model_1.eval()
+    best_model_2.eval()
+    best_model_3.eval()
+    best_model_4.eval()
+    #
+    #
+    dataset = CellTest_Dataset(tuple_list)
+    dataloader = torch.utils.data.DataLoader(dataset, batch_size = my_config['config/batch_size'].item(), collate_fn = graph_collate_fn, shuffle = False )# , num_workers=my_config['config/n_workers'].item()
+    #
+    CELL_PRED_DF = pd.DataFrame(columns = ['CV0','CV1','CV2','CV3','CV4','ROW_CID','COL_CID','CCLE','Y'])
+    CELL_PRED_DF.to_csv(CELVAL_PATH+'PRED_{}.FINAL_ing.csv'.format(CELLO), index=False)
+    #
+    with torch.no_grad():
+        for batch_idx_t, (tup_list, drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, adj_w, cell, y) in enumerate(dataloader):
+            print("{} / {}".format(batch_idx_t, len(dataloader)) , flush = True)
+            print(datetime.now(), flush = True)
+            list_ROW_CID = [a[0] for a in tup_list]
+            list_COL_CID = [a[1] for a in tup_list]
+            list_CELLO = [a[2] for a in tup_list]
+            #
+            if use_cuda:
+                drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, adj_w, y, cell = drug1_f.cuda(), drug2_f.cuda(), drug1_a.cuda(), drug2_a.cuda(), expA.cuda(), expB.cuda(), adj.cuda(), adj_w.cuda(), y.cuda(), cell.cuda()
+            #
+            output_0= best_model_0(drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, adj_w.squeeze(), cell.squeeze(), y)
+            output_1= best_model_1(drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, adj_w.squeeze(), cell.squeeze(), y)
+            output_2= best_model_2(drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, adj_w.squeeze(), cell.squeeze(), y)
+            output_3= best_model_3(drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, adj_w.squeeze(), cell.squeeze(), y)
+            output_4= best_model_4(drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, adj_w.squeeze(), cell.squeeze(), y)
+            outputs_0 = output_0.squeeze().tolist() # [output.squeeze().item()]
+            outputs_1 = output_1.squeeze().tolist()
+            outputs_2 = output_2.squeeze().tolist()
+            outputs_3 = output_3.squeeze().tolist()
+            outputs_4 = output_4.squeeze().tolist()
+            #print(outputs)
+            #
+            tmp_df = pd.DataFrame({
+            'CV0': outputs_0,
+            'CV1': outputs_1,
+            'CV2': outputs_2,
+            'CV3': outputs_3,
+            'CV4': outputs_4,
+            'ROW_CID' : list_ROW_CID,
+            'COL_CID' : list_COL_CID,
+            'CCLE' : list_CELLO,
+            'Y' : y.squeeze().tolist()
+            })
+            CELL_PRED_DF = pd.concat([CELL_PRED_DF, tmp_df])
+            tmp_df.to_csv(CELVAL_PATH+'PRED_{}.FINAL_ing.csv'.format(CELLO), mode='a', index=False, header = False)
+    return CELL_PRED_DF
+
+
+
+
+
+
+PRJ_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V4_MIS2_W20v1/'
+os.makedirs( os.path.join(PRJ_PATH,'VAL'), exist_ok = True)
+ANA_DF_CSV = pd.read_csv(os.path.join(PRJ_PATH,'RAY_ANA_DF.{}_{}_{}.csv'.format(MJ_NAME, MISS_NAME, W_NAME)))
+
+my_config = ANA_DF_CSV[ANA_DF_CSV.trial_id=='98d5812c']
+
+avail_cell_list = []
+
+for CELLO in avail_cell_list : 
+    # CELLO = 'A549_LUNG'
+    MODEL_NAME = 'C4'
+    CELL_PRED_DF = Cell_Test(CELLO, MODEL_NAME, use_cuda = False)
+    CELL_PRED_DF.to_csv(CELVAL_PATH+'PRED_{}.FINAL.csv'.format(CELLO), index=False)
+
+
+
+실제로 돌릴때 고칠거 
+
+1) workers
+2) json 파일이름 
+3) cell list
+4) 모델 미리 폴더에 가져와야함 
+5) 아직 GPU 실험 못해봄 
 
 
 
@@ -862,7 +888,24 @@ CELL_PRED_DF.to_csv(CELVAL_PATH+'PRED_{}.FINAL.csv'.format(Cell_name), index=Fal
 
 
 
+# Cell_Test(CELLO, MODEL_NAME, use_cuda = True)
 
+
+
+
+
+
+                    예시로 하나만 실험해보자면 
+                    CELLO = 'A549_LUNG'
+                    tmp_path = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V4_MIS2_W20v1.OLD/VAL/'
+                    with open(tmp_path+'{}.json'.format(CELLO)) as f:
+                        lst_check = [tuple(x) for x in json.load(f)]
+
+                    with open(tmp_path+'{}.testtest.json'.format(CELLO), 'w') as f:
+                        json.dump(lst_check[0:100], f)
+
+                    with open(tmp_path+'{}.testtest.json'.format(CELLO)) as f:
+                        lst_check2 = [tuple(x) for x in json.load(f)]
 
 
 

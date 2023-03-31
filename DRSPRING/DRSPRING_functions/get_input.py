@@ -58,13 +58,13 @@ import random
 import shutil
 import math
 
-import ray
-from ray import tune
-from functools import partial
-from ray.tune.schedulers import ASHAScheduler
-from ray.tune import CLIReporter
-from ray.tune.suggest.optuna import OptunaSearch
-from ray.tune import ExperimentAnalysis
+#import ray
+#from ray import tune
+#from functools import partial
+#from ray.tune.schedulers import ASHAScheduler
+#from ray.tune import CLIReporter
+#from ray.tune.suggest.optuna import OptunaSearch
+#from ray.tune import ExperimentAnalysis
 
 import numpy as np
 from rdkit import Chem
@@ -172,7 +172,7 @@ def graph_collate_fn(batch):
 
 
 
-def prepare_data_GCN(CV_ND_INDS, data_nodup_df, A_B_C_S_SET_SM, MY_chem_A_feat_RE2, MY_chem_B_feat_RE2, MY_chem_A_adj_RE2, MY_chem_B_adj_RE2, 
+def prepare_data_GCN(CV_ND_INDS, data_nodup_df3, data_nodup_df2, A_B_C_S_SET_SM, MY_chem_A_feat_RE2, MY_chem_B_feat_RE2, MY_chem_A_adj_RE2, MY_chem_B_adj_RE2, 
 MY_g_EXP_A_RE2, MY_g_EXP_B_RE2, MY_Target_A2, MY_Target_B2, MY_CellBase_RE2, 
 cell_one_hot, MY_syn_RE2, norm ) : 
 	#        
@@ -181,9 +181,9 @@ cell_one_hot, MY_syn_RE2, norm ) :
 	val_key = 'CV{}_val'.format(CV_num)
 	test_key = 'CV{}_test'.format(CV_num)
 	#
-	train_no_dup = data_nodup_df.loc[CV_ND_INDS[train_key]]
-	val_no_dup = data_nodup_df.loc[CV_ND_INDS[val_key]]
-	test_no_dup = data_nodup_df.loc[CV_ND_INDS[test_key]]
+	train_no_dup = data_nodup_df3.loc[CV_ND_INDS[train_key]]
+	val_no_dup = data_nodup_df3.loc[CV_ND_INDS[val_key]]
+	test_no_dup = data_nodup_df2.loc[CV_ND_INDS[test_key]]
 	#
 	ABCS_train = A_B_C_S_SET_SM[A_B_C_S_SET_SM.SM_C_CHECK.isin(train_no_dup.setset)]
 	ABCS_val = A_B_C_S_SET_SM[A_B_C_S_SET_SM.SM_C_CHECK.isin(val_no_dup.setset)]
@@ -505,18 +505,30 @@ def prepare_input(MJ_NAME, WORK_DATE, MISS_NAME, file_name, WORK_NAME, CELL_CUT)
 	A_B_C_S_SET_SM = copy.deepcopy(A_B_C_S_SET_COH2)
 	#
 	A_B_C_S_SET_SM['ori_index'] = list(A_B_C_S_SET_SM.index)
+	aaa = list(A_B_C_S_SET_SM['drug_row_CID'])
+	bbb = list(A_B_C_S_SET_SM['drug_col_CID'])
 	aa = list(A_B_C_S_SET_SM['ROW_CAN_SMILES'])
 	bb = list(A_B_C_S_SET_SM['COL_CAN_SMILES'])
 	cc = list(A_B_C_S_SET_SM['DrugCombCCLE'])
-	A_B_C_S_SET_SM['SM_C_CHECK'] = [aa[i] + '___' + bb[i]+ '___' + cc[i] for i in range(A_B_C_S_SET_SM.shape[0])]
+	#
+	A_B_C_S_SET_SM['CID_CID_CCLE'] = [str(int(aaa[i])) + '___' + str(int(bbb[i]))+ '___' + cc[i] if aaa[i] < bbb[i] else str(int(bbb[i])) + '___' + str(int(aaa[i]))+ '___' + cc[i] for i in range(A_B_C_S_SET_SM.shape[0])]
+	A_B_C_S_SET_SM['SM_C_CHECK'] = [aa[i] + '___' + bb[i]+ '___' + cc[i] if aa[i] < bb[i] else bb[i] + '___' + aa[i]+ '___' + cc[i] for i in range(A_B_C_S_SET_SM.shape[0])]
+	#
+	A_B_C_S_SET_SM[['drug_row_CID','drug_col_CID','DrugCombCCLE']].drop_duplicates() # 52152
+	A_B_C_S_SET_SM[['ROW_CAN_SMILES','COL_CAN_SMILES','DrugCombCCLE']].drop_duplicates() # 52120
+	len(set(A_B_C_S_SET_SM['CID_CID_CCLE'])) # 51212
+	len(set(A_B_C_S_SET_SM['SM_C_CHECK'])) # 51160
+	#
 	#
 	#
 	# get unique values, remove duplicates, but keep original counts
 	data_no_dup, counts = np.unique(list(A_B_C_S_SET_SM['SM_C_CHECK']), return_counts=True)
 	data_no_dup_cells = [setset.split('___')[2] for setset in data_no_dup]
 	data_nodup_df = pd.DataFrame({'setset' : data_no_dup.tolist(), 'cell' : data_no_dup_cells })
-	grouped_df = data_nodup_df.groupby('cell')
+	data_nodup_df2 = data_nodup_df.sort_values('cell')
+	data_nodup_df2 = data_nodup_df2.reset_index(drop =True)
 	#
+	grouped_df = data_nodup_df2.groupby('cell')
 	TrainVal_list = []; Test_list =[]
 	#
 	for i, g in grouped_df:
@@ -525,7 +537,7 @@ def prepare_input(MJ_NAME, WORK_DATE, MISS_NAME, file_name, WORK_NAME, CELL_CUT)
 			bins = []
 			g2 = sklearn.utils.shuffle(g, random_state=42)
 			for ii in list(range(0, len(g2), nums)):
-				if len(bins)<= 5 :
+				if len(bins)< 5 :
 					bins.append(ii)
 			#
 			bins = bins[1:]
@@ -536,8 +548,10 @@ def prepare_input(MJ_NAME, WORK_DATE, MISS_NAME, file_name, WORK_NAME, CELL_CUT)
 			print(i)
 	#
 	#
-	data_nodup_df2 = data_nodup_df.loc[TrainVal_list]
-	grouped_df2 = data_nodup_df2.groupby('cell')
+	data_nodup_df3 = data_nodup_df2.loc[TrainVal_list]
+	data_nodup_df3 = data_nodup_df3.reset_index(drop=True)
+	grouped_df2 = data_nodup_df3.groupby('cell')
+	#
 	CV_1_list = []; CV_2_list = []; CV_3_list = []; CV_4_list = []; CV_5_list = []
 	for i, g in grouped_df2:
 		nums = int(.2 * len(g)) 
@@ -569,7 +583,7 @@ def prepare_input(MJ_NAME, WORK_DATE, MISS_NAME, file_name, WORK_NAME, CELL_CUT)
 	}
 	#
 	norm = 'tanh_norm'
-	train_data, val_data, test_data = prepare_data_GCN (CV_ND_INDS, data_nodup_df, A_B_C_S_SET_SM, MY_chem_A_feat_RE2, MY_chem_B_feat_RE2, MY_chem_A_adj_RE2, MY_chem_B_adj_RE2, 
+	train_data, val_data, test_data = prepare_data_GCN (CV_ND_INDS, data_nodup_df3, data_nodup_df2, A_B_C_S_SET_SM, MY_chem_A_feat_RE2, MY_chem_B_feat_RE2, MY_chem_A_adj_RE2, MY_chem_B_adj_RE2, 
 	MY_g_EXP_A_RE2, MY_g_EXP_B_RE2, MY_Target_A2, MY_Target_B2, MY_CellBase_RE2, 
 	cell_one_hot, MY_syn_RE2, norm)
 	#

@@ -88,80 +88,80 @@ DC_PATH = '/home01/k020a01/01.Data/DrugComb/'
 
 print('NETWORK')
 			# 978
-			hunet_gsp = pd.read_csv(NETWORK_PATH+'HumanNet-GSP.tsv', sep = '\t', header = None)
-			hunet_gsp.columns = ['G_A','G_B']
+hunet_gsp = pd.read_csv(NETWORK_PATH+'HumanNet-GSP.tsv', sep = '\t', header = None)
+hunet_gsp.columns = ['G_A','G_B']
 
-			LINCS_gene_file = pd.read_csv(LINCS_PATH+'geneinfo_beta.txt', sep = '\t')
-			LINCS_978 = LINCS_gene_file[LINCS_gene_file.feature_space == 'landmark']
-			LINCS_978 = LINCS_978[['gene_id','gene_symbol']]
-			LINCS_978['new_node'] = [str(list(LINCS_978.gene_id)[i]) + "__" + list(LINCS_978.gene_symbol)[i] for i in range(978)]
-			LINCS_978 = LINCS_978.reset_index(drop=True)
-			lm_entrezs = list(LINCS_978.gene_id)
-
-
-			hnet_L1 = hunet_gsp[hunet_gsp['G_A'].isin(lm_entrezs)]
-			hnet_L2 = hnet_L1[hnet_L1['G_B'].isin(lm_entrezs)] # 3885
-
-			len(set(list(hnet_L2['G_A']) + list(hnet_L2['G_B']))) # 611
-
-			ID_G = nx.from_pandas_edgelist(hnet_L2, 'G_A', 'G_B')
-
-			MSSNG = [a for a in lm_entrezs if a not in list(ID_G.nodes)]
-
-			for nn in list(MSSNG):
-				ID_G.add_node(nn)
+LINCS_gene_file = pd.read_csv(LINCS_PATH+'geneinfo_beta.txt', sep = '\t')
+LINCS_978 = LINCS_gene_file[LINCS_gene_file.feature_space == 'landmark']
+LINCS_978 = LINCS_978[['gene_id','gene_symbol']]
+LINCS_978['new_node'] = [str(list(LINCS_978.gene_id)[i]) + "__" + list(LINCS_978.gene_symbol)[i] for i in range(978)]
+LINCS_978 = LINCS_978.reset_index(drop=True)
+lm_entrezs = list(LINCS_978.gene_id)
 
 
-			# edge 3871
-			ID_GENE_ORDER_mini = list(ID_G.nodes()) # 978
-			ID_ADJ = nx.adjacency_matrix(ID_G)
-			ID_ADJ_tmp = torch.LongTensor(ID_ADJ.toarray())
-			ID_ADJ_IDX = ID_ADJ_tmp.to_sparse().indices()  # [2, 7742]
-			ID_WEIGHT = [] # len : 3871 -> 7742
+hnet_L1 = hunet_gsp[hunet_gsp['G_A'].isin(lm_entrezs)]
+hnet_L2 = hnet_L1[hnet_L1['G_B'].isin(lm_entrezs)] # 3885
 
-			ID_WEIGHT_SCORE = [1 for a in range(ID_ADJ_IDX.shape[1])]
+len(set(list(hnet_L2['G_A']) + list(hnet_L2['G_B']))) # 611
+
+ID_G = nx.from_pandas_edgelist(hnet_L2, 'G_A', 'G_B')
+
+MSSNG = [a for a in lm_entrezs if a not in list(ID_G.nodes)]
+
+for nn in list(MSSNG):
+	ID_G.add_node(nn)
 
 
+# edge 3871
+ID_GENE_ORDER_mini = list(ID_G.nodes()) # 978
+ID_ADJ = nx.adjacency_matrix(ID_G)
+ID_ADJ_tmp = torch.LongTensor(ID_ADJ.toarray())
+ID_ADJ_IDX = ID_ADJ_tmp.to_sparse().indices()  # [2, 7742]
+ID_WEIGHT = [] # len : 3871 -> 7742
+
+ID_WEIGHT_SCORE = [1 for a in range(ID_ADJ_IDX.shape[1])]
 
 
 
 
-					# HS Drug pathway DB 활용 -> 349
-					print('NETWORK')
-					# HUMANNET 사용 
 
-					hunet_gsp = pd.read_csv(NETWORK_PATH+'HS-DB.tsv', sep = '\t', header = None)
-					hunet_gsp.columns = ['G_A','G_B','SC']
 
-					LINCS_gene_file = pd.read_csv(LINCS_PATH+'geneinfo_beta.txt', sep = '\t')
-					LINCS_978 = LINCS_gene_file[LINCS_gene_file.feature_space == 'landmark']
-					LINCS_978 = LINCS_978[['gene_id','gene_symbol']]
-					LINCS_978['new_node'] = [str(list(LINCS_978.gene_id)[i]) + "__" + list(LINCS_978.gene_symbol)[i] for i in range(978)]
-					LINCS_978 = LINCS_978.reset_index(drop=True)
-					lm_entrezs = list(LINCS_978.gene_id)
+# HS Drug pathway DB 활용 -> 349
+print('NETWORK')
+# HUMANNET 사용 
 
-					hnet_L1 = hunet_gsp[hunet_gsp['G_A'].isin(lm_entrezs)]
-					hnet_L2 = hnet_L1[hnet_L1['G_B'].isin(lm_entrezs)] # 3885
-					hnet_L3 = hnet_L2[hnet_L2.SC >= 3.5]
+hunet_gsp = pd.read_csv(NETWORK_PATH+'HS-DB.tsv', sep = '\t', header = None)
+hunet_gsp.columns = ['G_A','G_B','SC']
 
-					len(set(list(hnet_L3['G_A']) + list(hnet_L3['G_B']))) # 611
+LINCS_gene_file = pd.read_csv(LINCS_PATH+'geneinfo_beta.txt', sep = '\t')
+LINCS_978 = LINCS_gene_file[LINCS_gene_file.feature_space == 'landmark']
+LINCS_978 = LINCS_978[['gene_id','gene_symbol']]
+LINCS_978['new_node'] = [str(list(LINCS_978.gene_id)[i]) + "__" + list(LINCS_978.gene_symbol)[i] for i in range(978)]
+LINCS_978 = LINCS_978.reset_index(drop=True)
+lm_entrezs = list(LINCS_978.gene_id)
 
-					ID_G = nx.from_pandas_edgelist(hnet_L3, 'G_A', 'G_B')
+hnet_L1 = hunet_gsp[hunet_gsp['G_A'].isin(lm_entrezs)]
+hnet_L2 = hnet_L1[hnet_L1['G_B'].isin(lm_entrezs)] # 3885
+hnet_L3 = hnet_L2[hnet_L2.SC >= 3.5]
 
-					# MSSNG = [a for a in lm_entrezs if a not in list(ID_G.nodes)]
+len(set(list(hnet_L3['G_A']) + list(hnet_L3['G_B']))) # 611
 
-					#for nn in list(MSSNG):
-					#	ID_G.add_node(nn)
+ID_G = nx.from_pandas_edgelist(hnet_L3, 'G_A', 'G_B')
 
-					# edge 
-					ID_GENE_ORDER_mini = list(ID_G.nodes()) # 978
-					ID_ADJ = nx.adjacency_matrix(ID_G)
-					ID_ADJ_tmp = torch.LongTensor(ID_ADJ.toarray())
-					ID_ADJ_IDX = ID_ADJ_tmp.to_sparse().indices()  # [2, 7742]
-					ID_WEIGHT = [] # len : 3871 -> 7742
+# MSSNG = [a for a in lm_entrezs if a not in list(ID_G.nodes)]
 
-					# 원래는 edge score 있지만 일단은...
-					ID_WEIGHT_SCORE = [1 for a in range(ID_ADJ_IDX.shape[1])]
+#for nn in list(MSSNG):
+#	ID_G.add_node(nn)
+
+# edge 
+ID_GENE_ORDER_mini = list(ID_G.nodes()) # 978
+ID_ADJ = nx.adjacency_matrix(ID_G)
+ID_ADJ_tmp = torch.LongTensor(ID_ADJ.toarray())
+ID_ADJ_IDX = ID_ADJ_tmp.to_sparse().indices()  # [2, 7742]
+ID_WEIGHT = [] # len : 3871 -> 7742
+
+# 원래는 edge score 있지만 일단은...
+ID_WEIGHT_SCORE = [1 for a in range(ID_ADJ_IDX.shape[1])]
 
 
 
@@ -491,21 +491,36 @@ def normalize(X, means1=None, std1=None, means2=None, std2=None,
 
 
 
+
+# 0328 added.... hahahahaha
 A_B_C_S_SET_SM = copy.deepcopy(A_B_C_S_SET_COH2)
 
 A_B_C_S_SET_SM['ori_index'] = list(A_B_C_S_SET_SM.index)
+aaa = list(A_B_C_S_SET_SM['drug_row_CID'])
+bbb = list(A_B_C_S_SET_SM['drug_col_CID'])
 aa = list(A_B_C_S_SET_SM['ROW_CAN_SMILES'])
 bb = list(A_B_C_S_SET_SM['COL_CAN_SMILES'])
 cc = list(A_B_C_S_SET_SM['DrugCombCCLE'])
-A_B_C_S_SET_SM['SM_C_CHECK'] = [aa[i] + '___' + bb[i]+ '___' + cc[i] for i in range(A_B_C_S_SET_SM.shape[0])]
+
+A_B_C_S_SET_SM['CID_CID_CCLE'] = [str(int(aaa[i])) + '___' + str(int(bbb[i]))+ '___' + cc[i] if aaa[i] < bbb[i] else str(int(bbb[i])) + '___' + str(int(aaa[i]))+ '___' + cc[i] for i in range(A_B_C_S_SET_SM.shape[0])]
+A_B_C_S_SET_SM['SM_C_CHECK'] = [aa[i] + '___' + bb[i]+ '___' + cc[i] if aa[i] < bb[i] else bb[i] + '___' + aa[i]+ '___' + cc[i] for i in range(A_B_C_S_SET_SM.shape[0])]
+
+A_B_C_S_SET_SM[['drug_row_CID','drug_col_CID','DrugCombCCLE']].drop_duplicates() # 52152
+A_B_C_S_SET_SM[['ROW_CAN_SMILES','COL_CAN_SMILES','DrugCombCCLE']].drop_duplicates() # 52120
+len(set(A_B_C_S_SET_SM['CID_CID_CCLE'])) # 51212
+len(set(A_B_C_S_SET_SM['SM_C_CHECK'])) # 51160
+
 
 
 # get unique values, remove duplicates, but keep original counts
 data_no_dup, counts = np.unique(list(A_B_C_S_SET_SM['SM_C_CHECK']), return_counts=True)
 data_no_dup_cells = [setset.split('___')[2] for setset in data_no_dup]
 data_nodup_df = pd.DataFrame({'setset' : data_no_dup.tolist(), 'cell' : data_no_dup_cells })
+data_nodup_df2 = data_nodup_df.sort_values('cell')
+data_nodup_df2 = data_nodup_df2.reset_index(drop =True)
 
-grouped_df = data_nodup_df.groupby('cell')
+grouped_df = data_nodup_df2.groupby('cell')
+
 
 TrainVal_list = []; Test_list =[]
 
@@ -515,7 +530,7 @@ for i, g in grouped_df:
 		bins = []
 		g2 = sklearn.utils.shuffle(g, random_state=42)
 		for ii in list(range(0, len(g2), nums)):
-			if len(bins)<= 5 :
+			if len(bins)< 5 :
 				bins.append(ii)
 		#
 		bins = bins[1:]
@@ -527,9 +542,28 @@ for i, g in grouped_df:
 
 
 
-data_nodup_df2 = data_nodup_df.loc[TrainVal_list]
+check_index_list = TrainVal_list+Test_list
+len(TrainVal_list) # 51182
+len(Test_list) # 51182
+len(TrainVal_list)+len(Test_list) # 51182
 
-grouped_df2 = data_nodup_df2.groupby('cell')
+set(data_nodup_df2.index)-set(check_index_list)
+
+len(data_nodup_df2.loc[Test_list]['setset'])
+len(set(data_nodup_df2.loc[Test_list]['setset']))
+
+len(data_nodup_df2.loc[TrainVal_list]['setset'])
+len(set(data_nodup_df2.loc[TrainVal_list]['setset']))
+
+
+
+
+
+# CV split 
+data_nodup_df3 = data_nodup_df2.loc[TrainVal_list]
+data_nodup_df3 = data_nodup_df3.reset_index(drop=True)
+
+grouped_df2 = data_nodup_df3.groupby('cell')
 
 CV_1_list = []; CV_2_list = []; CV_3_list = []; CV_4_list = []; CV_5_list = []
 
@@ -538,11 +572,15 @@ for i, g in grouped_df2:
 	bins = []
 	g2 = sklearn.utils.shuffle(g, random_state=42)
 	for ii in list(range(0, len(g2), nums)):
-		if len(bins)<= 5 :
+		if len(bins)< 5 :
 			bins.append(ii)
 	#
 	bins = bins[1:]
 	res = np.split(g2, bins)
+	print(i)
+	print(len(g2))
+	len(set(sum([list(ii.setset) for ii in res],[])))
+	len(set(sum([list(ii.setset) for ii in res],[]))) == len(sum([list(ii.setset) for ii in res],[]))
 	CV_1_list = CV_1_list + res[0].index.tolist()
 	CV_2_list = CV_2_list + res[1].index.tolist()
 	CV_3_list = CV_3_list + res[2].index.tolist()
@@ -564,8 +602,27 @@ CV_ND_INDS = {
 	'CV4_val' : CV_4_list, 'CV4_test' : Test_list 
 }
 
-len(CV_5_list + CV_1_list + CV_2_list + CV_3_list + CV_4_list + Test_list)
-len(set(CV_5_list + CV_1_list + CV_2_list + CV_3_list + CV_4_list + Test_list))
+len(CV_5_list + CV_1_list + CV_2_list + CV_3_list + CV_4_list)
+len(set(CV_5_list + CV_1_list + CV_2_list + CV_3_list + CV_4_list ))
+
+
+len(data_nodup_df3.loc[CV_1_list]['setset'])
+len(set(data_nodup_df3.loc[CV_1_list]['setset']))
+
+len(data_nodup_df3.loc[CV_2_list]['setset'])
+len(set(data_nodup_df3.loc[CV_2_list]['setset']))
+
+len(data_nodup_df3.loc[CV_3_list]['setset'])
+len(set(data_nodup_df3.loc[CV_3_list]['setset']))
+
+len(data_nodup_df3.loc[CV_4_list]['setset'])
+len(set(data_nodup_df3.loc[CV_4_list]['setset']))
+
+len(data_nodup_df3.loc[CV_5_list]['setset'])
+len(set(data_nodup_df3.loc[CV_5_list]['setset']))
+
+len(data_nodup_df3.loc[CV_5_list + CV_1_list + CV_2_list + CV_3_list + CV_4_list]['setset'])
+len(set(data_nodup_df3.loc[CV_5_list + CV_1_list + CV_2_list + CV_3_list + CV_4_list]['setset']))
 
 
 # use just index 
@@ -579,9 +636,9 @@ cell_one_hot, MY_syn_RE2, norm ) :
 	val_key = 'CV{}_val'.format(CV_num)
 	test_key = 'CV{}_test'.format(CV_num)
 	#
-	train_no_dup = data_nodup_df.loc[CV_ND_INDS[train_key]]
-	val_no_dup = data_nodup_df.loc[CV_ND_INDS[val_key]]
-	test_no_dup = data_nodup_df.loc[CV_ND_INDS[test_key]]
+	train_no_dup = data_nodup_df3.loc[CV_ND_INDS[train_key]] # train val df 
+	val_no_dup = data_nodup_df3.loc[CV_ND_INDS[val_key]] # train val df 
+	test_no_dup = data_nodup_df2.loc[CV_ND_INDS[test_key]] # from test included df 
 	#
 	ABCS_train = A_B_C_S_SET_SM[A_B_C_S_SET_SM.SM_C_CHECK.isin(train_no_dup.setset)]
 	ABCS_val = A_B_C_S_SET_SM[A_B_C_S_SET_SM.SM_C_CHECK.isin(val_no_dup.setset)]
@@ -655,6 +712,37 @@ cell_one_hot, MY_syn_RE2, norm ) :
 	print(val_data['drug1_feat'].shape, flush=True)
 	print(test_data['drug1_feat'].shape, flush=True)
 	return train_data, val_data, test_data
+
+
+
+ch1 = ABCS_train.reset_index(drop=True)
+ch1_ind = list(ch1.index)
+aa = list(ch1['ROW_CAN_SMILES'])
+bb = list(ch1['COL_CAN_SMILES'])
+cc = list(ch1['DrugCombCCLE'])
+SM_C_CHECK_1 = [aa[i] + '___' + bb[i]+ '___' + cc[i] for i in ch1_ind]
+SM_C_CHECK_2 = [bb[i] + '___' + aa[i]+ '___' + cc[i] for i in ch1_ind]
+ch1_checklist = list(set(SM_C_CHECK_1+SM_C_CHECK_2)) # 65794 -> 65361
+
+ch2 = ABCS_test.reset_index(drop=True)
+ch2_ind = list(ch2.index)
+aa = list(ch2['ROW_CAN_SMILES'])
+bb = list(ch2['COL_CAN_SMILES'])
+cc = list(ch2['DrugCombCCLE'])
+SM_C_CHECK_1 = [aa[i] + '___' + bb[i]+ '___' + cc[i] for i in ch2_ind]
+SM_C_CHECK_2 = [bb[i] + '___' + aa[i]+ '___' + cc[i] for i in ch2_ind]
+ch2_checklist = list(set(SM_C_CHECK_1+SM_C_CHECK_2)) #20733 -> 20526
+
+print('trainval : test')
+print(len(set(ch2_checklist) - set(ch1_checklist))) # 20514
+
+#sample_prob1 = 'CC1=C(C=C(C=C1)C(=O)NC2=CC(=CC(=C2)C(F)(F)F)N3C=C(N=C3)C)NC4=NC=CC(=N4)C5=CN=CC=C5___C1=NC2=C(N=C(N=C2N1C3C(C(C(O3)CO)O)O)F)N___SKMEL5_SKIN'
+#sample_prob2 = 'C1=NC2=C(N=C(N=C2N1C3C(C(C(O3)CO)O)O)F)N___CC1=C(C=C(C=C1)C(=O)NC2=CC(=CC(=C2)C(F)(F)F)N3C=C(N=C3)C)NC4=NC=CC(=N4)C5=CN=CC=C5___SKMEL5_SKIN'
+
+
+ 
+
+
 
 
 
@@ -1518,7 +1606,7 @@ import pickle
 import math
 import torch
 import os 
-
+import copy
 
 WORK_DATE = '23.03.19'
 PRJ_NAME = 'M3V4'
@@ -1533,6 +1621,17 @@ MISS_NAME = 'MIS2'
 WORK_NAME = 'WORK_20v2'
 W_NAME = 'W20v2' # 978
 
+# 아놔 날짜 바꿨어야하는데 시불 
+WORK_DATE = '23.03.19'
+PRJ_NAME = 'M3V4'
+MISS_NAME = 'MIS2'
+WORK_NAME = 'WORK_20v1'
+W_NAME = 'W20v1' # 349
+
+
+
+
+
 
 anal_dir = "/home01/k020a01/ray_results/PRJ02.{}.{}.{}.{}/".format(WORK_DATE, PRJ_NAME, MISS_NAME, WORK_NAME)
 list_dir = os.listdir(anal_dir)
@@ -1545,6 +1644,8 @@ anal_df = Analysis(anal_dir)
 ANA_DF = anal_df.dataframe()
 ANA_ALL_DF = anal_df.trial_dataframes
 
+
+# ORIGINAL VER
 ANA_DF.to_csv('/home01/k020a01/02.VER3/{}_{}_{}/RAY_ANA_DF.{}_{}_{}.csv'.format(PRJ_NAME, MISS_NAME, W_NAME, PRJ_NAME, MISS_NAME, W_NAME))
 import pickle
 with open("/home01/k020a01/02.VER3/{}_{}_{}/RAY_ANA_DF.{}_{}_{}.pickle".format(PRJ_NAME, MISS_NAME, W_NAME, PRJ_NAME, MISS_NAME, W_NAME), "wb") as fp:
@@ -1552,6 +1653,26 @@ with open("/home01/k020a01/02.VER3/{}_{}_{}/RAY_ANA_DF.{}_{}_{}.pickle".format(P
 
 '/home01/k020a01/02.VER3/{}_{}_{}/RAY_ANA_DF.{}_{}_{}.csv'.format(PRJ_NAME, MISS_NAME, W_NAME, PRJ_NAME, MISS_NAME, W_NAME)
 "/home01/k020a01/02.VER3/{}_{}_{}/RAY_ANA_DF.{}_{}_{}.pickle".format(PRJ_NAME, MISS_NAME, W_NAME, PRJ_NAME, MISS_NAME, W_NAME)
+
+
+# 다시돌린거 확인을 위해서는 아예 GPU 에서 새로 matrix 저장해주는게 맞는것 같음 
+ANA_TF_CHECK = [a.split('_')[0]>'2023-03-27' for a in ANA_DF['date'] ] # 문제는 중간에 버린애들도 포함.. 알아서 걸릴듯
+ANA_DF_RE = ANA_DF[ANA_TF_CHECK]
+new_key = list(ANA_DF_RE.logdir)
+ANA_ALL_DF_RE = {k : v for k,v in ANA_ALL_DF.items() if k in new_key}
+
+ANA_DF_RE.to_csv('/home01/k020a01/02.VER3/{}_{}_{}/RAY_ANA_DF.{}_{}_{}.csv'.format(PRJ_NAME, MISS_NAME, W_NAME, PRJ_NAME, MISS_NAME, W_NAME))
+import pickle
+with open("/home01/k020a01/02.VER3/{}_{}_{}/RAY_ANA_DF.{}_{}_{}.pickle".format(PRJ_NAME, MISS_NAME, W_NAME, PRJ_NAME, MISS_NAME, W_NAME), "wb") as fp:
+	pickle.dump(ANA_ALL_DF_RE,fp) 
+
+'/home01/k020a01/02.VER3/{}_{}_{}/RAY_ANA_DF.{}_{}_{}.csv'.format(PRJ_NAME, MISS_NAME, W_NAME, PRJ_NAME, MISS_NAME, W_NAME)
+"/home01/k020a01/02.VER3/{}_{}_{}/RAY_ANA_DF.{}_{}_{}.pickle".format(PRJ_NAME, MISS_NAME, W_NAME, PRJ_NAME, MISS_NAME, W_NAME)
+
+ANA_DF = copy.deepcopy(ANA_DF_RE)
+ANA_ALL_DF = copy.deepcopy(ANA_ALL_DF_RE)
+
+
 
 
 # 1) best final loss 
@@ -1825,11 +1946,11 @@ print(DF_KEY, flush=True)
 mini_df = ANA_ALL_DF[DF_KEY]
 my_config = ANA_DF[ANA_DF.logdir==DF_KEY]
 R_1_V = list(ANA_DF.sort_values('AV_V_LS')['AV_V_LS'])[0]
-R_1_T_CV0, R_1_1_CV0, R_1_2_CV0, _, _ = TEST_CPU(PRJ_PATH, 'CV_0', my_config, PRJ_PATH, 'M1_CV_0_model.pth', 'M1')
-R_1_T_CV1, R_1_1_CV1, R_1_2_CV1, _, _ = TEST_CPU(PRJ_PATH, 'CV_1', my_config, PRJ_PATH, 'M1_CV_1_model.pth', 'M1')
-R_1_T_CV2, R_1_1_CV2, R_1_2_CV2, _, _ = TEST_CPU(PRJ_PATH, 'CV_2', my_config, PRJ_PATH, 'M1_CV_2_model.pth', 'M1')
-R_1_T_CV3, R_1_1_CV3, R_1_2_CV3, _, _ = TEST_CPU(PRJ_PATH, 'CV_3', my_config, PRJ_PATH, 'M1_CV_3_model.pth', 'M1')
-R_1_T_CV4, R_1_1_CV4, R_1_2_CV4, _, _ = TEST_CPU(PRJ_PATH, 'CV_4', my_config, PRJ_PATH, 'M1_CV_4_model.pth', 'M1')
+R_1_T_CV0, R_1_1_CV0, R_1_2_CV0, pred_1_CV0, pred_1_CV0 = TEST_CPU(PRJ_PATH, 'CV_0', my_config, PRJ_PATH, 'M1_CV_0_model.pth', 'M1')
+R_1_T_CV1, R_1_1_CV1, R_1_2_CV1, pred_1_CV1, pred_1_CV1 = TEST_CPU(PRJ_PATH, 'CV_1', my_config, PRJ_PATH, 'M1_CV_1_model.pth', 'M1')
+R_1_T_CV2, R_1_1_CV2, R_1_2_CV2, pred_1_CV2, pred_1_CV2 = TEST_CPU(PRJ_PATH, 'CV_2', my_config, PRJ_PATH, 'M1_CV_2_model.pth', 'M1')
+R_1_T_CV3, R_1_1_CV3, R_1_2_CV3, pred_1_CV3, pred_1_CV3 = TEST_CPU(PRJ_PATH, 'CV_3', my_config, PRJ_PATH, 'M1_CV_3_model.pth', 'M1')
+R_1_T_CV4, R_1_1_CV4, R_1_2_CV4, pred_1_CV4, pred_1_CV4 = TEST_CPU(PRJ_PATH, 'CV_4', my_config, PRJ_PATH, 'M1_CV_4_model.pth', 'M1')
 
 plot_loss(list(mini_df.AV_T_LS), list(mini_df.AV_V_LS), PRJ_PATH, '{}_{}_{}_VAL_BestLast'.format(MJ_NAME, MISS_NAME, WORK_NAME)  )
 plot_Pcorr(list(mini_df.AV_T_PC), list(mini_df.AV_V_PC), PRJ_PATH, '{}_{}_{}_VAL_BestLast'.format(MJ_NAME, MISS_NAME, WORK_NAME))
@@ -1845,11 +1966,11 @@ print('best final check', flush=True)
 print(TOPVAL_PATH, flush=True)
 R_2_V = min(mini_df.AV_V_LS)
 R_2_V
-R_2_T_CV0, R_2_1_CV0, R_2_2_CV0, _, _ = TEST_CPU(PRJ_PATH, 'CV_0', my_config, PRJ_PATH, 'M2_CV_0_model.pth', 'M2')
-R_2_T_CV1, R_2_1_CV1, R_2_2_CV1, _, _ = TEST_CPU(PRJ_PATH, 'CV_1', my_config, PRJ_PATH, 'M2_CV_1_model.pth', 'M2')
-R_2_T_CV2, R_2_1_CV2, R_2_2_CV2, _, _ = TEST_CPU(PRJ_PATH, 'CV_2', my_config, PRJ_PATH, 'M2_CV_2_model.pth', 'M2')
-R_2_T_CV3, R_2_1_CV3, R_2_2_CV3, _, _ = TEST_CPU(PRJ_PATH, 'CV_3', my_config, PRJ_PATH, 'M2_CV_3_model.pth', 'M2')
-R_2_T_CV4, R_2_1_CV4, R_2_2_CV4, _, _ = TEST_CPU(PRJ_PATH, 'CV_4', my_config, PRJ_PATH, 'M2_CV_4_model.pth', 'M2')
+R_2_T_CV0, R_2_1_CV0, R_2_2_CV0, pred_2_CV0, pred_2_CV0 = TEST_CPU(PRJ_PATH, 'CV_0', my_config, PRJ_PATH, 'M2_CV_0_model.pth', 'M2')
+R_2_T_CV1, R_2_1_CV1, R_2_2_CV1, pred_2_CV1, pred_2_CV1 = TEST_CPU(PRJ_PATH, 'CV_1', my_config, PRJ_PATH, 'M2_CV_1_model.pth', 'M2')
+R_2_T_CV2, R_2_1_CV2, R_2_2_CV2, pred_2_CV2, pred_2_CV2 = TEST_CPU(PRJ_PATH, 'CV_2', my_config, PRJ_PATH, 'M2_CV_2_model.pth', 'M2')
+R_2_T_CV3, R_2_1_CV3, R_2_2_CV3, pred_2_CV3, pred_2_CV3 = TEST_CPU(PRJ_PATH, 'CV_3', my_config, PRJ_PATH, 'M2_CV_3_model.pth', 'M2')
+R_2_T_CV4, R_2_1_CV4, R_2_2_CV4, pred_2_CV4, pred_2_CV4 = TEST_CPU(PRJ_PATH, 'CV_4', my_config, PRJ_PATH, 'M2_CV_4_model.pth', 'M2')
 
 
 
@@ -1878,11 +1999,11 @@ print('best val check', flush=True)
 print(TOPVAL_PATH, flush=True)
 R_3_V = min(mini_df.AV_V_LS)
 R_3_V
-R_3_T_CV0, R_3_1_CV0, R_3_2_CV0, _, _ = TEST_CPU(PRJ_PATH, 'CV_0', my_config, PRJ_PATH, 'M4_CV_0_model.pth', 'M4')
-R_3_T_CV1, R_3_1_CV1, R_3_2_CV1, _, _ = TEST_CPU(PRJ_PATH, 'CV_1', my_config, PRJ_PATH, 'M4_CV_1_model.pth', 'M4')
-R_3_T_CV2, R_3_1_CV2, R_3_2_CV2, _, _ = TEST_CPU(PRJ_PATH, 'CV_2', my_config, PRJ_PATH, 'M4_CV_2_model.pth', 'M4')
-R_3_T_CV3, R_3_1_CV3, R_3_2_CV3, _, _ = TEST_CPU(PRJ_PATH, 'CV_3', my_config, PRJ_PATH, 'M4_CV_3_model.pth', 'M4')
-R_3_T_CV4, R_3_1_CV4, R_3_2_CV4, _, _ = TEST_CPU(PRJ_PATH, 'CV_4', my_config, PRJ_PATH, 'M4_CV_4_model.pth', 'M4')
+R_3_T_CV0, R_3_1_CV0, R_3_2_CV0, pred_3_CV0, pred_3_CV0 = TEST_CPU(PRJ_PATH, 'CV_0', my_config, PRJ_PATH, 'M4_CV_0_model.pth', 'M4')
+R_3_T_CV1, R_3_1_CV1, R_3_2_CV1, pred_3_CV1, pred_3_CV1 = TEST_CPU(PRJ_PATH, 'CV_1', my_config, PRJ_PATH, 'M4_CV_1_model.pth', 'M4')
+R_3_T_CV2, R_3_1_CV2, R_3_2_CV2, pred_3_CV2, pred_3_CV2 = TEST_CPU(PRJ_PATH, 'CV_2', my_config, PRJ_PATH, 'M4_CV_2_model.pth', 'M4')
+R_3_T_CV3, R_3_1_CV3, R_3_2_CV3, pred_3_CV3, pred_3_CV3 = TEST_CPU(PRJ_PATH, 'CV_3', my_config, PRJ_PATH, 'M4_CV_3_model.pth', 'M4')
+R_3_T_CV4, R_3_1_CV4, R_3_2_CV4, pred_3_CV4, pred_3_CV4 = TEST_CPU(PRJ_PATH, 'CV_4', my_config, PRJ_PATH, 'M4_CV_4_model.pth', 'M4')
 
 plot_loss(list(mini_df.AV_T_LS), list(mini_df.AV_V_LS), PRJ_PATH, '{}_{}_{}_VAL_TOT'.format(MJ_NAME, MISS_NAME, WORK_NAME)  )
 plot_Pcorr(list(mini_df.AV_T_PC), list(mini_df.AV_V_PC), PRJ_PATH, '{}_{}_{}_VAL_TOT'.format(MJ_NAME, MISS_NAME, WORK_NAME))
@@ -1902,11 +2023,11 @@ mini_df = ANA_ALL_DF[DF_KEY]
 my_config = ANA_DF[ANA_DF.logdir==DF_KEY]
 R_4_V = max_cor
 R_4_V
-R_4_T_CV0, R_4_1_CV0, R_4_2_CV0, _, _ = TEST_CPU(PRJ_PATH, 'CV_0', my_config, PRJ_PATH, 'C1_CV_0_model.pth', 'C1')
-R_4_T_CV1, R_4_1_CV1, R_4_2_CV1, _, _ = TEST_CPU(PRJ_PATH, 'CV_1', my_config, PRJ_PATH, 'C1_CV_1_model.pth', 'C1')
-R_4_T_CV2, R_4_1_CV2, R_4_2_CV2, _, _ = TEST_CPU(PRJ_PATH, 'CV_2', my_config, PRJ_PATH, 'C1_CV_2_model.pth', 'C1')
-R_4_T_CV3, R_4_1_CV3, R_4_2_CV3, _, _ = TEST_CPU(PRJ_PATH, 'CV_3', my_config, PRJ_PATH, 'C1_CV_3_model.pth', 'C1')
-R_4_T_CV4, R_4_1_CV4, R_4_2_CV4, _, _ = TEST_CPU(PRJ_PATH, 'CV_4', my_config, PRJ_PATH, 'C1_CV_4_model.pth', 'C1')
+R_4_T_CV0, R_4_1_CV0, R_4_2_CV0, pred_4_CV0, pred_4_CV0 = TEST_CPU(PRJ_PATH, 'CV_0', my_config, PRJ_PATH, 'C1_CV_0_model.pth', 'C1')
+R_4_T_CV1, R_4_1_CV1, R_4_2_CV1, pred_4_CV1, pred_4_CV1 = TEST_CPU(PRJ_PATH, 'CV_1', my_config, PRJ_PATH, 'C1_CV_1_model.pth', 'C1')
+R_4_T_CV2, R_4_1_CV2, R_4_2_CV2, pred_4_CV2, pred_4_CV2 = TEST_CPU(PRJ_PATH, 'CV_2', my_config, PRJ_PATH, 'C1_CV_2_model.pth', 'C1')
+R_4_T_CV3, R_4_1_CV3, R_4_2_CV3, pred_4_CV3, pred_4_CV3 = TEST_CPU(PRJ_PATH, 'CV_3', my_config, PRJ_PATH, 'C1_CV_3_model.pth', 'C1')
+R_4_T_CV4, R_4_1_CV4, R_4_2_CV4, pred_4_CV4, pred_4_CV4 = TEST_CPU(PRJ_PATH, 'CV_4', my_config, PRJ_PATH, 'C1_CV_4_model.pth', 'C1')
 
 
 
@@ -1927,11 +2048,11 @@ print('best final check', flush=True)
 print(TOPCOR_PATH, flush=True)
 R_5_V = max(mini_df.AV_V_SC)
 R_5_V
-R_5_T_CV0, R_5_1_CV0, R_5_2_CV0, _, _ = TEST_CPU(PRJ_PATH, 'CV_0', my_config, PRJ_PATH, 'C2_CV_0_model.pth', 'C2')
-R_5_T_CV1, R_5_1_CV1, R_5_2_CV1, _, _ = TEST_CPU(PRJ_PATH, 'CV_1', my_config, PRJ_PATH, 'C2_CV_1_model.pth', 'C2')
-R_5_T_CV2, R_5_1_CV2, R_5_2_CV2, _, _ = TEST_CPU(PRJ_PATH, 'CV_2', my_config, PRJ_PATH, 'C2_CV_2_model.pth', 'C2')
-R_5_T_CV3, R_5_1_CV3, R_5_2_CV3, _, _ = TEST_CPU(PRJ_PATH, 'CV_3', my_config, PRJ_PATH, 'C2_CV_3_model.pth', 'C2')
-R_5_T_CV4, R_5_1_CV4, R_5_2_CV4, _, _ = TEST_CPU(PRJ_PATH, 'CV_4', my_config, PRJ_PATH, 'C2_CV_4_model.pth', 'C2')
+R_5_T_CV0, R_5_1_CV0, R_5_2_CV0, pred_5_CV0, pred_5_CV0 = TEST_CPU(PRJ_PATH, 'CV_0', my_config, PRJ_PATH, 'C2_CV_0_model.pth', 'C2')
+R_5_T_CV1, R_5_1_CV1, R_5_2_CV1, pred_5_CV1, pred_5_CV1 = TEST_CPU(PRJ_PATH, 'CV_1', my_config, PRJ_PATH, 'C2_CV_1_model.pth', 'C2')
+R_5_T_CV2, R_5_1_CV2, R_5_2_CV2, pred_5_CV2, pred_5_CV2 = TEST_CPU(PRJ_PATH, 'CV_2', my_config, PRJ_PATH, 'C2_CV_2_model.pth', 'C2')
+R_5_T_CV3, R_5_1_CV3, R_5_2_CV3, pred_5_CV3, pred_5_CV3 = TEST_CPU(PRJ_PATH, 'CV_3', my_config, PRJ_PATH, 'C2_CV_3_model.pth', 'C2')
+R_5_T_CV4, R_5_1_CV4, R_5_2_CV4, pred_5_CV4, pred_5_CV4 = TEST_CPU(PRJ_PATH, 'CV_4', my_config, PRJ_PATH, 'C2_CV_4_model.pth', 'C2')
 
 #
 #
@@ -1959,11 +2080,11 @@ print('best cor check', flush=True)
 print(TOPCOR_PATH, flush=True)
 R_6_V = max(mini_df.AV_V_SC)
 R_6_V
-R_6_T_CV0, R_6_1_CV0, R_6_2_CV0, _, _ = TEST_CPU(PRJ_PATH, 'CV_0', my_config, PRJ_PATH, 'C4_CV_0_model.pth', 'C4')
-R_6_T_CV1, R_6_1_CV1, R_6_2_CV1, _, _ = TEST_CPU(PRJ_PATH, 'CV_1', my_config, PRJ_PATH, 'C4_CV_1_model.pth', 'C4')
-R_6_T_CV2, R_6_1_CV2, R_6_2_CV2, _, _ = TEST_CPU(PRJ_PATH, 'CV_2', my_config, PRJ_PATH, 'C4_CV_2_model.pth', 'C4')
-R_6_T_CV3, R_6_1_CV3, R_6_2_CV3, _, _ = TEST_CPU(PRJ_PATH, 'CV_3', my_config, PRJ_PATH, 'C4_CV_3_model.pth', 'C4')
-R_6_T_CV4, R_6_1_CV4, R_6_2_CV4, _, _ = TEST_CPU(PRJ_PATH, 'CV_4', my_config, PRJ_PATH, 'C4_CV_4_model.pth', 'C4')
+R_6_T_CV0, R_6_1_CV0, R_6_2_CV0, pred_6_CV0, pred_6_CV0 = TEST_CPU(PRJ_PATH, 'CV_0', my_config, PRJ_PATH, 'C4_CV_0_model.pth', 'C4')
+R_6_T_CV1, R_6_1_CV1, R_6_2_CV1, pred_6_CV1, pred_6_CV1 = TEST_CPU(PRJ_PATH, 'CV_1', my_config, PRJ_PATH, 'C4_CV_1_model.pth', 'C4')
+R_6_T_CV2, R_6_1_CV2, R_6_2_CV2, pred_6_CV2, pred_6_CV2 = TEST_CPU(PRJ_PATH, 'CV_2', my_config, PRJ_PATH, 'C4_CV_2_model.pth', 'C4')
+R_6_T_CV3, R_6_1_CV3, R_6_2_CV3, pred_6_CV3, pred_6_CV3 = TEST_CPU(PRJ_PATH, 'CV_3', my_config, PRJ_PATH, 'C4_CV_3_model.pth', 'C4')
+R_6_T_CV4, R_6_1_CV4, R_6_2_CV4, pred_6_CV4, pred_6_CV4 = TEST_CPU(PRJ_PATH, 'CV_4', my_config, PRJ_PATH, 'C4_CV_4_model.pth', 'C4')
 #
 
 plot_loss(list(mini_df.AV_T_LS), list(mini_df.AV_V_LS), PRJ_PATH, '{}_{}_{}_SCOR_TOT'.format(MJ_NAME, MISS_NAME, WORK_NAME)  )
@@ -1971,8 +2092,7 @@ plot_Pcorr(list(mini_df.AV_T_PC), list(mini_df.AV_V_PC), PRJ_PATH, '{}_{}_{}_SCO
 plot_Scorr(list(mini_df.AV_T_SC), list(mini_df.AV_V_SC), PRJ_PATH, '{}_{}_{}_SCOR_TOT'.format(MJ_NAME, MISS_NAME, WORK_NAME))
 
 
-final_result(R_1_V, R_1_T, R_1_1, R_1_2, R_2_V, R_2_T, R_2_1, R_2_2, R_3_V, R_3_T, R_3_1, R_3_2,
-R_4_V, R_4_T, R_4_1, R_4_2, R_5_V, R_5_T, R_5_1, R_5_2, R_6_V, R_6_T, R_6_1, R_6_2)
+#final_result(R_1_V, R_1_T, R_1_1, R_1_2, R_2_V, R_2_T, R_2_1, R_2_2, R_3_V, R_3_T, R_3_1, R_3_2,R_4_V, R_4_T, R_4_1, R_4_2, R_5_V, R_5_T, R_5_1, R_5_2, R_6_V, R_6_T, R_6_1, R_6_2)
 
 final_result(R_1_V, R_1_T_CV0, R_1_T_CV1, R_1_T_CV2, R_1_T_CV3, R_1_T_CV4, R_1_1_CV0, R_1_1_CV1, R_1_1_CV2, R_1_1_CV3, R_1_1_CV4, R_1_2_CV0, R_1_2_CV1, R_1_2_CV2, R_1_2_CV3, R_1_2_CV4,
 	R_2_V, R_2_T_CV0, R_2_T_CV1, R_2_T_CV2, R_2_T_CV3, R_2_T_CV4, R_2_1_CV0, R_2_1_CV1, R_2_1_CV2, R_2_1_CV3, R_2_1_CV4, R_2_2_CV0, R_2_2_CV1, R_2_2_CV2, R_2_2_CV3, R_2_2_CV4,
@@ -1997,53 +2117,53 @@ def final_result(
 	R_5_V, R_5_T_CV0, R_5_T_CV1, R_5_T_CV2, R_5_T_CV3, R_5_T_CV4, R_5_1_CV0, R_5_1_CV1, R_5_1_CV2, R_5_1_CV3, R_5_1_CV4, R_5_2_CV0, R_5_2_CV1, R_5_2_CV2, R_5_2_CV3, R_5_2_CV4,
 	R_6_V, R_6_T_CV0, R_6_T_CV1, R_6_T_CV2, R_6_T_CV3, R_6_T_CV4, R_6_1_CV0, R_6_1_CV1, R_6_1_CV2, R_6_1_CV3, R_6_1_CV4, R_6_2_CV0, R_6_2_CV1, R_6_2_CV2, R_6_2_CV3, R_6_2_CV4) :
 	print('---1---', flush=True)
-	print('- Val MSE : {:.2f}'.format(R_1_V), flush=True)
-	print('- Test MSE MEAN : {:.2f}'.format(np.mean([R_1_T_CV0, R_1_T_CV1, R_1_T_CV2, R_1_T_CV3, R_1_T_CV4])), flush=True)
-	print('- Test MSE STD : {:.2f}'.format(np.std([R_1_T_CV0, R_1_T_CV1, R_1_T_CV2, R_1_T_CV3, R_1_T_CV4])), flush=True)
-	print('- Test Pearson MEAN : {:.2f}'.format(np.mean([R_1_1_CV0, R_1_1_CV1, R_1_1_CV2, R_1_1_CV3, R_1_1_CV4])), flush=True)
-	print('- Test Pearson STD : {:.2f}'.format(np.std([R_1_1_CV0, R_1_1_CV1, R_1_1_CV2, R_1_1_CV3, R_1_1_CV4])), flush=True)
-	print('- Test Spearman : {:.2f}'.format(np.mean([R_1_2_CV0, R_1_2_CV1, R_1_2_CV2, R_1_2_CV3, R_1_2_CV4])), flush=True)
-	print('- Test Spearman : {:.2f}'.format(np.std([R_1_2_CV0, R_1_2_CV1, R_1_2_CV2, R_1_2_CV3, R_1_2_CV4])), flush=True)
+	print('- Val MSE : {:.4f}'.format(R_1_V), flush=True)
+	print('- Test MSE MEAN : {:.4f}'.format(np.mean([R_1_T_CV0, R_1_T_CV1, R_1_T_CV2, R_1_T_CV3, R_1_T_CV4])), flush=True)
+	print('- Test MSE STD : {:.4f}'.format(np.std([R_1_T_CV0, R_1_T_CV1, R_1_T_CV2, R_1_T_CV3, R_1_T_CV4])), flush=True)
+	print('- Test Pearson MEAN : {:.4f}'.format(np.mean([R_1_1_CV0, R_1_1_CV1, R_1_1_CV2, R_1_1_CV3, R_1_1_CV4])), flush=True)
+	print('- Test Pearson STD : {:.4f}'.format(np.std([R_1_1_CV0, R_1_1_CV1, R_1_1_CV2, R_1_1_CV3, R_1_1_CV4])), flush=True)
+	print('- Test Spearman : {:.4f}'.format(np.mean([R_1_2_CV0, R_1_2_CV1, R_1_2_CV2, R_1_2_CV3, R_1_2_CV4])), flush=True)
+	print('- Test Spearman : {:.4f}'.format(np.std([R_1_2_CV0, R_1_2_CV1, R_1_2_CV2, R_1_2_CV3, R_1_2_CV4])), flush=True)
 	print('---2---', flush=True)
-	print('- Val MSE : {:.2f}'.format(R_2_V), flush=True)
-	print('- Test MSE MEAN : {:.2f}'.format(np.mean([R_2_T_CV0, R_2_T_CV1, R_2_T_CV2, R_2_T_CV3, R_2_T_CV4])), flush=True)
-	print('- Test MSE STD : {:.2f}'.format(np.std([R_2_T_CV0, R_2_T_CV1, R_2_T_CV2, R_2_T_CV3, R_2_T_CV4])), flush=True)
-	print('- Test Pearson MEAN : {:.2f}'.format(np.mean([R_2_1_CV0, R_2_1_CV1, R_2_1_CV2, R_2_1_CV3, R_2_1_CV4])), flush=True)
-	print('- Test Pearson STD : {:.2f}'.format(np.std([R_2_1_CV0, R_2_1_CV1, R_2_1_CV2, R_2_1_CV3, R_2_1_CV4])), flush=True)
-	print('- Test Spearman : {:.2f}'.format(np.mean([R_2_2_CV0, R_2_2_CV1, R_2_2_CV2, R_2_2_CV3, R_2_2_CV4])), flush=True)
-	print('- Test Spearman : {:.2f}'.format(np.std([R_2_2_CV0, R_2_2_CV1, R_2_2_CV2, R_2_2_CV3, R_2_2_CV4])), flush=True)
+	print('- Val MSE : {:.4f}'.format(R_2_V), flush=True)
+	print('- Test MSE MEAN : {:.4f}'.format(np.mean([R_2_T_CV0, R_2_T_CV1, R_2_T_CV2, R_2_T_CV3, R_2_T_CV4])), flush=True)
+	print('- Test MSE STD : {:.4f}'.format(np.std([R_2_T_CV0, R_2_T_CV1, R_2_T_CV2, R_2_T_CV3, R_2_T_CV4])), flush=True)
+	print('- Test Pearson MEAN : {:.4f}'.format(np.mean([R_2_1_CV0, R_2_1_CV1, R_2_1_CV2, R_2_1_CV3, R_2_1_CV4])), flush=True)
+	print('- Test Pearson STD : {:.4f}'.format(np.std([R_2_1_CV0, R_2_1_CV1, R_2_1_CV2, R_2_1_CV3, R_2_1_CV4])), flush=True)
+	print('- Test Spearman : {:.4f}'.format(np.mean([R_2_2_CV0, R_2_2_CV1, R_2_2_CV2, R_2_2_CV3, R_2_2_CV4])), flush=True)
+	print('- Test Spearman : {:.4f}'.format(np.std([R_2_2_CV0, R_2_2_CV1, R_2_2_CV2, R_2_2_CV3, R_2_2_CV4])), flush=True)
 	print('---3---', flush=True)
-	print('- Val MSE : {:.2f}'.format(R_3_V), flush=True)
-	print('- Test MSE MEAN : {:.2f}'.format(np.mean([R_3_T_CV0, R_3_T_CV1, R_3_T_CV2, R_3_T_CV3, R_3_T_CV4])), flush=True)
-	print('- Test MSE STD : {:.2f}'.format(np.std([R_3_T_CV0, R_3_T_CV1, R_3_T_CV2, R_3_T_CV3, R_3_T_CV4])), flush=True)
-	print('- Test Pearson MEAN : {:.2f}'.format(np.mean([R_3_1_CV0, R_3_1_CV1, R_3_1_CV2, R_3_1_CV3, R_3_1_CV4])), flush=True)
-	print('- Test Pearson STD : {:.2f}'.format(np.std([R_3_1_CV0, R_3_1_CV1, R_3_1_CV2, R_3_1_CV3, R_3_1_CV4])), flush=True)
-	print('- Test Spearman : {:.2f}'.format(np.mean([R_3_2_CV0, R_3_2_CV1, R_3_2_CV2, R_3_2_CV3, R_3_2_CV4])), flush=True)
-	print('- Test Spearman : {:.2f}'.format(np.std([R_3_2_CV0, R_3_2_CV1, R_3_2_CV2, R_3_2_CV3, R_3_2_CV4])), flush=True)
+	print('- Val MSE : {:.4f}'.format(R_3_V), flush=True)
+	print('- Test MSE MEAN : {:.4f}'.format(np.mean([R_3_T_CV0, R_3_T_CV1, R_3_T_CV2, R_3_T_CV3, R_3_T_CV4])), flush=True)
+	print('- Test MSE STD : {:.4f}'.format(np.std([R_3_T_CV0, R_3_T_CV1, R_3_T_CV2, R_3_T_CV3, R_3_T_CV4])), flush=True)
+	print('- Test Pearson MEAN : {:.4f}'.format(np.mean([R_3_1_CV0, R_3_1_CV1, R_3_1_CV2, R_3_1_CV3, R_3_1_CV4])), flush=True)
+	print('- Test Pearson STD : {:.4f}'.format(np.std([R_3_1_CV0, R_3_1_CV1, R_3_1_CV2, R_3_1_CV3, R_3_1_CV4])), flush=True)
+	print('- Test Spearman : {:.4f}'.format(np.mean([R_3_2_CV0, R_3_2_CV1, R_3_2_CV2, R_3_2_CV3, R_3_2_CV4])), flush=True)
+	print('- Test Spearman : {:.4f}'.format(np.std([R_3_2_CV0, R_3_2_CV1, R_3_2_CV2, R_3_2_CV3, R_3_2_CV4])), flush=True)
 	print('---4---', flush=True)
-	print('- Val MSE : {:.2f}'.format(R_4_V), flush=True)
-	print('- Test MSE MEAN : {:.2f}'.format(np.mean([R_4_T_CV0, R_4_T_CV1, R_4_T_CV2, R_4_T_CV3, R_4_T_CV4])), flush=True)
-	print('- Test MSE STD : {:.2f}'.format(np.std([R_4_T_CV0, R_4_T_CV1, R_4_T_CV2, R_4_T_CV3, R_4_T_CV4])), flush=True)
-	print('- Test Pearson MEAN : {:.2f}'.format(np.mean([R_4_1_CV0, R_4_1_CV1, R_4_1_CV2, R_4_1_CV3, R_4_1_CV4])), flush=True)
-	print('- Test Pearson STD : {:.2f}'.format(np.std([R_4_1_CV0, R_4_1_CV1, R_4_1_CV2, R_4_1_CV3, R_4_1_CV4])), flush=True)
-	print('- Test Spearman : {:.2f}'.format(np.mean([R_4_2_CV0, R_4_2_CV1, R_4_2_CV2, R_4_2_CV3, R_4_2_CV4])), flush=True)
-	print('- Test Spearman : {:.2f}'.format(np.std([R_4_2_CV0, R_4_2_CV1, R_4_2_CV2, R_4_2_CV3, R_4_2_CV4])), flush=True)
+	print('- Val MSE : {:.4f}'.format(R_4_V), flush=True)
+	print('- Test MSE MEAN : {:.4f}'.format(np.mean([R_4_T_CV0, R_4_T_CV1, R_4_T_CV2, R_4_T_CV3, R_4_T_CV4])), flush=True)
+	print('- Test MSE STD : {:.4f}'.format(np.std([R_4_T_CV0, R_4_T_CV1, R_4_T_CV2, R_4_T_CV3, R_4_T_CV4])), flush=True)
+	print('- Test Pearson MEAN : {:.4f}'.format(np.mean([R_4_1_CV0, R_4_1_CV1, R_4_1_CV2, R_4_1_CV3, R_4_1_CV4])), flush=True)
+	print('- Test Pearson STD : {:.4f}'.format(np.std([R_4_1_CV0, R_4_1_CV1, R_4_1_CV2, R_4_1_CV3, R_4_1_CV4])), flush=True)
+	print('- Test Spearman : {:.4f}'.format(np.mean([R_4_2_CV0, R_4_2_CV1, R_4_2_CV2, R_4_2_CV3, R_4_2_CV4])), flush=True)
+	print('- Test Spearman : {:.4f}'.format(np.std([R_4_2_CV0, R_4_2_CV1, R_4_2_CV2, R_4_2_CV3, R_4_2_CV4])), flush=True)
 	print('---5---', flush=True)
-	print('- Val MSE : {:.2f}'.format(R_5_V), flush=True)
-	print('- Test MSE MEAN : {:.2f}'.format(np.mean([R_5_T_CV0, R_5_T_CV1, R_5_T_CV2, R_5_T_CV3, R_5_T_CV4])), flush=True)
-	print('- Test MSE STD : {:.2f}'.format(np.std([R_5_T_CV0, R_5_T_CV1, R_5_T_CV2, R_5_T_CV3, R_5_T_CV4])), flush=True)
-	print('- Test Pearson MEAN : {:.2f}'.format(np.mean([R_5_1_CV0, R_5_1_CV1, R_5_1_CV2, R_5_1_CV3, R_5_1_CV4])), flush=True)
-	print('- Test Pearson STD : {:.2f}'.format(np.std([R_5_1_CV0, R_5_1_CV1, R_5_1_CV2, R_5_1_CV3, R_5_1_CV4])), flush=True)
-	print('- Test Spearman : {:.2f}'.format(np.mean([R_5_2_CV0, R_5_2_CV1, R_5_2_CV2, R_5_2_CV3, R_5_2_CV4])), flush=True)
-	print('- Test Spearman : {:.2f}'.format(np.std([R_5_2_CV0, R_5_2_CV1, R_5_2_CV2, R_5_2_CV3, R_5_2_CV4])), flush=True)
+	print('- Val MSE : {:.4f}'.format(R_5_V), flush=True)
+	print('- Test MSE MEAN : {:.4f}'.format(np.mean([R_5_T_CV0, R_5_T_CV1, R_5_T_CV2, R_5_T_CV3, R_5_T_CV4])), flush=True)
+	print('- Test MSE STD : {:.4f}'.format(np.std([R_5_T_CV0, R_5_T_CV1, R_5_T_CV2, R_5_T_CV3, R_5_T_CV4])), flush=True)
+	print('- Test Pearson MEAN : {:.4f}'.format(np.mean([R_5_1_CV0, R_5_1_CV1, R_5_1_CV2, R_5_1_CV3, R_5_1_CV4])), flush=True)
+	print('- Test Pearson STD : {:.4f}'.format(np.std([R_5_1_CV0, R_5_1_CV1, R_5_1_CV2, R_5_1_CV3, R_5_1_CV4])), flush=True)
+	print('- Test Spearman : {:.4f}'.format(np.mean([R_5_2_CV0, R_5_2_CV1, R_5_2_CV2, R_5_2_CV3, R_5_2_CV4])), flush=True)
+	print('- Test Spearman : {:.4f}'.format(np.std([R_5_2_CV0, R_5_2_CV1, R_5_2_CV2, R_5_2_CV3, R_5_2_CV4])), flush=True)
 	print('---6---', flush=True)
-	print('- Val MSE : {:.2f}'.format(R_6_V), flush=True)
-	print('- Test MSE MEAN : {:.2f}'.format(np.mean([R_6_T_CV0, R_6_T_CV1, R_6_T_CV2, R_6_T_CV3, R_6_T_CV4])), flush=True)
-	print('- Test MSE STD : {:.2f}'.format(np.std([R_6_T_CV0, R_6_T_CV1, R_6_T_CV2, R_6_T_CV3, R_6_T_CV4])), flush=True)
-	print('- Test Pearson MEAN : {:.2f}'.format(np.mean([R_6_1_CV0, R_6_1_CV1, R_6_1_CV2, R_6_1_CV3, R_6_1_CV4])), flush=True)
-	print('- Test Pearson STD : {:.2f}'.format(np.std([R_6_1_CV0, R_6_1_CV1, R_6_1_CV2, R_6_1_CV3, R_6_1_CV4])), flush=True)
-	print('- Test Spearman : {:.2f}'.format(np.mean([R_6_2_CV0, R_6_2_CV1, R_6_2_CV2, R_6_2_CV3, R_6_2_CV4])), flush=True)
-	print('- Test Spearman : {:.2f}'.format(np.std([R_6_2_CV0, R_6_2_CV1, R_6_2_CV2, R_6_2_CV3, R_6_2_CV4])), flush=True)
+	print('- Val MSE : {:.4f}'.format(R_6_V), flush=True)
+	print('- Test MSE MEAN : {:.4f}'.format(np.mean([R_6_T_CV0, R_6_T_CV1, R_6_T_CV2, R_6_T_CV3, R_6_T_CV4])), flush=True)
+	print('- Test MSE STD : {:.4f}'.format(np.std([R_6_T_CV0, R_6_T_CV1, R_6_T_CV2, R_6_T_CV3, R_6_T_CV4])), flush=True)
+	print('- Test Pearson MEAN : {:.4f}'.format(np.mean([R_6_1_CV0, R_6_1_CV1, R_6_1_CV2, R_6_1_CV3, R_6_1_CV4])), flush=True)
+	print('- Test Pearson STD : {:.4f}'.format(np.std([R_6_1_CV0, R_6_1_CV1, R_6_1_CV2, R_6_1_CV3, R_6_1_CV4])), flush=True)
+	print('- Test Spearman : {:.4f}'.format(np.mean([R_6_2_CV0, R_6_2_CV1, R_6_2_CV2, R_6_2_CV3, R_6_2_CV4])), flush=True)
+	print('- Test Spearman : {:.4f}'.format(np.std([R_6_2_CV0, R_6_2_CV1, R_6_2_CV2, R_6_2_CV3, R_6_2_CV4])), flush=True)
 
 
 
@@ -2088,11 +2208,11 @@ print('best val check', flush=True)
 print(TOPVAL_PATH, flush=True)
 R_3_V = min(mini_df.AV_V_LS)
 R_3_V
-R_3_T_CV0, R_3_1_CV0, R_3_2_CV0, pred_list_0, ans_list_0 = TEST_CPU(PRJ_PATH, 'CV_0', my_config, PRJ_PATH, 'M4_CV_0_model.pth', 'M4')
-R_3_T_CV1, R_3_1_CV1, R_3_2_CV1, pred_list_1, ans_list_1 = TEST_CPU(PRJ_PATH, 'CV_1', my_config, PRJ_PATH, 'M4_CV_1_model.pth', 'M4')
-R_3_T_CV2, R_3_1_CV2, R_3_2_CV2, pred_list_2, ans_list_2 = TEST_CPU(PRJ_PATH, 'CV_2', my_config, PRJ_PATH, 'M4_CV_2_model.pth', 'M4')
-R_3_T_CV3, R_3_1_CV3, R_3_2_CV3, pred_list_3, ans_list_3 = TEST_CPU(PRJ_PATH, 'CV_3', my_config, PRJ_PATH, 'M4_CV_3_model.pth', 'M4')
-R_3_T_CV4, R_3_1_CV4, R_3_2_CV4, pred_list_4, ans_list_4 = TEST_CPU(PRJ_PATH, 'CV_4', my_config, PRJ_PATH, 'M4_CV_4_model.pth', 'M4')
+pred_list_0, ans_list_0 = copy.deepcopy(pred_3_CV0), copy.deepcopy(pred_3_CV0)
+pred_list_1, ans_list_1 = copy.deepcopy(pred_3_CV1), copy.deepcopy(pred_3_CV1)
+pred_list_2, ans_list_2 = copy.deepcopy(pred_3_CV2), copy.deepcopy(pred_3_CV2)
+pred_list_3, ans_list_3 = copy.deepcopy(pred_3_CV3), copy.deepcopy(pred_3_CV3)
+pred_list_4, ans_list_4 = copy.deepcopy(pred_3_CV4), copy.deepcopy(pred_3_CV4)
 
 
 
@@ -2106,11 +2226,11 @@ print('best final check', flush=True)
 print(TOPCOR_PATH, flush=True)
 R_5_V = max(mini_df.AV_V_SC)
 R_5_V
-R_5_T_CV0, R_5_1_CV0, R_5_2_CV0, pred_list_0, ans_list_0 = TEST_CPU(PRJ_PATH, 'CV_0', my_config, PRJ_PATH, 'C2_CV_0_model.pth', 'C2')
-R_5_T_CV1, R_5_1_CV1, R_5_2_CV1, pred_list_1, ans_list_1 = TEST_CPU(PRJ_PATH, 'CV_1', my_config, PRJ_PATH, 'C2_CV_1_model.pth', 'C2')
-R_5_T_CV2, R_5_1_CV2, R_5_2_CV2, pred_list_2, ans_list_2 = TEST_CPU(PRJ_PATH, 'CV_2', my_config, PRJ_PATH, 'C2_CV_2_model.pth', 'C2')
-R_5_T_CV3, R_5_1_CV3, R_5_2_CV3, pred_list_3, ans_list_3 = TEST_CPU(PRJ_PATH, 'CV_3', my_config, PRJ_PATH, 'C2_CV_3_model.pth', 'C2')
-R_5_T_CV4, R_5_1_CV4, R_5_2_CV4, pred_list_4, ans_list_4 = TEST_CPU(PRJ_PATH, 'CV_4', my_config, PRJ_PATH, 'C2_CV_4_model.pth', 'C2')
+pred_list_0, ans_list_0 = copy.deepcopy(pred_5_CV0), copy.deepcopy(pred_5_CV0)
+pred_list_1, ans_list_1 = copy.deepcopy(pred_5_CV1), copy.deepcopy(pred_5_CV1)
+pred_list_2, ans_list_2 = copy.deepcopy(pred_5_CV2), copy.deepcopy(pred_5_CV2)
+pred_list_3, ans_list_3 = copy.deepcopy(pred_5_CV3), copy.deepcopy(pred_5_CV3)
+pred_list_4, ans_list_4 = copy.deepcopy(pred_5_CV4), copy.deepcopy(pred_5_CV4)
 
 
 
@@ -2139,12 +2259,11 @@ print('best cor check', flush=True)
 print(TOPCOR_PATH, flush=True)
 R_6_V = max(mini_df.AV_V_SC)
 R_6_V
-R_6_T_CV0, R_6_1_CV0, R_6_2_CV0, pred_list_0, ans_list_0 = TEST_CPU(PRJ_PATH, 'CV_0', my_config, PRJ_PATH, 'C4_CV_0_model.pth', 'C4')
-R_6_T_CV1, R_6_1_CV1, R_6_2_CV1, pred_list_1, ans_list_1 = TEST_CPU(PRJ_PATH, 'CV_1', my_config, PRJ_PATH, 'C4_CV_1_model.pth', 'C4')
-R_6_T_CV2, R_6_1_CV2, R_6_2_CV2, pred_list_2, ans_list_2 = TEST_CPU(PRJ_PATH, 'CV_2', my_config, PRJ_PATH, 'C4_CV_2_model.pth', 'C4')
-R_6_T_CV3, R_6_1_CV3, R_6_2_CV3, pred_list_3, ans_list_3 = TEST_CPU(PRJ_PATH, 'CV_3', my_config, PRJ_PATH, 'C4_CV_3_model.pth', 'C4')
-R_6_T_CV4, R_6_1_CV4, R_6_2_CV4, pred_list_4, ans_list_4 = TEST_CPU(PRJ_PATH, 'CV_4', my_config, PRJ_PATH, 'C4_CV_4_model.pth', 'C4')
-#
+pred_list_0, ans_list_0 = copy.deepcopy(pred_6_CV0), copy.deepcopy(pred_6_CV0)
+pred_list_1, ans_list_1 = copy.deepcopy(pred_6_CV1), copy.deepcopy(pred_6_CV1)
+pred_list_2, ans_list_2 = copy.deepcopy(pred_6_CV2), copy.deepcopy(pred_6_CV2)
+pred_list_3, ans_list_3 = copy.deepcopy(pred_6_CV3), copy.deepcopy(pred_6_CV3)
+pred_list_4, ans_list_4 = copy.deepcopy(pred_6_CV4), copy.deepcopy(pred_6_CV4)
 
 
 
@@ -2161,14 +2280,18 @@ R_6_T_CV4, R_6_1_CV4, R_6_2_CV4, pred_list_4, ans_list_4 = TEST_CPU(PRJ_PATH, 'C
 
 # test 데이터 다시 가져오기 
 
+
+
+
+
 CV_num = 0
 train_key = 'CV{}_train'.format(CV_num)
 val_key = 'CV{}_val'.format(CV_num)
 test_key = 'CV{}_test'.format(CV_num)
 #
-train_no_dup = data_nodup_df.loc[CV_ND_INDS[train_key]]
-val_no_dup = data_nodup_df.loc[CV_ND_INDS[val_key]]
-test_no_dup = data_nodup_df.loc[CV_ND_INDS[test_key]]
+train_no_dup = data_nodup_df3.loc[CV_ND_INDS[train_key]] # train val df 
+val_no_dup = data_nodup_df3.loc[CV_ND_INDS[val_key]] # train val df 
+test_no_dup = data_nodup_df2.loc[CV_ND_INDS[test_key]] # from test included df 
 #
 ABCS_train = A_B_C_S_SET_SM[A_B_C_S_SET_SM.SM_C_CHECK.isin(train_no_dup.setset)]
 ABCS_val = A_B_C_S_SET_SM[A_B_C_S_SET_SM.SM_C_CHECK.isin(val_no_dup.setset)]
@@ -2482,7 +2605,7 @@ DC_re_4 = DC_re_3.reset_index(drop = True)
 
 
 
-
+목적 : training 에 활용한 DC 애들 말고, 그 CID 들에 해당하는 모든 조합중에서 우리 train 에 안쓰인 애들. 맞나? 
 
 from itertools import combinations
 from itertools import product
@@ -2520,6 +2643,7 @@ import json
 
 # mkdir PRJ_PATH+'VAL/'
 CELVAL_PATH = PRJ_PATH + 'VAL/'
+os.makedirs(CELVAL_PATH, exist_ok=True)
 
 def save_cell_json (cell_name) :
 	this_list = [(a,b,cell_name) for a,b in DC_pairs]
@@ -2652,7 +2776,7 @@ MJ_DIR = '/st06/jiyeonH/13.DD_SESS/01.PRJ2/'
 # train 에서 활용해서 주는거
 MJ_request_ANS_for_train = pd.read_csv(MJ_DIR+'PRJ2_EXP_ccle_fugcn_hst1.csv') 
 # 내가 요청한 전부 
-MJ_request_ANS_FULL = pd.read_csv(MJ_DIR+'PRJ2ver2_EXP_ccle_fugcn_hst1.csv') 
+MJ_request_ANS_FULL = pd.read_csv(MJ_DIR+'PRJ2ver2_EXP_ccle_fugcn_hst1.csv') # 349 
 
 
 
@@ -2870,9 +2994,9 @@ len(set([a for a in BETA_MJ_RE['canonical_smiles'] if type(a) == str])) # 25864
 len(set(BETA_MJ_RE_CK[BETA_MJ_RE_CK.SMILES_cid>0]['SMILES_cid'])) # 25642
 
 check = pd.merge(can_sm_re3, BETA_MJ_RE_CK, on = 'pert_id', how = 'left' )
-check2 = check[check.CONV_CID !=check.SMILES_cid]
+check2 = check[check.CONV_CID != check.SMILES_cid]
 check3 = check2[check2.SMILES_cid > 0 ]
-check4 = check3[check3.CONV_CID > 0 ]
+check4 = check3[check3.CONV_CID > 0 ] # 순수하게 다른 애들 
 
 pert_id_match = check[check.CONV_CID == check.SMILES_cid][['pert_id','canonical_smiles','CONV_CID']]
 conv_win = check2[(check2.CONV_CID >0 ) & ( np.isnan(check2.SMILES_cid)==True)][['pert_id','canonical_smiles','CONV_CID']]
@@ -2887,6 +3011,7 @@ mj_win.columns =['pert_id','canonical_smiles','CID']
 
 individual_check = check4.reset_index(drop =True)
 
+# 하나하나 결국 살펴봄 
 individual_check_conv = individual_check.loc[[0,4,5,6,10,11,12,13,16,17,18,19]+[a for a in range(21,34)]+[36,40,54]][['pert_id','canonical_smiles','CONV_CID']]
 individual_check_mj = individual_check.loc[[1,2,3,7,8,9,14,15,20,34,35,37,38,39]+[a for a in range(41,54)]+[55,56,57]][['pert_id','canonical_smiles','SMILES_cid']]
 individual_check_conv.columns = ['pert_id','canonical_smiles','CID'] # 28
@@ -2911,8 +3036,6 @@ BETA_CID_CELLO_SIG = BETA_SELEC_SIG_wCell2[cello_tt][['pert_id','CID','ccle_name
 beta_cid_cello_sig_tf = [ True if a>0 else False for a in list(BETA_CID_CELLO_SIG.CID)]
 BETA_CID_CELLO_SIG = BETA_CID_CELLO_SIG[beta_cid_cello_sig_tf]
 BETA_CID_CELLO_SIG['CID'] = [int(a) for a in list(BETA_CID_CELLO_SIG['CID']) ] # 111012 
-
-
 
 
 
@@ -3002,4 +3125,169 @@ BETA_CID_CELLO_SIG_re_re.to_csv(SAVE_PATH+'AVAIL_LINCS_EXP_cell.csv')
 
 
 
+
+
+############## cell line 하나만 보기 
+
+cell_path = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V4_MIS2_W20v1/VAL/'
+
+import glob
+
+CELL_NAME = 'VCAP_PROSTATE'
+CELL_pred_file = pd.read_csv(cell_path+'PRED_{}.FINAL_ing.csv'.format(CELL_NAME)) # ing 파일이라서 의미가 음슴 
+
+
+CELL_pred_file['pred_mean'] = np.mean(CELL_pred_file[['CV0', 'CV1','CV2','CV3','CV4']], 1)
+CELL_pred_file['pred_std'] = np.std(CELL_pred_file[['CV0', 'CV1','CV2','CV3','CV4']], 1)
+
+np.max(CELL_pred_file.pred_std)
+np.min(CELL_pred_file.pred_std)
+
+근데 지금 그래서 pred 한게 
+pred_row_cid = len(set(CELL_pred_file.ROW_CID))
+
+
+
+
+
+
+pred_df = pd.DataFrame(columns = ['CV0', 'CV1','CV2','CV3','CV4','ROW_CID','COL_CID','CCLE','Y'])
+for fifi in CVCL_files :
+	print(fifi.split('/')[8].split('.')[0])
+	tmp_df = pd.read_csv(fifi,  low_memory=False, index_col = False)
+	tmp_df2 = tmp_df[['ROW_CID','COL_CID','CELLO', 'PRED_RES', 'Y']]
+	pred_df = pd.concat([pred_df, tmp_df2])
+
+
+merged_CVCL = pred_df.drop_duplicates()
+
+# merged_CVCL.sort_values('PRED_RES')
+# merged_CVCL.to_csv(cell_path+'/PRED_RESULT.csv', index=False)
+# merged_CVCL = pd.read_csv(cell_path+'/PRED_RESULT.csv')
+
+# 그놈의 색깔 
+PRJ_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/{}_{}_{}/'.format(PRJ_NAME, MISS_NAME, W_NAME)
+all_CellBase_DF = pd.read_csv(cell_path+'/AVAIL_CELL_DF.csv')
+all_CellBase_DF['tissue'] = [ '_'.join(a.split('_')[1:]) if type(a) == str else 'NA' for a in list(all_CellBase_DF['DrugCombCCLE'])]
+
+all_CellBase_DF.at[(all_CellBase_DF[all_CellBase_DF.DrugCombCello=='CVCL_0395']).index.item(), 'tissue'] = 'PROSTATE'
+all_CellBase_DF.at[(all_CellBase_DF[all_CellBase_DF.DrugCombCello=='CVCL_A442']).index.item(), 'tissue'] = 'HAEMATOPOIETIC_AND_LYMPHOID_TISSUE'
+all_CellBase_DF.at[(all_CellBase_DF[all_CellBase_DF.DrugCombCello=='CVCL_0219']).index.item(), 'tissue'] = 'LARGE_INTESTINE'
+
+tissue_set = ['CENTRAL_NERVOUS_SYSTEM', 'LUNG',  'HAEMATOPOIETIC_AND_LYMPHOID_TISSUE','BREAST','LARGE_INTESTINE', 'BONE',  'SKIN', 'PROSTATE',  'OVARY' ] # list(set(test_cell_df['tissue']))
+color_set = ["#FFA420","#826C34","#D36E70","#705335","#57A639","#434B4D","#C35831","#B32821","#FAD201","#20603D","#828282","#1E1E1E"]
+color_dict = {a : color_set[tissue_set.index(a)] for a in tissue_set}
+
+merged_CVCL_RE = pd.merge(merged_CVCL, all_CellBase_DF[['DC_cellname','DrugCombCello','tissue']], left_on = 'CELLO', right_on='DrugCombCello', how = 'left')
+
+
+# BOX plot -> 너무 퍼져서 violin plot 이 의미가 없었음 
+
+cell_list = list(set(merged_CVCL_RE.DrugCombCello))
+
+fig, ax = plt.subplots(figsize=(30, 15))
+x_pos = [a+1 for a in range(25)]
+data_list = []
+color_list = []
+cell_renames = []
+for ind in range(25) : 
+	cell = cell_list[ind]
+	tmp_per = merged_CVCL_RE[merged_CVCL_RE.DrugCombCello==cell]
+	data_list.append(np.array(tmp_per['PRED_RES']))
+	color = color_dict[list(set(tmp_per['tissue']))[0]]
+	cell_rename = list(set(tmp_per['DC_cellname']))[0]
+	cell_renames.append(cell_rename)
+	color_list.append(color)
+
+box = ax.boxplot(data_list, patch_artist=True ) # x_pos,
+ 
+for patch, color in zip(box['boxes'], color_list):
+	patch.set_facecolor(color)
+
+plt.xticks(x_pos, cell_renames, rotation=90, fontsize=18)
+
+ax.set_xlabel('cell names')
+ax.set_ylabel('pred_synergy')
+ax.set_title(WORK_NAME)
+plt.tight_layout()
+
+plotname = 'FINAL_cell_box'
+fig.savefig('{}/{}.png'.format(cell_path, plotname), bbox_inches = 'tight')
+plt.close()
+
+
+
+############## cell line wise violin plot 
+
+cell_path = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V4_MIS2_W20v1/VAL'
+
+import glob
+
+CVCL_files_raw = glob.glob(cell_path+'/PRED_CVCL*')
+CVCL_files = [a for a in CVCL_files_raw if '_ing' not in a]
+CVCL_files_0553 = [a for a in CVCL_files if '0553' in a]
+
+pred_df = pd.DataFrame(columns = ['ROW_CID','COL_CID','CELLO', 'PRED_RES', 'Y'])
+for fifi in CVCL_files :
+	print(fifi.split('/')[8].split('.')[0])
+	tmp_df = pd.read_csv(fifi,  low_memory=False, index_col = False)
+	tmp_df2 = tmp_df[['ROW_CID','COL_CID','CELLO', 'PRED_RES', 'Y']]
+	pred_df = pd.concat([pred_df, tmp_df2])
+
+
+merged_CVCL = pred_df.drop_duplicates()
+
+# merged_CVCL.sort_values('PRED_RES')
+# merged_CVCL.to_csv(cell_path+'/PRED_RESULT.csv', index=False)
+# merged_CVCL = pd.read_csv(cell_path+'/PRED_RESULT.csv')
+
+# 그놈의 색깔 
+PRJ_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/{}_{}_{}/'.format(PRJ_NAME, MISS_NAME, W_NAME)
+all_CellBase_DF = pd.read_csv(cell_path+'/AVAIL_CELL_DF.csv')
+all_CellBase_DF['tissue'] = [ '_'.join(a.split('_')[1:]) if type(a) == str else 'NA' for a in list(all_CellBase_DF['DrugCombCCLE'])]
+
+all_CellBase_DF.at[(all_CellBase_DF[all_CellBase_DF.DrugCombCello=='CVCL_0395']).index.item(), 'tissue'] = 'PROSTATE'
+all_CellBase_DF.at[(all_CellBase_DF[all_CellBase_DF.DrugCombCello=='CVCL_A442']).index.item(), 'tissue'] = 'HAEMATOPOIETIC_AND_LYMPHOID_TISSUE'
+all_CellBase_DF.at[(all_CellBase_DF[all_CellBase_DF.DrugCombCello=='CVCL_0219']).index.item(), 'tissue'] = 'LARGE_INTESTINE'
+
+tissue_set = ['CENTRAL_NERVOUS_SYSTEM', 'LUNG',  'HAEMATOPOIETIC_AND_LYMPHOID_TISSUE','BREAST','LARGE_INTESTINE', 'BONE',  'SKIN', 'PROSTATE',  'OVARY' ] # list(set(test_cell_df['tissue']))
+color_set = ["#FFA420","#826C34","#D36E70","#705335","#57A639","#434B4D","#C35831","#B32821","#FAD201","#20603D","#828282","#1E1E1E"]
+color_dict = {a : color_set[tissue_set.index(a)] for a in tissue_set}
+
+merged_CVCL_RE = pd.merge(merged_CVCL, all_CellBase_DF[['DC_cellname','DrugCombCello','tissue']], left_on = 'CELLO', right_on='DrugCombCello', how = 'left')
+
+
+# BOX plot -> 너무 퍼져서 violin plot 이 의미가 없었음 
+
+cell_list = list(set(merged_CVCL_RE.DrugCombCello))
+
+fig, ax = plt.subplots(figsize=(30, 15))
+x_pos = [a+1 for a in range(25)]
+data_list = []
+color_list = []
+cell_renames = []
+for ind in range(25) : 
+	cell = cell_list[ind]
+	tmp_per = merged_CVCL_RE[merged_CVCL_RE.DrugCombCello==cell]
+	data_list.append(np.array(tmp_per['PRED_RES']))
+	color = color_dict[list(set(tmp_per['tissue']))[0]]
+	cell_rename = list(set(tmp_per['DC_cellname']))[0]
+	cell_renames.append(cell_rename)
+	color_list.append(color)
+
+box = ax.boxplot(data_list, patch_artist=True ) # x_pos,
+ 
+for patch, color in zip(box['boxes'], color_list):
+	patch.set_facecolor(color)
+
+plt.xticks(x_pos, cell_renames, rotation=90, fontsize=18)
+
+ax.set_xlabel('cell names')
+ax.set_ylabel('pred_synergy')
+ax.set_title(WORK_NAME)
+plt.tight_layout()
+
+plotname = 'FINAL_cell_box'
+fig.savefig('{}/{}.png'.format(cell_path, plotname), bbox_inches = 'tight')
+plt.close()
 

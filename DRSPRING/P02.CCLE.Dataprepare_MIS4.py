@@ -522,7 +522,7 @@ DATA_AB_ONE[['ROW_pert_id','COL_pert_id','DrugCombCCLE']].drop_duplicates() #  9
 DATA_AB_ONE[['ROW_CAN_SMILES','COL_CAN_SMILES','DrugCombCCLE']].drop_duplicates() #  22329 
 
 
-67440, 8422, 10552,
+
 
 #################################################################################################
 ##################################################################################################
@@ -988,13 +988,13 @@ def get_MJ_data( CHECK ):
 		RES = MJ_DATA_re[CHECK]
 		OX = 'O'
 	else : 
-		#RES = [0]*978
-		#RES = [0]*349
-		RES = [0]*845
+		RES = [0]*349
 		OX = 'X'
 	return list(RES), OX
 
-
+#RES = [0]*978
+#RES = [0]*845
+		
 
 
 
@@ -1007,15 +1007,14 @@ MY_chem_A_adj = torch.empty(size=(A_B_C_S_SET_MJ.shape[0], max_len, max_len))
 MY_chem_B_adj= torch.empty(size=(A_B_C_S_SET_MJ.shape[0], max_len, max_len))
 MY_syn =  torch.empty(size=(A_B_C_S_SET_MJ.shape[0],1))
 
-#MY_g_EXP_A = torch.empty(size=(A_B_C_S_SET_MJ.shape[0], 978, 1))
-#MY_g_EXP_B = torch.empty(size=(A_B_C_S_SET_MJ.shape[0], 978, 1))
-
-#MY_g_EXP_A = torch.empty(size=(A_B_C_S_SET_MJ.shape[0], 349, 1))
-#MY_g_EXP_B = torch.empty(size=(A_B_C_S_SET_MJ.shape[0], 349, 1))
+MY_g_EXP_A = torch.empty(size=(A_B_C_S_SET_MJ.shape[0], 349, 1))
+MY_g_EXP_B = torch.empty(size=(A_B_C_S_SET_MJ.shape[0], 349, 1))
 
 #MY_g_EXP_A = torch.empty(size=(A_B_C_S_SET_MJ.shape[0], 845, 1))
 #MY_g_EXP_B = torch.empty(size=(A_B_C_S_SET_MJ.shape[0], 845, 1))
 
+#MY_g_EXP_A = torch.empty(size=(A_B_C_S_SET_MJ.shape[0], 978, 1))
+#MY_g_EXP_B = torch.empty(size=(A_B_C_S_SET_MJ.shape[0], 978, 1))
 
 
 
@@ -1041,24 +1040,10 @@ for IND in range(MY_chem_A_feat.shape[0]): #  100
 	DrugA_Feat, DrugA_ADJ = get_CHEM(DrugA_CID, k)
 	DrugB_Feat, DrugB_ADJ = get_CHEM(DrugB_CID, k)
 	# 
-	if dat_type == 'AOBO' :
-		EXP_A = get_LINCS_data(DrugA_SIG)
-		EXP_B = get_LINCS_data(DrugB_SIG)
-	elif dat_type == "AXBO" : 
-		EXP_A, OX = get_MJ_data(DrugA_CID_CELL)
-		EXP_B = get_LINCS_data(DrugB_SIG)
-		if OX == 'X':
-			Fail_ind.append(IND)
-	elif dat_type == "AOBX" :
-		EXP_A = get_LINCS_data(DrugA_SIG)
-		EXP_B, OX = get_MJ_data(DrugB_CID_CELL)
-		if OX == 'X':
-			Fail_ind.append(IND)
-	elif dat_type == "AXBX" :
-		EXP_A, OX1 = get_MJ_data(DrugA_CID_CELL)
-		EXP_B, OX2 = get_MJ_data(DrugB_CID_CELL)
-		if 'X' in [OX1, OX2]:
-			Fail_ind.append(IND)   
+	EXP_A, OX1 = get_MJ_data(DrugA_CID_CELL)
+	EXP_B, OX2 = get_MJ_data(DrugB_CID_CELL)
+	if 'X' in [OX1, OX2]:
+		Fail_ind.append(IND)   
 	# 
 	# 
 	AB_SYN = get_synergy_data(DrugA_CID, DrugB_CID, Cell)
@@ -1072,8 +1057,6 @@ for IND in range(MY_chem_A_feat.shape[0]): #  100
 	MY_syn[IND] = torch.Tensor([AB_SYN])
 
 
-하는중! 
-근데 시너지 점수에 NaN 들어가는 애들 이유 뭔지 확인해보기 -> 아니었음. 제대로 돌아갔음 
 
 
 selec_ind = A_B_C_S_SET_MJ.index.isin(Fail_ind)==False
@@ -1094,12 +1077,8 @@ SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V4_978_FULL/' # small ver
 SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V4_845_FULL/' # small ver 
 
 
-# PRJ_NAME = 'M3V3ccle_MISS2_FULL'
-# PRJ_NAME = 'M3V4ccle_MISS2_FULL'
-PRJ_NAME = 'M3V4_349_MISS2_FULL'
-PRJ_NAME = 'M3V4_978_MISS2_FULL'
-PRJ_NAME = 'M3V4_845_MISS2_FULL'
 
+PRJ_NAME = 'M3V4_349_MISS4_FULL'
 
 
 torch.save(MY_chem_A_feat_re, SAVE_PATH+'{}.MY_chem_A_feat.pt'.format(PRJ_NAME))
@@ -1173,38 +1152,38 @@ ccle_cell_ids = set(ccle_cell_info.DrugCombCCLE) # 1827
 
 
 
-# 978
+                        # 978
 
-cell_basal_exp_list = []
-# give vector 
-for i in range(A_B_C_S_SET.shape[0]) :
-    if i%100 == 0 :
-        print(str(i)+'/'+str(A_B_C_S_SET.shape[0]) )
-        datetime.now()
-    ccle = A_B_C_S_SET.loc[i]['DrugCombCCLE']
-    if ccle in ccle_names : 
-        ccle_exp_df = ccle_exp3[ccle_exp3.DrugCombCCLE==ccle][BETA_ENTREZ_ORDER]
-        ccle_exp_vector = ccle_exp_df.values[0].tolist()
-        cell_basal_exp_list.append(ccle_exp_vector)
-    else : # 'TC32_BONE', 'DU145_PROSTATE' -> 0 으로 진행하게 됨. public expression 없음 참고해야함. 
-        ccle_exp_vector = [0]*978
-        cell_basal_exp_list.append(ccle_exp_vector)
+                        cell_basal_exp_list = []
+                        # give vector 
+                        for i in range(A_B_C_S_SET.shape[0]) :
+                            if i%100 == 0 :
+                                print(str(i)+'/'+str(A_B_C_S_SET.shape[0]) )
+                                datetime.now()
+                            ccle = A_B_C_S_SET.loc[i]['DrugCombCCLE']
+                            if ccle in ccle_names : 
+                                ccle_exp_df = ccle_exp3[ccle_exp3.DrugCombCCLE==ccle][BETA_ENTREZ_ORDER]
+                                ccle_exp_vector = ccle_exp_df.values[0].tolist()
+                                cell_basal_exp_list.append(ccle_exp_vector)
+                            else : # 'TC32_BONE', 'DU145_PROSTATE' -> 0 으로 진행하게 됨. public expression 없음 참고해야함. 
+                                ccle_exp_vector = [0]*978
+                                cell_basal_exp_list.append(ccle_exp_vector)
 
-								# 349 
-								cell_basal_exp_list = []
-								# give vector 
-								for i in range(A_B_C_S_SET.shape[0]) :
-									if i%100 == 0 :
-										print(str(i)+'/'+str(A_B_C_S_SET.shape[0]) )
-										datetime.now()
-									ccle = A_B_C_S_SET.loc[i]['DrugCombCCLE']
-									if ccle in ccle_names : 
-										ccle_exp_df = ccle_exp3[ccle_exp3.DrugCombCCLE==ccle][BETA_ENTREZ_ORDER]
-										ccle_exp_vector = ccle_exp_df.values[0].tolist()
-										cell_basal_exp_list.append(ccle_exp_vector)
-									else : # 'TC32_BONE', 'DU145_PROSTATE' -> 0 으로 진행하게 됨. public expression 없음 참고해야함. 
-										ccle_exp_vector = [0]*349
-										cell_basal_exp_list.append(ccle_exp_vector)
+                    # 349 
+                    cell_basal_exp_list = []
+                    # give vector 
+                    for i in range(A_B_C_S_SET.shape[0]) :
+                        if i%100 == 0 :
+                            print(str(i)+'/'+str(A_B_C_S_SET.shape[0]) )
+                            datetime.now()
+                        ccle = A_B_C_S_SET.loc[i]['DrugCombCCLE']
+                        if ccle in ccle_names : 
+                            ccle_exp_df = ccle_exp3[ccle_exp3.DrugCombCCLE==ccle][BETA_ENTREZ_ORDER]
+                            ccle_exp_vector = ccle_exp_df.values[0].tolist()
+                            cell_basal_exp_list.append(ccle_exp_vector)
+                        else : # 'TC32_BONE', 'DU145_PROSTATE' -> 0 으로 진행하게 됨. public expression 없음 참고해야함. 
+                            ccle_exp_vector = [0]*349
+                            cell_basal_exp_list.append(ccle_exp_vector)
 
 
 
@@ -1322,34 +1301,34 @@ TARGET_DB_RE = TARGET_DB_RE[TARGET_DB_RE.ENTREZ_RE.isin(gene_ids)]
 
 
 
-# L_gene_symbol : 127501
-# PPI_name : 126185
-# 978
-target_cids = list(set(TARGET_DB_RE.CID))
-gene_ids = list(BETA_ORDER_DF.gene_id)
-def get_targets(CID): # 이건 지금 필터링 한 경우임 #
-	if CID in target_cids:
-		tmp_df2 = TARGET_DB_RE[TARGET_DB_RE.CID == CID]
-		targets = list(set(tmp_df2.EntrezID))
-		vec = [1 if a in targets else 0 for a in gene_ids ]
-	else :
-		vec = [0] * 978
-	return vec
+                    # L_gene_symbol : 127501
+                    # PPI_name : 126185
+                    # 978
+                    target_cids = list(set(TARGET_DB_RE.CID))
+                    gene_ids = list(BETA_ORDER_DF.gene_id)
+                    def get_targets(CID): # 이건 지금 필터링 한 경우임 #
+                        if CID in target_cids:
+                            tmp_df2 = TARGET_DB_RE[TARGET_DB_RE.CID == CID]
+                            targets = list(set(tmp_df2.EntrezID))
+                            vec = [1 if a in targets else 0 for a in gene_ids ]
+                        else :
+                            vec = [0] * 978
+                        return vec
 
 
-					# L_gene_symbol : 127501
-					# PPI_name : 126185
-					# 349
-					target_cids = list(set(TARGET_DB_RE.CID))
-					gene_ids = list(BETA_ORDER_DF.gene_id)
-					def get_targets(CID): # 이건 지금 필터링 한 경우임 #
-						if CID in target_cids:
-							tmp_df2 = TARGET_DB_RE[TARGET_DB_RE.CID == CID]
-							targets = list(set(tmp_df2.EntrezID))
-							vec = [1 if a in targets else 0 for a in gene_ids ]
-						else :
-							vec = [0] * 349
-						return vec
+                # L_gene_symbol : 127501
+                # PPI_name : 126185
+                # 349
+                target_cids = list(set(TARGET_DB_RE.CID))
+                gene_ids = list(BETA_ORDER_DF.gene_id)
+                def get_targets(CID): # 이건 지금 필터링 한 경우임 #
+                    if CID in target_cids:
+                        tmp_df2 = TARGET_DB_RE[TARGET_DB_RE.CID == CID]
+                        targets = list(set(tmp_df2.EntrezID))
+                        vec = [1 if a in targets else 0 for a in gene_ids ]
+                    else :
+                        vec = [0] * 349
+                    return vec
 
 
 				# L_gene_symbol : 127501
@@ -1441,37 +1420,37 @@ TARGET_DB_RE = TARGET_DB_RE[TARGET_DB_RE.EntrezID.isin(gene_ids)]
 
 
 
+                # L_gene_symbol : 127501
+                # PPI_name : 126185
+                # 978
+                target_cids = list(set(TARGET_DB_RE.CID))
+                gene_ids = list(BETA_ORDER_DF.gene_id)
+                def get_targets(CID): # 이건 지금 필터링 한 경우임 #
+                    if CID in target_cids:
+                        tmp_df2 = TARGET_DB_RE[TARGET_DB_RE.CID == CID]
+                        targets = list(set(tmp_df2.EntrezID))
+                        vec = [1 if a in targets else 0 for a in gene_ids ]
+                    else :
+                        vec = [0] * 978
+                    return vec
+
+
+
+
+
 # L_gene_symbol : 127501
 # PPI_name : 126185
-# 978
+# 349
 target_cids = list(set(TARGET_DB_RE.CID))
 gene_ids = list(BETA_ORDER_DF.gene_id)
 def get_targets(CID): # 이건 지금 필터링 한 경우임 #
-	if CID in target_cids:
-		tmp_df2 = TARGET_DB_RE[TARGET_DB_RE.CID == CID]
-		targets = list(set(tmp_df2.EntrezID))
-		vec = [1 if a in targets else 0 for a in gene_ids ]
-	else :
-		vec = [0] * 978
-	return vec
-
-
-
-
-
-					# L_gene_symbol : 127501
-					# PPI_name : 126185
-					# 349
-					target_cids = list(set(TARGET_DB_RE.CID))
-					gene_ids = list(BETA_ORDER_DF.gene_id)
-					def get_targets(CID): # 이건 지금 필터링 한 경우임 #
-						if CID in target_cids:
-							tmp_df2 = TARGET_DB_RE[TARGET_DB_RE.CID == CID]
-							targets = list(set(tmp_df2.EntrezID))
-							vec = [1 if a in targets else 0 for a in gene_ids ]
-						else :
-							vec = [0] * 349
-						return vec
+    if CID in target_cids:
+        tmp_df2 = TARGET_DB_RE[TARGET_DB_RE.CID == CID]
+        targets = list(set(tmp_df2.EntrezID))
+        vec = [1 if a in targets else 0 for a in gene_ids ]
+    else :
+        vec = [0] * 349
+    return vec
 
 
 				# L_gene_symbol : 127501
