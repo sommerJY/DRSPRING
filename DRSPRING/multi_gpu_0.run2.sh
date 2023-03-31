@@ -1,10 +1,10 @@
 #!/bin/bash
 #SBATCH --job-name=test_multi
-#SBATCH --partition=4gpu
+#SBATCH --partition=8gpu
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --tasks-per-node=4
-#SBATCH --cpus-per-task=4
+#SBATCH --tasks-per-node=1
+#SBATCH --cpus-per-task=1
 #SBATCH --output=/home01/k020a01/TEST/multi_check_%j.log
 #SBATCH --error=/home01/k020a01/TEST/multi_check_%j.log
 
@@ -39,14 +39,23 @@ echo "r$SLURM_NODEID master: $MASTER_ADDR"
 echo "r$SLURM_NODEID work!"
 
 
-srun torchrun --nnodes 1 --nproc_per_node 1 /home01/k020a01/TEST/multi_gpu_0.singleGPUDDP.py > /home01/k020a01/TEST/multi_check11.txt
+# srun torchrun --nnodes 1 --nproc_per_node 1 /home01/k020a01/TEST/multi_gpu_0.singleGPUDDP.py > /home01/k020a01/TEST/multi_check11.txt
 
+
+# best practice 
+# srun torchrun --nnodes 1 --nproc_per_node 4 /home01/k020a01/TEST/multi_gpu_0.multinodeGPUDDP.py > /home01/k020a01/TEST/multi_check11.txt 
+
+# my trial 
+## srun torchrun --nnodes 1 --nproc_per_node 8 /home01/k020a01/TEST/multi_gpu_test_7.py > /home01/k020a01/TEST/multi_my.1.txt
+# srun torchrun --nnodes 1 --nproc_per_node 8 /home01/k020a01/TEST/multi_gpu_test_7.py --world_size 8 > /home01/k020a01/TEST/multi_my.2.txt # train successful
+srun torchrun --nnodes 1 --nproc_per_node 8 /home01/k020a01/TEST/multi_gpu_test_7.py --world_size 8 > /home01/k020a01/TEST/multi_my.3.txt
 
 date
 
 
 
-나의 궁금증
-왜 내가 만든 multi_gpu 에서는 되고 
-오히려 튜토리얼 sh 는 안될까..? 
+
+
+
+
 
