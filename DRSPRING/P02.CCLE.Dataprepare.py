@@ -533,127 +533,127 @@ print('NETWORK')
 # HUMANNET 사용 
 
 
-					hunet_dir = '/st06/jiyeonH/13.DD_SESS/HumanNetV3/'
+				hunet_dir = '/st06/jiyeonH/13.DD_SESS/HumanNetV3/'
 
-					hunet_gsp = pd.read_csv(hunet_dir+'HumanNet-GSP.tsv', sep = '\t', header = None)
-					hunet_gsp.columns = ['G_A','G_B']
+				hunet_gsp = pd.read_csv(hunet_dir+'HumanNet-GSP.tsv', sep = '\t', header = None)
+				hunet_gsp.columns = ['G_A','G_B']
 
-					BETA_GENE = pd.read_table('/st06/jiyeonH/11.TOX/LINCS/L_2020/geneinfo_beta.txt')
-					BETA_lm_genes = BETA_GENE[BETA_GENE.feature_space=='landmark'] # 978
-					BETA_lm_genes = BETA_lm_genes.reset_index()
-					lm_entrezs = list(BETA_lm_genes.gene_id)
+				BETA_GENE = pd.read_table('/st06/jiyeonH/11.TOX/LINCS/L_2020/geneinfo_beta.txt')
+				BETA_lm_genes = BETA_GENE[BETA_GENE.feature_space=='landmark'] # 978
+				BETA_lm_genes = BETA_lm_genes.reset_index()
+				lm_entrezs = list(BETA_lm_genes.gene_id)
 
-					hnet_L1 = hunet_gsp[hunet_gsp['G_A'].isin(BETA_lm_genes.gene_id)]
-					hnet_L2 = hnet_L1[hnet_L1['G_B'].isin(BETA_lm_genes.gene_id)] # 3885
+				hnet_L1 = hunet_gsp[hunet_gsp['G_A'].isin(BETA_lm_genes.gene_id)]
+				hnet_L2 = hnet_L1[hnet_L1['G_B'].isin(BETA_lm_genes.gene_id)] # 3885
 
-					len(set(list(hnet_L2['G_A']) + list(hnet_L2['G_B']))) # 611
+				len(set(list(hnet_L2['G_A']) + list(hnet_L2['G_B']))) # 611
 
-					ID_G = nx.from_pandas_edgelist(hnet_L2, 'G_A', 'G_B')
+				ID_G = nx.from_pandas_edgelist(hnet_L2, 'G_A', 'G_B')
 
-					MSSNG = [a for a in lm_entrezs if a not in list(ID_G.nodes)]
+				MSSNG = [a for a in lm_entrezs if a not in list(ID_G.nodes)]
 
-					for nn in list(MSSNG):
-						ID_G.add_node(nn)
+				for nn in list(MSSNG):
+					ID_G.add_node(nn)
 
-					# edge 3871
-					ID_GENE_ORDER_mini = list(ID_G.nodes()) # 978
-					ID_ADJ = nx.adjacency_matrix(ID_G)
-					ID_ADJ_tmp = torch.LongTensor(ID_ADJ.toarray())
-					ID_ADJ_IDX = ID_ADJ_tmp.to_sparse().indices()  # [2, 7742]
-					ID_WEIGHT = [] # len : 3871 -> 7742
+				# edge 3871
+				ID_GENE_ORDER_mini = list(ID_G.nodes()) # 978
+				ID_ADJ = nx.adjacency_matrix(ID_G)
+				ID_ADJ_tmp = torch.LongTensor(ID_ADJ.toarray())
+				ID_ADJ_IDX = ID_ADJ_tmp.to_sparse().indices()  # [2, 7742]
+				ID_WEIGHT = [] # len : 3871 -> 7742
 
-					ID_WEIGHT_SCORE = [1 for a in range(ID_ADJ_IDX.shape[1])]
-
-
-					# 유전자 이름으로 붙이기 
-					LINCS_PATH = '/st06/jiyeonH/11.TOX/MY_TRIAL_5/' 
-					LINCS_gene_file = pd.read_csv(LINCS_PATH+'geneinfo_beta.txt', sep = '\t')
-					LINCS_978 = LINCS_gene_file[LINCS_gene_file.feature_space == 'landmark']
-					LINCS_978 = LINCS_978[['gene_id','gene_symbol']]
-					LINCS_978['new_node'] = [str(list(LINCS_978.gene_id)[i]) + "__" + list(LINCS_978.gene_symbol)[i] for i in range(978)]
-					LINCS_978 = LINCS_978.reset_index(drop=True)
+				ID_WEIGHT_SCORE = [1 for a in range(ID_ADJ_IDX.shape[1])]
 
 
-					new_node_names = []
-					for a in ID_G.nodes():
-						tmp_name = LINCS_978[LINCS_978.gene_id == a ]['gene_symbol'].item() # 6118
-						new_node_name = str(a) + '__' + tmp_name
-						new_node_names = new_node_names + [new_node_name]
-
-					mapping = {list(ID_G.nodes())[a]:new_node_names[a] for a in range(len(new_node_names))}
-
-					ID_G_RE = nx.relabel_nodes(ID_G, mapping)
-
-					MY_G = ID_G_RE 
-					MY_WEIGHT_SCORE = ID_WEIGHT_SCORE # SCORE
+				# 유전자 이름으로 붙이기 
+				LINCS_PATH = '/st06/jiyeonH/11.TOX/MY_TRIAL_5/' 
+				LINCS_gene_file = pd.read_csv(LINCS_PATH+'geneinfo_beta.txt', sep = '\t')
+				LINCS_978 = LINCS_gene_file[LINCS_gene_file.feature_space == 'landmark']
+				LINCS_978 = LINCS_978[['gene_id','gene_symbol']]
+				LINCS_978['new_node'] = [str(list(LINCS_978.gene_id)[i]) + "__" + list(LINCS_978.gene_symbol)[i] for i in range(978)]
+				LINCS_978 = LINCS_978.reset_index(drop=True)
 
 
+				new_node_names = []
+				for a in ID_G.nodes():
+					tmp_name = LINCS_978[LINCS_978.gene_id == a ]['gene_symbol'].item() # 6118
+					new_node_name = str(a) + '__' + tmp_name
+					new_node_names = new_node_names + [new_node_name]
+
+				mapping = {list(ID_G.nodes())[a]:new_node_names[a] for a in range(len(new_node_names))}
+
+				ID_G_RE = nx.relabel_nodes(ID_G, mapping)
+
+				MY_G = ID_G_RE 
+				MY_WEIGHT_SCORE = ID_WEIGHT_SCORE # SCORE
 
 
 
 
 
-					# HS 다른 pathway 사용 
-					print('NETWORK')
-					# HUMANNET 사용 
 
 
-					hunet_dir = '/st06/jiyeonH/13.DD_SESS/HumanNetV3/'
-
-					hunet_gsp = pd.read_csv(hunet_dir+'HS-DB.tsv', sep = '\t', header = None)
-					hunet_gsp.columns = ['G_A','G_B','SC']
-
-					BETA_GENE = pd.read_table('/st06/jiyeonH/11.TOX/LINCS/L_2020/geneinfo_beta.txt')
-					BETA_lm_genes = BETA_GENE[BETA_GENE.feature_space=='landmark'] # 978
-					BETA_lm_genes = BETA_lm_genes.reset_index()
-					lm_entrezs = list(BETA_lm_genes.gene_id)
-
-					hnet_L1 = hunet_gsp[hunet_gsp['G_A'].isin(BETA_lm_genes.gene_id)]
-					hnet_L2 = hnet_L1[hnet_L1['G_B'].isin(BETA_lm_genes.gene_id)] # 3885
-					hnet_L3 = hnet_L2[hnet_L2.SC >= 3.5]
+				# HS 다른 pathway 사용 
+				print('NETWORK')
+				# HUMANNET 사용 
 
 
-					len(set(list(hnet_L3['G_A']) + list(hnet_L3['G_B']))) # 611
+				hunet_dir = '/st06/jiyeonH/13.DD_SESS/HumanNetV3/'
 
-					ID_G = nx.from_pandas_edgelist(hnet_L3, 'G_A', 'G_B')
+				hunet_gsp = pd.read_csv(hunet_dir+'HS-DB.tsv', sep = '\t', header = None)
+				hunet_gsp.columns = ['G_A','G_B','SC']
 
-					# MSSNG = [a for a in lm_entrezs if a not in list(ID_G.nodes)]
+				BETA_GENE = pd.read_table('/st06/jiyeonH/11.TOX/LINCS/L_2020/geneinfo_beta.txt')
+				BETA_lm_genes = BETA_GENE[BETA_GENE.feature_space=='landmark'] # 978
+				BETA_lm_genes = BETA_lm_genes.reset_index()
+				lm_entrezs = list(BETA_lm_genes.gene_id)
 
-					#for nn in list(MSSNG):
-					#	ID_G.add_node(nn)
-
-					# edge 
-					ID_GENE_ORDER_mini = list(ID_G.nodes()) # 978
-					ID_ADJ = nx.adjacency_matrix(ID_G)
-					ID_ADJ_tmp = torch.LongTensor(ID_ADJ.toarray())
-					ID_ADJ_IDX = ID_ADJ_tmp.to_sparse().indices()  # [2, 7742]
-					ID_WEIGHT = [] # len : 3871 -> 7742
-
-					# 원래는 edge score 있지만 일단은...
-					ID_WEIGHT_SCORE = [1 for a in range(ID_ADJ_IDX.shape[1])]
+				hnet_L1 = hunet_gsp[hunet_gsp['G_A'].isin(BETA_lm_genes.gene_id)]
+				hnet_L2 = hnet_L1[hnet_L1['G_B'].isin(BETA_lm_genes.gene_id)] # 3885
+				hnet_L3 = hnet_L2[hnet_L2.SC >= 3.5]
 
 
-					# 유전자 이름으로 붙이기 
-					LINCS_PATH = '/st06/jiyeonH/11.TOX/MY_TRIAL_5/' 
-					LINCS_gene_file = pd.read_csv(LINCS_PATH+'geneinfo_beta.txt', sep = '\t')
-					LINCS_978 = LINCS_gene_file[LINCS_gene_file.feature_space == 'landmark']
-					LINCS_978 = LINCS_978[['gene_id','gene_symbol']]
-					LINCS_978['new_node'] = [str(list(LINCS_978.gene_id)[i]) + "__" + list(LINCS_978.gene_symbol)[i] for i in range(978)]
-					LINCS_978 = LINCS_978.reset_index(drop=True)
+				len(set(list(hnet_L3['G_A']) + list(hnet_L3['G_B']))) # 611
+
+				ID_G = nx.from_pandas_edgelist(hnet_L3, 'G_A', 'G_B')
+
+				# MSSNG = [a for a in lm_entrezs if a not in list(ID_G.nodes)]
+
+				#for nn in list(MSSNG):
+				#	ID_G.add_node(nn)
+
+				# edge 
+				ID_GENE_ORDER_mini = list(ID_G.nodes()) # 978
+				ID_ADJ = nx.adjacency_matrix(ID_G)
+				ID_ADJ_tmp = torch.LongTensor(ID_ADJ.toarray())
+				ID_ADJ_IDX = ID_ADJ_tmp.to_sparse().indices()  # [2, 7742]
+				ID_WEIGHT = [] # len : 3871 -> 7742
+
+				# 원래는 edge score 있지만 일단은...
+				ID_WEIGHT_SCORE = [1 for a in range(ID_ADJ_IDX.shape[1])]
 
 
-					new_node_names = []
-					for a in ID_G.nodes():
-						tmp_name = LINCS_978[LINCS_978.gene_id == a ]['gene_symbol'].item() # 6118
-						new_node_name = str(a) + '__' + tmp_name
-						new_node_names = new_node_names + [new_node_name]
+				# 유전자 이름으로 붙이기 
+				LINCS_PATH = '/st06/jiyeonH/11.TOX/MY_TRIAL_5/' 
+				LINCS_gene_file = pd.read_csv(LINCS_PATH+'geneinfo_beta.txt', sep = '\t')
+				LINCS_978 = LINCS_gene_file[LINCS_gene_file.feature_space == 'landmark']
+				LINCS_978 = LINCS_978[['gene_id','gene_symbol']]
+				LINCS_978['new_node'] = [str(list(LINCS_978.gene_id)[i]) + "__" + list(LINCS_978.gene_symbol)[i] for i in range(978)]
+				LINCS_978 = LINCS_978.reset_index(drop=True)
 
-					mapping = {list(ID_G.nodes())[a]:new_node_names[a] for a in range(len(new_node_names))}
 
-					ID_G_RE = nx.relabel_nodes(ID_G, mapping)
+				new_node_names = []
+				for a in ID_G.nodes():
+					tmp_name = LINCS_978[LINCS_978.gene_id == a ]['gene_symbol'].item() # 6118
+					new_node_name = str(a) + '__' + tmp_name
+					new_node_names = new_node_names + [new_node_name]
 
-					MY_G = ID_G_RE 
-					MY_WEIGHT_SCORE = ID_WEIGHT_SCORE # SCORE
+				mapping = {list(ID_G.nodes())[a]:new_node_names[a] for a in range(len(new_node_names))}
+
+				ID_G_RE = nx.relabel_nodes(ID_G, mapping)
+
+				MY_G = ID_G_RE 
+				MY_WEIGHT_SCORE = ID_WEIGHT_SCORE # SCORE
 
 
 
@@ -943,6 +943,9 @@ MJ_request_ANS = pd.read_csv(MJ_DIR+'PRJ2_EXP_ccle_fugcn_hst1.csv') # M3V4 node 
 MJ_request_ANS = pd.read_csv(MJ_DIR+'PRJ2_EXP_ccle_fugcn_a3t4.csv') # M3V4 node 978
 MJ_request_ANS = pd.read_csv(MJ_DIR+'PRJ2_EXP_ccle_fugcn_fnt1.csv') # M3V4 node 845
 
+MJ_request_ANS = pd.read_csv(MJ_DIR+'PRJ2_EXP_ccle_fugcn_hsc50.csv') # M3V5 node 349
+MJ_request_ANS = pd.read_csv(MJ_DIR+'PRJ2_EXP_ccle_fugcn_hu50.csv') # M3V5 node 978
+
 
 
 
@@ -988,9 +991,9 @@ def get_MJ_data( CHECK ):
 		RES = MJ_DATA_re[CHECK]
 		OX = 'O'
 	else : 
-		#RES = [0]*978
-		#RES = [0]*349
-		RES = [0]*845
+		RES = [0]*978        ##############
+		#RES = [0]*349        ##############
+		#RES = [0]*845        ##############
 		OX = 'X'
 	return list(RES), OX
 
@@ -1007,14 +1010,14 @@ MY_chem_A_adj = torch.empty(size=(A_B_C_S_SET_MJ.shape[0], max_len, max_len))
 MY_chem_B_adj= torch.empty(size=(A_B_C_S_SET_MJ.shape[0], max_len, max_len))
 MY_syn =  torch.empty(size=(A_B_C_S_SET_MJ.shape[0],1))
 
-#MY_g_EXP_A = torch.empty(size=(A_B_C_S_SET_MJ.shape[0], 978, 1))
-#MY_g_EXP_B = torch.empty(size=(A_B_C_S_SET_MJ.shape[0], 978, 1))
+#MY_g_EXP_A = torch.empty(size=(A_B_C_S_SET_MJ.shape[0], 978, 1)) ##############
+#MY_g_EXP_B = torch.empty(size=(A_B_C_S_SET_MJ.shape[0], 978, 1))##############
 
-#MY_g_EXP_A = torch.empty(size=(A_B_C_S_SET_MJ.shape[0], 349, 1))
-#MY_g_EXP_B = torch.empty(size=(A_B_C_S_SET_MJ.shape[0], 349, 1))
+#MY_g_EXP_A = torch.empty(size=(A_B_C_S_SET_MJ.shape[0], 349, 1))##############
+#MY_g_EXP_B = torch.empty(size=(A_B_C_S_SET_MJ.shape[0], 349, 1))##############
 
-#MY_g_EXP_A = torch.empty(size=(A_B_C_S_SET_MJ.shape[0], 845, 1))
-#MY_g_EXP_B = torch.empty(size=(A_B_C_S_SET_MJ.shape[0], 845, 1))
+#MY_g_EXP_A = torch.empty(size=(A_B_C_S_SET_MJ.shape[0], 845, 1))##############
+#MY_g_EXP_B = torch.empty(size=(A_B_C_S_SET_MJ.shape[0], 845, 1))##############
 
 
 
@@ -1089,17 +1092,24 @@ MY_syn_re = MY_syn[selec_ind]
 
 # SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V3_CCLE_FULL/'
 # SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V4_CCLE_FULL/' wrong ver
-SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V4_349_FULL/' # small ver 
-SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V4_978_FULL/' # small ver 
-SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V4_845_FULL/' # small ver 
+#SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V4_349_FULL/' # small ver 
+#SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V4_978_FULL/' # small ver 
+#SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V4_845_FULL/' # small ver 
+
+
+SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V5_349_FULL/' # small ver 
+SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V5_978_FULL/' # small ver 
+
 
 
 # PRJ_NAME = 'M3V3ccle_MISS2_FULL'
 # PRJ_NAME = 'M3V4ccle_MISS2_FULL'
-PRJ_NAME = 'M3V4_349_MISS2_FULL'
-PRJ_NAME = 'M3V4_978_MISS2_FULL'
-PRJ_NAME = 'M3V4_845_MISS2_FULL'
+# PRJ_NAME = 'M3V4_349_MISS2_FULL'
+# PRJ_NAME = 'M3V4_978_MISS2_FULL'
+# PRJ_NAME = 'M3V4_845_MISS2_FULL'
 
+PRJ_NAME = 'M3V5_349_MISS2_FULL'
+PRJ_NAME = 'M3V5_978_MISS2_FULL'
 
 
 torch.save(MY_chem_A_feat_re, SAVE_PATH+'{}.MY_chem_A_feat.pt'.format(PRJ_NAME))
@@ -1173,38 +1183,38 @@ ccle_cell_ids = set(ccle_cell_info.DrugCombCCLE) # 1827
 
 
 
-# 978
+					# 978
 
-cell_basal_exp_list = []
-# give vector 
-for i in range(A_B_C_S_SET.shape[0]) :
-    if i%100 == 0 :
-        print(str(i)+'/'+str(A_B_C_S_SET.shape[0]) )
-        datetime.now()
-    ccle = A_B_C_S_SET.loc[i]['DrugCombCCLE']
-    if ccle in ccle_names : 
-        ccle_exp_df = ccle_exp3[ccle_exp3.DrugCombCCLE==ccle][BETA_ENTREZ_ORDER]
-        ccle_exp_vector = ccle_exp_df.values[0].tolist()
-        cell_basal_exp_list.append(ccle_exp_vector)
-    else : # 'TC32_BONE', 'DU145_PROSTATE' -> 0 으로 진행하게 됨. public expression 없음 참고해야함. 
-        ccle_exp_vector = [0]*978
-        cell_basal_exp_list.append(ccle_exp_vector)
+					cell_basal_exp_list = []
+					# give vector 
+					for i in range(A_B_C_S_SET.shape[0]) :
+						if i%100 == 0 :
+							print(str(i)+'/'+str(A_B_C_S_SET.shape[0]) )
+							datetime.now()
+						ccle = A_B_C_S_SET.loc[i]['DrugCombCCLE']
+						if ccle in ccle_names : 
+							ccle_exp_df = ccle_exp3[ccle_exp3.DrugCombCCLE==ccle][BETA_ENTREZ_ORDER]
+							ccle_exp_vector = ccle_exp_df.values[0].tolist()
+							cell_basal_exp_list.append(ccle_exp_vector)
+						else : # 'TC32_BONE', 'DU145_PROSTATE' -> 0 으로 진행하게 됨. public expression 없음 참고해야함. 
+							ccle_exp_vector = [0]*978
+							cell_basal_exp_list.append(ccle_exp_vector)
 
-								# 349 
-								cell_basal_exp_list = []
-								# give vector 
-								for i in range(A_B_C_S_SET.shape[0]) :
-									if i%100 == 0 :
-										print(str(i)+'/'+str(A_B_C_S_SET.shape[0]) )
-										datetime.now()
-									ccle = A_B_C_S_SET.loc[i]['DrugCombCCLE']
-									if ccle in ccle_names : 
-										ccle_exp_df = ccle_exp3[ccle_exp3.DrugCombCCLE==ccle][BETA_ENTREZ_ORDER]
-										ccle_exp_vector = ccle_exp_df.values[0].tolist()
-										cell_basal_exp_list.append(ccle_exp_vector)
-									else : # 'TC32_BONE', 'DU145_PROSTATE' -> 0 으로 진행하게 됨. public expression 없음 참고해야함. 
-										ccle_exp_vector = [0]*349
-										cell_basal_exp_list.append(ccle_exp_vector)
+									# 349 
+									cell_basal_exp_list = []
+									# give vector 
+									for i in range(A_B_C_S_SET.shape[0]) :
+										if i%100 == 0 :
+											print(str(i)+'/'+str(A_B_C_S_SET.shape[0]) )
+											datetime.now()
+										ccle = A_B_C_S_SET.loc[i]['DrugCombCCLE']
+										if ccle in ccle_names : 
+											ccle_exp_df = ccle_exp3[ccle_exp3.DrugCombCCLE==ccle][BETA_ENTREZ_ORDER]
+											ccle_exp_vector = ccle_exp_df.values[0].tolist()
+											cell_basal_exp_list.append(ccle_exp_vector)
+										else : # 'TC32_BONE', 'DU145_PROSTATE' -> 0 으로 진행하게 됨. public expression 없음 참고해야함. 
+											ccle_exp_vector = [0]*349
+											cell_basal_exp_list.append(ccle_exp_vector)
 
 
 
@@ -1322,34 +1332,34 @@ TARGET_DB_RE = TARGET_DB_RE[TARGET_DB_RE.ENTREZ_RE.isin(gene_ids)]
 
 
 
-# L_gene_symbol : 127501
-# PPI_name : 126185
-# 978
-target_cids = list(set(TARGET_DB_RE.CID))
-gene_ids = list(BETA_ORDER_DF.gene_id)
-def get_targets(CID): # 이건 지금 필터링 한 경우임 #
-	if CID in target_cids:
-		tmp_df2 = TARGET_DB_RE[TARGET_DB_RE.CID == CID]
-		targets = list(set(tmp_df2.EntrezID))
-		vec = [1 if a in targets else 0 for a in gene_ids ]
-	else :
-		vec = [0] * 978
-	return vec
+				# L_gene_symbol : 127501
+				# PPI_name : 126185
+				# 978
+				target_cids = list(set(TARGET_DB_RE.CID))
+				gene_ids = list(BETA_ORDER_DF.gene_id)
+				def get_targets(CID): # 이건 지금 필터링 한 경우임 #
+					if CID in target_cids:
+						tmp_df2 = TARGET_DB_RE[TARGET_DB_RE.CID == CID]
+						targets = list(set(tmp_df2.EntrezID))
+						vec = [1 if a in targets else 0 for a in gene_ids ]
+					else :
+						vec = [0] * 978
+					return vec
 
 
-					# L_gene_symbol : 127501
-					# PPI_name : 126185
-					# 349
-					target_cids = list(set(TARGET_DB_RE.CID))
-					gene_ids = list(BETA_ORDER_DF.gene_id)
-					def get_targets(CID): # 이건 지금 필터링 한 경우임 #
-						if CID in target_cids:
-							tmp_df2 = TARGET_DB_RE[TARGET_DB_RE.CID == CID]
-							targets = list(set(tmp_df2.EntrezID))
-							vec = [1 if a in targets else 0 for a in gene_ids ]
-						else :
-							vec = [0] * 349
-						return vec
+				# L_gene_symbol : 127501
+				# PPI_name : 126185
+				# 349
+				target_cids = list(set(TARGET_DB_RE.CID))
+				gene_ids = list(BETA_ORDER_DF.gene_id)
+				def get_targets(CID): # 이건 지금 필터링 한 경우임 #
+					if CID in target_cids:
+						tmp_df2 = TARGET_DB_RE[TARGET_DB_RE.CID == CID]
+						targets = list(set(tmp_df2.EntrezID))
+						vec = [1 if a in targets else 0 for a in gene_ids ]
+					else :
+						vec = [0] * 349
+					return vec
 
 
 				# L_gene_symbol : 127501
@@ -1628,13 +1638,7 @@ for IND in range(A_B_C_S_SET_ADD.shape[0]) :
         tani_02_result.append('X')
         #
     if (CID_A in tani_Q) & (CID_B in tani_Q):
-        tani_Q_result.append('O')
-    else : 
-        tani_Q_result.append('X')
-    
-
-A_B_C_S_SET_ADD['tani01'] = tani_01_result
-A_B_C_S_SET_ADD['tani_02'] = tani_02_result
+        tani_Q_result2_02'] = tani_02_result
 A_B_C_S_SET_ADD['tani_Q'] = tani_Q_result
 
 

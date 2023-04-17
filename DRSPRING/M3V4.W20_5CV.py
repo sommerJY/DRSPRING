@@ -253,6 +253,19 @@ WORK_DATE = '23.03.19'
 MISS_NAME = 'MIS2'
 
 
+MJ_NAME = 'M3V5'
+WORK_DATE = '23.04.10' # 349
+MISS_NAME = 'MIS2'
+
+MJ_NAME = 'M3V5'
+WORK_DATE = '23.04.12' # 978
+MISS_NAME = 'MIS2'
+
+
+
+
+
+
 # SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V4_CCLE_FULL/'
 
 SAVE_PATH = '/home01/k020a01/02.VER3/M3V4_349_DATA/'
@@ -264,10 +277,22 @@ SAVE_PATH = '/home01/k020a01/02.VER3/M3V4_978_DATA/'
 SAVE_PATH = '/home01/k020a01/02.VER3/M3V4_845_DATA/'
 # SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V4_845_FULL/'
 
-
 file_name = 'M3V4_349_MISS2_FULL'
 file_name = 'M3V4_978_MISS2_FULL'
 file_name = 'M3V4_845_MISS2_FULL'
+
+
+SAVE_PATH = '/home01/k020a01/02.M3V5/M3V5_349_DATA/'
+# SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V5_349_FULL/'
+
+SAVE_PATH = '/home01/k020a01/02.M3V5/M3V5_978_DATA/'
+# SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V5_978_FULL/'
+
+file_name = 'M3V5_349_MISS2_FULL'
+
+
+
+
 
 
 A_B_C_S_SET_ADD = pd.read_csv(SAVE_PATH+'{}.A_B_C_S_SET_ADD.csv'.format(file_name), low_memory=False)
@@ -291,6 +316,7 @@ WORK_NAME = 'WORK_20v1' # 349
 WORK_NAME = 'WORK_20v2' # 978
 WORK_NAME = 'WORK_20v3' # 845
 
+WORK_NAME = 'WORK_20' # 349
 
 
 
@@ -521,7 +547,27 @@ data_nodup_df2 = data_nodup_df2.reset_index(drop =True)
 
 grouped_df = data_nodup_df2.groupby('cell')
 
+# 10% test 
+TrainVal_list = []; Test_list =[]
 
+for i, g in grouped_df:
+	if len(g) > CELL_CUT :
+		nums = int(.10 * len(g)) 
+		bins = []
+		g2 = sklearn.utils.shuffle(g, random_state=42)
+		for ii in list(range(0, len(g2), nums)):
+			if len(bins)< 10 :
+				bins.append(ii)
+		#
+		bins = bins[1:]
+		res = np.split(g2, bins)
+		TrainVal_list = TrainVal_list + res[0].index.tolist() + res[1].index.tolist() + res[2].index.tolist() + res[3].index.tolist() + res[4].index.tolist() + res[5].index.tolist() + res[6].index.tolist() + res[7].index.tolist() + res[8].index.tolist()   
+		Test_list = Test_list + res[9].index.tolist()
+	else :
+		print(i)
+
+
+# 20% test 
 TrainVal_list = []; Test_list =[]
 
 for i, g in grouped_df:
@@ -539,6 +585,15 @@ for i, g in grouped_df:
 		Test_list = Test_list + res[4].index.tolist()
 	else :
 		print(i)
+
+
+
+
+
+
+
+
+
 
 
 
@@ -839,6 +894,7 @@ def result_spearman(y, pred):
 	print("Spearman correlation is {} and related p_value is {}".format(spear_value, spear_p_val), flush=True)
 
 
+
 def plot_loss(train_loss, valid_loss, path, plotname):
 	fig = plt.figure(figsize=(10,8))
 	plt.plot(range(1,len(train_loss)+1),train_loss, label='Training Loss')
@@ -851,7 +907,29 @@ def plot_loss(train_loss, valid_loss, path, plotname):
 	plt.legend()
 	plt.tight_layout()
 	fig.savefig('{}/{}.loss_plot.png'.format(path, plotname), bbox_inches = 'tight')
+
+
+def plot_loss(train_loss, train_max, train_min,  valid_loss, valid_max, valid_min, path, plotname):
+	# fig = plt.figure(figsize=(10,8))
+	fig, ax = plt.subplots(figsize = (10,8))
+	ax.plot(range(1,len(train_loss)+1),train_loss, label='Training Loss', color = 'Blue')
+	ax.fill_between(range(1,len(train_loss)+1), train_min, train_max, alpha = 0.3, edgecolor = 'Blue', facecolor = 'Blue' )
+	ax.plot(range(1,len(valid_loss)+1),valid_loss, label='Validation Loss', color= 'Red' )
+	ax.fill_between(range(1,len(valid_loss)+1), valid_min, valid_max, alpha = 0.3, edgecolor ='Red', facecolor =  'Red')
+	ax.xlabel('epochs')
+	ax.ylabel('loss')
+	ax.ylim(0, math.ceil(max(train_loss+valid_loss))) # 일정한 scale
+	ax.xlim(0, len(train_loss)+1) # 일정한 scale
+	ax.grid(True)
+	ax.legend()
+	ax.tight_layout()
+	fig.savefig('{}/{}.loss_plot.png'.format(path, plotname), bbox_inches = 'tight')
 	plt.close()
+
+
+아 근데 나는 그럼 따로 다시 저장하는걸 했어야 하네 시붕 
+
+
 
 
 
@@ -1629,7 +1707,20 @@ WORK_NAME = 'WORK_20v1'
 W_NAME = 'W20v1' # 349
 
 
+# 아놔 날짜 바꿨어야하는데 시불 
+WORK_DATE = '23.03.19'
+PRJ_NAME = 'M3V4'
+MISS_NAME = 'MIS2'
+WORK_NAME = 'WORK_20v2'
+W_NAME = 'W20v2' # 978
 
+#######
+# 아놔 test 비율 바꿨어야 하는데 시불
+WORK_DATE = '23.04.10'
+PRJ_NAME = 'M3V5'
+MISS_NAME = 'MIS2'
+WORK_NAME = 'WORK_20'
+W_NAME = '349' # 349
 
 
 
@@ -1644,15 +1735,14 @@ anal_df = Analysis(anal_dir)
 ANA_DF = anal_df.dataframe()
 ANA_ALL_DF = anal_df.trial_dataframes
 
-
 # ORIGINAL VER
-ANA_DF.to_csv('/home01/k020a01/02.VER3/{}_{}_{}/RAY_ANA_DF.{}_{}_{}.csv'.format(PRJ_NAME, MISS_NAME, W_NAME, PRJ_NAME, MISS_NAME, W_NAME))
+ANA_DF.to_csv('/home01/k020a01/02.M3V5/{}_{}_{}/RAY_ANA_DF.{}_{}_{}.csv'.format(PRJ_NAME, W_NAME, MISS_NAME,  PRJ_NAME, W_NAME, MISS_NAME))
 import pickle
-with open("/home01/k020a01/02.VER3/{}_{}_{}/RAY_ANA_DF.{}_{}_{}.pickle".format(PRJ_NAME, MISS_NAME, W_NAME, PRJ_NAME, MISS_NAME, W_NAME), "wb") as fp:
+with open("/home01/k020a01/02.M3V5/{}_{}_{}/RAY_ANA_DF.{}_{}_{}.pickle".format(PRJ_NAME, W_NAME, MISS_NAME, PRJ_NAME, W_NAME, MISS_NAME), "wb") as fp:
 	pickle.dump(ANA_ALL_DF,fp) 
 
-'/home01/k020a01/02.VER3/{}_{}_{}/RAY_ANA_DF.{}_{}_{}.csv'.format(PRJ_NAME, MISS_NAME, W_NAME, PRJ_NAME, MISS_NAME, W_NAME)
-"/home01/k020a01/02.VER3/{}_{}_{}/RAY_ANA_DF.{}_{}_{}.pickle".format(PRJ_NAME, MISS_NAME, W_NAME, PRJ_NAME, MISS_NAME, W_NAME)
+'/home01/k020a01/02.M3V5/{}_{}_{}/RAY_ANA_DF.{}_{}_{}.csv'.format(PRJ_NAME, W_NAME, MISS_NAME, PRJ_NAME, W_NAME, MISS_NAME)
+"/home01/k020a01/02.M3V5/{}_{}_{}/RAY_ANA_DF.{}_{}_{}.pickle".format(PRJ_NAME, W_NAME, MISS_NAME, PRJ_NAME, W_NAME, MISS_NAME)
 
 
 # 다시돌린거 확인을 위해서는 아예 GPU 에서 새로 matrix 저장해주는게 맞는것 같음 
@@ -1681,6 +1771,7 @@ DF_KEY = list(ANA_DF.sort_values('AV_V_LS')['logdir'])[0]
 DF_KEY
 
 # get /model.pth M1_model.pth
+/home01/k020a01/ray_results/PRJ02.23.04.10.M3V5.MIS2.WORK_20/RAY_MY_train_3f2cac72_9_G_chem_hdim=8,G_chem_layer=3,G_exp_hdim=8,G_exp_layer=3,batch_size=64,dropout_1=0.2,dropout_2=0.5,epoch=10_2023-04-11_14-22-10
 
 
 #  2) best final's best chck 
@@ -1691,7 +1782,7 @@ TOPVAL_PATH = DF_KEY + checkpoint
 TOPVAL_PATH
 
 # get /checkpoint M2_model
-
+/home01/k020a01/ray_results/PRJ02.23.04.10.M3V5.MIS2.WORK_20/RAY_MY_train_3f2cac72_9_G_chem_hdim=8,G_chem_layer=3,G_exp_hdim=8,G_exp_layer=3,batch_size=64,dropout_1=0.2,dropout_2=0.5,epoch=10_2023-04-11_14-22-10/checkpoint_000149
 
 
 
@@ -1712,6 +1803,8 @@ TOPVAL_PATH = TOT_key + checkpoint
 TOPVAL_PATH
 
 # get /checkpoint M4_model
+/home01/k020a01/ray_results/PRJ02.23.04.10.M3V5.MIS2.WORK_20/RAY_MY_train_dc5b32ee_26_G_chem_hdim=16,G_chem_layer=3,G_exp_hdim=32,G_exp_layer=3,batch_size=32,dropout_1=0.5,dropout_2=0.5,epoch_2023-04-14_22-55-17/checkpoint_000139
+
 
 
 
@@ -1723,6 +1816,10 @@ print(DF_KEY, flush=True)
 
 # get /model.pth C1_model.pth
 
+/home01/k020a01/ray_results/PRJ02.23.04.10.M3V5.MIS2.WORK_20/RAY_MY_train_dc5b32ee_26_G_chem_hdim=16,G_chem_layer=3,G_exp_hdim=32,G_exp_layer=3,batch_size=32,dropout_1=0.5,dropout_2=0.5,epoch_2023-04-14_22-55-17
+
+
+
 
 
 # 5) correlation best's best corr 
@@ -1733,6 +1830,9 @@ TOPCOR_PATH = DF_KEY + checkpoint
 TOPCOR_PATH
 
 # get /checkpoint C2_model.pth
+
+/home01/k020a01/ray_results/PRJ02.23.04.10.M3V5.MIS2.WORK_20/RAY_MY_train_dc5b32ee_26_G_chem_hdim=16,G_chem_layer=3,G_exp_hdim=32,G_exp_layer=3,batch_size=32,dropout_1=0.5,dropout_2=0.5,epoch_2023-04-14_22-55-17/checkpoint_000206
+
 
 
 
@@ -1755,7 +1855,7 @@ TOPCOR_PATH
 
 # get /checkpoint C4_model.pth
 
-
+/home01/k020a01/ray_results/PRJ02.23.04.10.M3V5.MIS2.WORK_20/RAY_MY_train_9fc230e4_19_G_chem_hdim=16,G_chem_layer=3,G_exp_hdim=32,G_exp_layer=3,batch_size=64,dropout_1=0.2,dropout_2=0.2,epoch_2023-04-13_11-22-17/checkpoint_000185
 
 
 
@@ -1771,6 +1871,14 @@ TOPCOR_PATH
 ################## LOCAL ###################
 
 from ray.tune import ExperimentAnalysis
+
+
+
+
+
+
+
+
 
 
 def plot_Pcorr(train_corr, valid_corr, path, plotname):
@@ -1926,10 +2034,21 @@ WORK_NAME = 'WORK_20v2'
 W_NAME = 'W20v2' # 978
 
 
+#######
+# 아놔 test 비율 바꿨어야 하는데 시불
+WORK_DATE = '23.04.10'
+PRJ_NAME = 'M3V5'
+MISS_NAME = 'MIS2'
+WORK_NAME = 'WORK_20'
+W_NAME = 'W20'
+PPI_NAME = '349' # 349
+MJ_NAME = 'M3V5'
 
-PRJ_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/{}_{}_{}/'.format(PRJ_NAME, MISS_NAME, W_NAME)
-ANA_DF = pd.read_csv(PRJ_PATH+'RAY_ANA_DF.{}_{}_{}.csv'.format(PRJ_NAME, MISS_NAME, W_NAME))
-with open(PRJ_PATH+'RAY_ANA_DF.{}_{}_{}.pickle'.format(PRJ_NAME, MISS_NAME, W_NAME), 'rb') as f:
+
+
+PRJ_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/{}_{}_{}_{}/'.format(PRJ_NAME, W_NAME, MISS_NAME,  PPI_NAME)
+ANA_DF = pd.read_csv(PRJ_PATH+'RAY_ANA_DF.{}_{}_{}.csv'.format(PRJ_NAME, PPI_NAME, MISS_NAME))
+with open(PRJ_PATH+'RAY_ANA_DF.{}_{}_{}.pickle'.format(PRJ_NAME, PPI_NAME, MISS_NAME), 'rb') as f:
 	ANA_ALL_DF = pickle.load(f)
 
 
@@ -1946,11 +2065,11 @@ print(DF_KEY, flush=True)
 mini_df = ANA_ALL_DF[DF_KEY]
 my_config = ANA_DF[ANA_DF.logdir==DF_KEY]
 R_1_V = list(ANA_DF.sort_values('AV_V_LS')['AV_V_LS'])[0]
-R_1_T_CV0, R_1_1_CV0, R_1_2_CV0, pred_1_CV0, pred_1_CV0 = TEST_CPU(PRJ_PATH, 'CV_0', my_config, PRJ_PATH, 'M1_CV_0_model.pth', 'M1')
-R_1_T_CV1, R_1_1_CV1, R_1_2_CV1, pred_1_CV1, pred_1_CV1 = TEST_CPU(PRJ_PATH, 'CV_1', my_config, PRJ_PATH, 'M1_CV_1_model.pth', 'M1')
-R_1_T_CV2, R_1_1_CV2, R_1_2_CV2, pred_1_CV2, pred_1_CV2 = TEST_CPU(PRJ_PATH, 'CV_2', my_config, PRJ_PATH, 'M1_CV_2_model.pth', 'M1')
-R_1_T_CV3, R_1_1_CV3, R_1_2_CV3, pred_1_CV3, pred_1_CV3 = TEST_CPU(PRJ_PATH, 'CV_3', my_config, PRJ_PATH, 'M1_CV_3_model.pth', 'M1')
-R_1_T_CV4, R_1_1_CV4, R_1_2_CV4, pred_1_CV4, pred_1_CV4 = TEST_CPU(PRJ_PATH, 'CV_4', my_config, PRJ_PATH, 'M1_CV_4_model.pth', 'M1')
+R_1_T_CV0, R_1_1_CV0, R_1_2_CV0, pred_1_CV0, ans_1_CV0 = TEST_CPU(PRJ_PATH, 'CV_0', my_config, PRJ_PATH, 'M1_CV_0_model.pth', 'M1')
+R_1_T_CV1, R_1_1_CV1, R_1_2_CV1, pred_1_CV1, ans_1_CV1 = TEST_CPU(PRJ_PATH, 'CV_1', my_config, PRJ_PATH, 'M1_CV_1_model.pth', 'M1')
+R_1_T_CV2, R_1_1_CV2, R_1_2_CV2, pred_1_CV2, ans_1_CV2 = TEST_CPU(PRJ_PATH, 'CV_2', my_config, PRJ_PATH, 'M1_CV_2_model.pth', 'M1')
+R_1_T_CV3, R_1_1_CV3, R_1_2_CV3, pred_1_CV3, ans_1_CV3 = TEST_CPU(PRJ_PATH, 'CV_3', my_config, PRJ_PATH, 'M1_CV_3_model.pth', 'M1')
+R_1_T_CV4, R_1_1_CV4, R_1_2_CV4, pred_1_CV4, ans_1_CV4 = TEST_CPU(PRJ_PATH, 'CV_4', my_config, PRJ_PATH, 'M1_CV_4_model.pth', 'M1')
 
 plot_loss(list(mini_df.AV_T_LS), list(mini_df.AV_V_LS), PRJ_PATH, '{}_{}_{}_VAL_BestLast'.format(MJ_NAME, MISS_NAME, WORK_NAME)  )
 plot_Pcorr(list(mini_df.AV_T_PC), list(mini_df.AV_V_PC), PRJ_PATH, '{}_{}_{}_VAL_BestLast'.format(MJ_NAME, MISS_NAME, WORK_NAME))
@@ -1966,11 +2085,11 @@ print('best final check', flush=True)
 print(TOPVAL_PATH, flush=True)
 R_2_V = min(mini_df.AV_V_LS)
 R_2_V
-R_2_T_CV0, R_2_1_CV0, R_2_2_CV0, pred_2_CV0, pred_2_CV0 = TEST_CPU(PRJ_PATH, 'CV_0', my_config, PRJ_PATH, 'M2_CV_0_model.pth', 'M2')
-R_2_T_CV1, R_2_1_CV1, R_2_2_CV1, pred_2_CV1, pred_2_CV1 = TEST_CPU(PRJ_PATH, 'CV_1', my_config, PRJ_PATH, 'M2_CV_1_model.pth', 'M2')
-R_2_T_CV2, R_2_1_CV2, R_2_2_CV2, pred_2_CV2, pred_2_CV2 = TEST_CPU(PRJ_PATH, 'CV_2', my_config, PRJ_PATH, 'M2_CV_2_model.pth', 'M2')
-R_2_T_CV3, R_2_1_CV3, R_2_2_CV3, pred_2_CV3, pred_2_CV3 = TEST_CPU(PRJ_PATH, 'CV_3', my_config, PRJ_PATH, 'M2_CV_3_model.pth', 'M2')
-R_2_T_CV4, R_2_1_CV4, R_2_2_CV4, pred_2_CV4, pred_2_CV4 = TEST_CPU(PRJ_PATH, 'CV_4', my_config, PRJ_PATH, 'M2_CV_4_model.pth', 'M2')
+R_2_T_CV0, R_2_1_CV0, R_2_2_CV0, pred_2_CV0, ans_2_CV0 = TEST_CPU(PRJ_PATH, 'CV_0', my_config, PRJ_PATH, 'M2_CV_0_model.pth', 'M2')
+R_2_T_CV1, R_2_1_CV1, R_2_2_CV1, pred_2_CV1, ans_2_CV1 = TEST_CPU(PRJ_PATH, 'CV_1', my_config, PRJ_PATH, 'M2_CV_1_model.pth', 'M2')
+R_2_T_CV2, R_2_1_CV2, R_2_2_CV2, pred_2_CV2, ans_2_CV2 = TEST_CPU(PRJ_PATH, 'CV_2', my_config, PRJ_PATH, 'M2_CV_2_model.pth', 'M2')
+R_2_T_CV3, R_2_1_CV3, R_2_2_CV3, pred_2_CV3, ans_2_CV3 = TEST_CPU(PRJ_PATH, 'CV_3', my_config, PRJ_PATH, 'M2_CV_3_model.pth', 'M2')
+R_2_T_CV4, R_2_1_CV4, R_2_2_CV4, pred_2_CV4, ans_2_CV4 = TEST_CPU(PRJ_PATH, 'CV_4', my_config, PRJ_PATH, 'M2_CV_4_model.pth', 'M2')
 
 
 
@@ -1999,11 +2118,11 @@ print('best val check', flush=True)
 print(TOPVAL_PATH, flush=True)
 R_3_V = min(mini_df.AV_V_LS)
 R_3_V
-R_3_T_CV0, R_3_1_CV0, R_3_2_CV0, pred_3_CV0, pred_3_CV0 = TEST_CPU(PRJ_PATH, 'CV_0', my_config, PRJ_PATH, 'M4_CV_0_model.pth', 'M4')
-R_3_T_CV1, R_3_1_CV1, R_3_2_CV1, pred_3_CV1, pred_3_CV1 = TEST_CPU(PRJ_PATH, 'CV_1', my_config, PRJ_PATH, 'M4_CV_1_model.pth', 'M4')
-R_3_T_CV2, R_3_1_CV2, R_3_2_CV2, pred_3_CV2, pred_3_CV2 = TEST_CPU(PRJ_PATH, 'CV_2', my_config, PRJ_PATH, 'M4_CV_2_model.pth', 'M4')
-R_3_T_CV3, R_3_1_CV3, R_3_2_CV3, pred_3_CV3, pred_3_CV3 = TEST_CPU(PRJ_PATH, 'CV_3', my_config, PRJ_PATH, 'M4_CV_3_model.pth', 'M4')
-R_3_T_CV4, R_3_1_CV4, R_3_2_CV4, pred_3_CV4, pred_3_CV4 = TEST_CPU(PRJ_PATH, 'CV_4', my_config, PRJ_PATH, 'M4_CV_4_model.pth', 'M4')
+R_3_T_CV0, R_3_1_CV0, R_3_2_CV0, pred_3_CV0, ans_3_CV0 = TEST_CPU(PRJ_PATH, 'CV_0', my_config, PRJ_PATH, 'M4_CV_0_model.pth', 'M4')
+R_3_T_CV1, R_3_1_CV1, R_3_2_CV1, pred_3_CV1, ans_3_CV1 = TEST_CPU(PRJ_PATH, 'CV_1', my_config, PRJ_PATH, 'M4_CV_1_model.pth', 'M4')
+R_3_T_CV2, R_3_1_CV2, R_3_2_CV2, pred_3_CV2, ans_3_CV2 = TEST_CPU(PRJ_PATH, 'CV_2', my_config, PRJ_PATH, 'M4_CV_2_model.pth', 'M4')
+R_3_T_CV3, R_3_1_CV3, R_3_2_CV3, pred_3_CV3, ans_3_CV3 = TEST_CPU(PRJ_PATH, 'CV_3', my_config, PRJ_PATH, 'M4_CV_3_model.pth', 'M4')
+R_3_T_CV4, R_3_1_CV4, R_3_2_CV4, pred_3_CV4, ans_3_CV4 = TEST_CPU(PRJ_PATH, 'CV_4', my_config, PRJ_PATH, 'M4_CV_4_model.pth', 'M4')
 
 plot_loss(list(mini_df.AV_T_LS), list(mini_df.AV_V_LS), PRJ_PATH, '{}_{}_{}_VAL_TOT'.format(MJ_NAME, MISS_NAME, WORK_NAME)  )
 plot_Pcorr(list(mini_df.AV_T_PC), list(mini_df.AV_V_PC), PRJ_PATH, '{}_{}_{}_VAL_TOT'.format(MJ_NAME, MISS_NAME, WORK_NAME))
@@ -2023,11 +2142,11 @@ mini_df = ANA_ALL_DF[DF_KEY]
 my_config = ANA_DF[ANA_DF.logdir==DF_KEY]
 R_4_V = max_cor
 R_4_V
-R_4_T_CV0, R_4_1_CV0, R_4_2_CV0, pred_4_CV0, pred_4_CV0 = TEST_CPU(PRJ_PATH, 'CV_0', my_config, PRJ_PATH, 'C1_CV_0_model.pth', 'C1')
-R_4_T_CV1, R_4_1_CV1, R_4_2_CV1, pred_4_CV1, pred_4_CV1 = TEST_CPU(PRJ_PATH, 'CV_1', my_config, PRJ_PATH, 'C1_CV_1_model.pth', 'C1')
-R_4_T_CV2, R_4_1_CV2, R_4_2_CV2, pred_4_CV2, pred_4_CV2 = TEST_CPU(PRJ_PATH, 'CV_2', my_config, PRJ_PATH, 'C1_CV_2_model.pth', 'C1')
-R_4_T_CV3, R_4_1_CV3, R_4_2_CV3, pred_4_CV3, pred_4_CV3 = TEST_CPU(PRJ_PATH, 'CV_3', my_config, PRJ_PATH, 'C1_CV_3_model.pth', 'C1')
-R_4_T_CV4, R_4_1_CV4, R_4_2_CV4, pred_4_CV4, pred_4_CV4 = TEST_CPU(PRJ_PATH, 'CV_4', my_config, PRJ_PATH, 'C1_CV_4_model.pth', 'C1')
+R_4_T_CV0, R_4_1_CV0, R_4_2_CV0, pred_4_CV0, ans_4_CV0 = TEST_CPU(PRJ_PATH, 'CV_0', my_config, PRJ_PATH, 'C1_CV_0_model.pth', 'C1')
+R_4_T_CV1, R_4_1_CV1, R_4_2_CV1, pred_4_CV1, ans_4_CV1 = TEST_CPU(PRJ_PATH, 'CV_1', my_config, PRJ_PATH, 'C1_CV_1_model.pth', 'C1')
+R_4_T_CV2, R_4_1_CV2, R_4_2_CV2, pred_4_CV2, ans_4_CV2 = TEST_CPU(PRJ_PATH, 'CV_2', my_config, PRJ_PATH, 'C1_CV_2_model.pth', 'C1')
+R_4_T_CV3, R_4_1_CV3, R_4_2_CV3, pred_4_CV3, ans_4_CV3 = TEST_CPU(PRJ_PATH, 'CV_3', my_config, PRJ_PATH, 'C1_CV_3_model.pth', 'C1')
+R_4_T_CV4, R_4_1_CV4, R_4_2_CV4, pred_4_CV4, ans_4_CV4 = TEST_CPU(PRJ_PATH, 'CV_4', my_config, PRJ_PATH, 'C1_CV_4_model.pth', 'C1')
 
 
 
@@ -2048,11 +2167,11 @@ print('best final check', flush=True)
 print(TOPCOR_PATH, flush=True)
 R_5_V = max(mini_df.AV_V_SC)
 R_5_V
-R_5_T_CV0, R_5_1_CV0, R_5_2_CV0, pred_5_CV0, pred_5_CV0 = TEST_CPU(PRJ_PATH, 'CV_0', my_config, PRJ_PATH, 'C2_CV_0_model.pth', 'C2')
-R_5_T_CV1, R_5_1_CV1, R_5_2_CV1, pred_5_CV1, pred_5_CV1 = TEST_CPU(PRJ_PATH, 'CV_1', my_config, PRJ_PATH, 'C2_CV_1_model.pth', 'C2')
-R_5_T_CV2, R_5_1_CV2, R_5_2_CV2, pred_5_CV2, pred_5_CV2 = TEST_CPU(PRJ_PATH, 'CV_2', my_config, PRJ_PATH, 'C2_CV_2_model.pth', 'C2')
-R_5_T_CV3, R_5_1_CV3, R_5_2_CV3, pred_5_CV3, pred_5_CV3 = TEST_CPU(PRJ_PATH, 'CV_3', my_config, PRJ_PATH, 'C2_CV_3_model.pth', 'C2')
-R_5_T_CV4, R_5_1_CV4, R_5_2_CV4, pred_5_CV4, pred_5_CV4 = TEST_CPU(PRJ_PATH, 'CV_4', my_config, PRJ_PATH, 'C2_CV_4_model.pth', 'C2')
+R_5_T_CV0, R_5_1_CV0, R_5_2_CV0, pred_5_CV0, ans_5_CV0 = TEST_CPU(PRJ_PATH, 'CV_0', my_config, PRJ_PATH, 'C2_CV_0_model.pth', 'C2')
+R_5_T_CV1, R_5_1_CV1, R_5_2_CV1, pred_5_CV1, ans_5_CV1 = TEST_CPU(PRJ_PATH, 'CV_1', my_config, PRJ_PATH, 'C2_CV_1_model.pth', 'C2')
+R_5_T_CV2, R_5_1_CV2, R_5_2_CV2, pred_5_CV2, ans_5_CV2 = TEST_CPU(PRJ_PATH, 'CV_2', my_config, PRJ_PATH, 'C2_CV_2_model.pth', 'C2')
+R_5_T_CV3, R_5_1_CV3, R_5_2_CV3, pred_5_CV3, ans_5_CV3 = TEST_CPU(PRJ_PATH, 'CV_3', my_config, PRJ_PATH, 'C2_CV_3_model.pth', 'C2')
+R_5_T_CV4, R_5_1_CV4, R_5_2_CV4, pred_5_CV4, ans_5_CV4 = TEST_CPU(PRJ_PATH, 'CV_4', my_config, PRJ_PATH, 'C2_CV_4_model.pth', 'C2')
 
 #
 #
@@ -2080,11 +2199,11 @@ print('best cor check', flush=True)
 print(TOPCOR_PATH, flush=True)
 R_6_V = max(mini_df.AV_V_SC)
 R_6_V
-R_6_T_CV0, R_6_1_CV0, R_6_2_CV0, pred_6_CV0, pred_6_CV0 = TEST_CPU(PRJ_PATH, 'CV_0', my_config, PRJ_PATH, 'C4_CV_0_model.pth', 'C4')
-R_6_T_CV1, R_6_1_CV1, R_6_2_CV1, pred_6_CV1, pred_6_CV1 = TEST_CPU(PRJ_PATH, 'CV_1', my_config, PRJ_PATH, 'C4_CV_1_model.pth', 'C4')
-R_6_T_CV2, R_6_1_CV2, R_6_2_CV2, pred_6_CV2, pred_6_CV2 = TEST_CPU(PRJ_PATH, 'CV_2', my_config, PRJ_PATH, 'C4_CV_2_model.pth', 'C4')
-R_6_T_CV3, R_6_1_CV3, R_6_2_CV3, pred_6_CV3, pred_6_CV3 = TEST_CPU(PRJ_PATH, 'CV_3', my_config, PRJ_PATH, 'C4_CV_3_model.pth', 'C4')
-R_6_T_CV4, R_6_1_CV4, R_6_2_CV4, pred_6_CV4, pred_6_CV4 = TEST_CPU(PRJ_PATH, 'CV_4', my_config, PRJ_PATH, 'C4_CV_4_model.pth', 'C4')
+R_6_T_CV0, R_6_1_CV0, R_6_2_CV0, pred_6_CV0, ans_6_CV0 = TEST_CPU(PRJ_PATH, 'CV_0', my_config, PRJ_PATH, 'C4_CV_0_model.pth', 'C4')
+R_6_T_CV1, R_6_1_CV1, R_6_2_CV1, pred_6_CV1, ans_6_CV1 = TEST_CPU(PRJ_PATH, 'CV_1', my_config, PRJ_PATH, 'C4_CV_1_model.pth', 'C4')
+R_6_T_CV2, R_6_1_CV2, R_6_2_CV2, pred_6_CV2, ans_6_CV2 = TEST_CPU(PRJ_PATH, 'CV_2', my_config, PRJ_PATH, 'C4_CV_2_model.pth', 'C4')
+R_6_T_CV3, R_6_1_CV3, R_6_2_CV3, pred_6_CV3, ans_6_CV3 = TEST_CPU(PRJ_PATH, 'CV_3', my_config, PRJ_PATH, 'C4_CV_3_model.pth', 'C4')
+R_6_T_CV4, R_6_1_CV4, R_6_2_CV4, pred_6_CV4, ans_6_CV4 = TEST_CPU(PRJ_PATH, 'CV_4', my_config, PRJ_PATH, 'C4_CV_4_model.pth', 'C4')
 #
 
 plot_loss(list(mini_df.AV_T_LS), list(mini_df.AV_V_LS), PRJ_PATH, '{}_{}_{}_SCOR_TOT'.format(MJ_NAME, MISS_NAME, WORK_NAME)  )
@@ -2122,48 +2241,48 @@ def final_result(
 	print('- Test MSE STD : {:.4f}'.format(np.std([R_1_T_CV0, R_1_T_CV1, R_1_T_CV2, R_1_T_CV3, R_1_T_CV4])), flush=True)
 	print('- Test Pearson MEAN : {:.4f}'.format(np.mean([R_1_1_CV0, R_1_1_CV1, R_1_1_CV2, R_1_1_CV3, R_1_1_CV4])), flush=True)
 	print('- Test Pearson STD : {:.4f}'.format(np.std([R_1_1_CV0, R_1_1_CV1, R_1_1_CV2, R_1_1_CV3, R_1_1_CV4])), flush=True)
-	print('- Test Spearman : {:.4f}'.format(np.mean([R_1_2_CV0, R_1_2_CV1, R_1_2_CV2, R_1_2_CV3, R_1_2_CV4])), flush=True)
-	print('- Test Spearman : {:.4f}'.format(np.std([R_1_2_CV0, R_1_2_CV1, R_1_2_CV2, R_1_2_CV3, R_1_2_CV4])), flush=True)
+	print('- Test Spearman MEAN : {:.4f}'.format(np.mean([R_1_2_CV0, R_1_2_CV1, R_1_2_CV2, R_1_2_CV3, R_1_2_CV4])), flush=True)
+	print('- Test Spearman STD : {:.4f}'.format(np.std([R_1_2_CV0, R_1_2_CV1, R_1_2_CV2, R_1_2_CV3, R_1_2_CV4])), flush=True)
 	print('---2---', flush=True)
 	print('- Val MSE : {:.4f}'.format(R_2_V), flush=True)
 	print('- Test MSE MEAN : {:.4f}'.format(np.mean([R_2_T_CV0, R_2_T_CV1, R_2_T_CV2, R_2_T_CV3, R_2_T_CV4])), flush=True)
 	print('- Test MSE STD : {:.4f}'.format(np.std([R_2_T_CV0, R_2_T_CV1, R_2_T_CV2, R_2_T_CV3, R_2_T_CV4])), flush=True)
 	print('- Test Pearson MEAN : {:.4f}'.format(np.mean([R_2_1_CV0, R_2_1_CV1, R_2_1_CV2, R_2_1_CV3, R_2_1_CV4])), flush=True)
 	print('- Test Pearson STD : {:.4f}'.format(np.std([R_2_1_CV0, R_2_1_CV1, R_2_1_CV2, R_2_1_CV3, R_2_1_CV4])), flush=True)
-	print('- Test Spearman : {:.4f}'.format(np.mean([R_2_2_CV0, R_2_2_CV1, R_2_2_CV2, R_2_2_CV3, R_2_2_CV4])), flush=True)
-	print('- Test Spearman : {:.4f}'.format(np.std([R_2_2_CV0, R_2_2_CV1, R_2_2_CV2, R_2_2_CV3, R_2_2_CV4])), flush=True)
+	print('- Test Spearman MEAN: {:.4f}'.format(np.mean([R_2_2_CV0, R_2_2_CV1, R_2_2_CV2, R_2_2_CV3, R_2_2_CV4])), flush=True)
+	print('- Test Spearman STD: {:.4f}'.format(np.std([R_2_2_CV0, R_2_2_CV1, R_2_2_CV2, R_2_2_CV3, R_2_2_CV4])), flush=True)
 	print('---3---', flush=True)
 	print('- Val MSE : {:.4f}'.format(R_3_V), flush=True)
 	print('- Test MSE MEAN : {:.4f}'.format(np.mean([R_3_T_CV0, R_3_T_CV1, R_3_T_CV2, R_3_T_CV3, R_3_T_CV4])), flush=True)
 	print('- Test MSE STD : {:.4f}'.format(np.std([R_3_T_CV0, R_3_T_CV1, R_3_T_CV2, R_3_T_CV3, R_3_T_CV4])), flush=True)
 	print('- Test Pearson MEAN : {:.4f}'.format(np.mean([R_3_1_CV0, R_3_1_CV1, R_3_1_CV2, R_3_1_CV3, R_3_1_CV4])), flush=True)
 	print('- Test Pearson STD : {:.4f}'.format(np.std([R_3_1_CV0, R_3_1_CV1, R_3_1_CV2, R_3_1_CV3, R_3_1_CV4])), flush=True)
-	print('- Test Spearman : {:.4f}'.format(np.mean([R_3_2_CV0, R_3_2_CV1, R_3_2_CV2, R_3_2_CV3, R_3_2_CV4])), flush=True)
-	print('- Test Spearman : {:.4f}'.format(np.std([R_3_2_CV0, R_3_2_CV1, R_3_2_CV2, R_3_2_CV3, R_3_2_CV4])), flush=True)
+	print('- Test Spearman MEAN: {:.4f}'.format(np.mean([R_3_2_CV0, R_3_2_CV1, R_3_2_CV2, R_3_2_CV3, R_3_2_CV4])), flush=True)
+	print('- Test Spearman STD: {:.4f}'.format(np.std([R_3_2_CV0, R_3_2_CV1, R_3_2_CV2, R_3_2_CV3, R_3_2_CV4])), flush=True)
 	print('---4---', flush=True)
 	print('- Val MSE : {:.4f}'.format(R_4_V), flush=True)
 	print('- Test MSE MEAN : {:.4f}'.format(np.mean([R_4_T_CV0, R_4_T_CV1, R_4_T_CV2, R_4_T_CV3, R_4_T_CV4])), flush=True)
 	print('- Test MSE STD : {:.4f}'.format(np.std([R_4_T_CV0, R_4_T_CV1, R_4_T_CV2, R_4_T_CV3, R_4_T_CV4])), flush=True)
 	print('- Test Pearson MEAN : {:.4f}'.format(np.mean([R_4_1_CV0, R_4_1_CV1, R_4_1_CV2, R_4_1_CV3, R_4_1_CV4])), flush=True)
 	print('- Test Pearson STD : {:.4f}'.format(np.std([R_4_1_CV0, R_4_1_CV1, R_4_1_CV2, R_4_1_CV3, R_4_1_CV4])), flush=True)
-	print('- Test Spearman : {:.4f}'.format(np.mean([R_4_2_CV0, R_4_2_CV1, R_4_2_CV2, R_4_2_CV3, R_4_2_CV4])), flush=True)
-	print('- Test Spearman : {:.4f}'.format(np.std([R_4_2_CV0, R_4_2_CV1, R_4_2_CV2, R_4_2_CV3, R_4_2_CV4])), flush=True)
+	print('- Test Spearman MEAN: {:.4f}'.format(np.mean([R_4_2_CV0, R_4_2_CV1, R_4_2_CV2, R_4_2_CV3, R_4_2_CV4])), flush=True)
+	print('- Test Spearman STD: {:.4f}'.format(np.std([R_4_2_CV0, R_4_2_CV1, R_4_2_CV2, R_4_2_CV3, R_4_2_CV4])), flush=True)
 	print('---5---', flush=True)
 	print('- Val MSE : {:.4f}'.format(R_5_V), flush=True)
 	print('- Test MSE MEAN : {:.4f}'.format(np.mean([R_5_T_CV0, R_5_T_CV1, R_5_T_CV2, R_5_T_CV3, R_5_T_CV4])), flush=True)
 	print('- Test MSE STD : {:.4f}'.format(np.std([R_5_T_CV0, R_5_T_CV1, R_5_T_CV2, R_5_T_CV3, R_5_T_CV4])), flush=True)
 	print('- Test Pearson MEAN : {:.4f}'.format(np.mean([R_5_1_CV0, R_5_1_CV1, R_5_1_CV2, R_5_1_CV3, R_5_1_CV4])), flush=True)
 	print('- Test Pearson STD : {:.4f}'.format(np.std([R_5_1_CV0, R_5_1_CV1, R_5_1_CV2, R_5_1_CV3, R_5_1_CV4])), flush=True)
-	print('- Test Spearman : {:.4f}'.format(np.mean([R_5_2_CV0, R_5_2_CV1, R_5_2_CV2, R_5_2_CV3, R_5_2_CV4])), flush=True)
-	print('- Test Spearman : {:.4f}'.format(np.std([R_5_2_CV0, R_5_2_CV1, R_5_2_CV2, R_5_2_CV3, R_5_2_CV4])), flush=True)
+	print('- Test Spearman MEAN: {:.4f}'.format(np.mean([R_5_2_CV0, R_5_2_CV1, R_5_2_CV2, R_5_2_CV3, R_5_2_CV4])), flush=True)
+	print('- Test Spearman STD: {:.4f}'.format(np.std([R_5_2_CV0, R_5_2_CV1, R_5_2_CV2, R_5_2_CV3, R_5_2_CV4])), flush=True)
 	print('---6---', flush=True)
 	print('- Val MSE : {:.4f}'.format(R_6_V), flush=True)
 	print('- Test MSE MEAN : {:.4f}'.format(np.mean([R_6_T_CV0, R_6_T_CV1, R_6_T_CV2, R_6_T_CV3, R_6_T_CV4])), flush=True)
 	print('- Test MSE STD : {:.4f}'.format(np.std([R_6_T_CV0, R_6_T_CV1, R_6_T_CV2, R_6_T_CV3, R_6_T_CV4])), flush=True)
 	print('- Test Pearson MEAN : {:.4f}'.format(np.mean([R_6_1_CV0, R_6_1_CV1, R_6_1_CV2, R_6_1_CV3, R_6_1_CV4])), flush=True)
 	print('- Test Pearson STD : {:.4f}'.format(np.std([R_6_1_CV0, R_6_1_CV1, R_6_1_CV2, R_6_1_CV3, R_6_1_CV4])), flush=True)
-	print('- Test Spearman : {:.4f}'.format(np.mean([R_6_2_CV0, R_6_2_CV1, R_6_2_CV2, R_6_2_CV3, R_6_2_CV4])), flush=True)
-	print('- Test Spearman : {:.4f}'.format(np.std([R_6_2_CV0, R_6_2_CV1, R_6_2_CV2, R_6_2_CV3, R_6_2_CV4])), flush=True)
+	print('- Test Spearman MEAN: {:.4f}'.format(np.mean([R_6_2_CV0, R_6_2_CV1, R_6_2_CV2, R_6_2_CV3, R_6_2_CV4])), flush=True)
+	print('- Test Spearman STD: {:.4f}'.format(np.std([R_6_2_CV0, R_6_2_CV1, R_6_2_CV2, R_6_2_CV3, R_6_2_CV4])), flush=True)
 
 
 
@@ -2181,38 +2300,6 @@ def final_result(
 ###### BEST result to plot 
 ###### BEST result to plot 
 ###### BEST result to plot 
-
-
-#
-# 3) total checkpoint best 
-#	
-#
-import numpy as np
-TOT_min = np.Inf
-TOT_key = ""
-for key in ANA_ALL_DF.keys():
-	trial_min = min(ANA_ALL_DF[key]['AV_V_LS'])
-	if trial_min < TOT_min :
-		TOT_min = trial_min
-		TOT_key = key
-#
-
-print('best val', flush=True)
-print(TOT_key, flush=True)
-mini_df = ANA_ALL_DF[TOT_key]
-my_config = ANA_DF[ANA_DF.logdir==TOT_key]
-cck_num =mini_df[mini_df.AV_V_LS==min(mini_df.AV_V_LS)].index.item()
-checkpoint = "/checkpoint_"+str(cck_num).zfill(6)
-TOPVAL_PATH = TOT_key + checkpoint
-print('best val check', flush=True)
-print(TOPVAL_PATH, flush=True)
-R_3_V = min(mini_df.AV_V_LS)
-R_3_V
-pred_list_0, ans_list_0 = copy.deepcopy(pred_3_CV0), copy.deepcopy(pred_3_CV0)
-pred_list_1, ans_list_1 = copy.deepcopy(pred_3_CV1), copy.deepcopy(pred_3_CV1)
-pred_list_2, ans_list_2 = copy.deepcopy(pred_3_CV2), copy.deepcopy(pred_3_CV2)
-pred_list_3, ans_list_3 = copy.deepcopy(pred_3_CV3), copy.deepcopy(pred_3_CV3)
-pred_list_4, ans_list_4 = copy.deepcopy(pred_3_CV4), copy.deepcopy(pred_3_CV4)
 
 
 
@@ -2231,39 +2318,6 @@ pred_list_1, ans_list_1 = copy.deepcopy(pred_5_CV1), copy.deepcopy(pred_5_CV1)
 pred_list_2, ans_list_2 = copy.deepcopy(pred_5_CV2), copy.deepcopy(pred_5_CV2)
 pred_list_3, ans_list_3 = copy.deepcopy(pred_5_CV3), copy.deepcopy(pred_5_CV3)
 pred_list_4, ans_list_4 = copy.deepcopy(pred_5_CV4), copy.deepcopy(pred_5_CV4)
-
-
-
-#
-# (6) 그냥 최고 corr 
-#	
-#
-import numpy as np
-TOT_max = -np.Inf
-TOT_key = ""
-for key in ANA_ALL_DF.keys():
-	trial_max = max(ANA_ALL_DF[key]['AV_V_SC'])
-	if trial_max > TOT_max :
-		TOT_max = trial_max
-		TOT_key = key
-#
-
-print('best cor', flush=True)
-print(TOT_key, flush=True)
-mini_df = ANA_ALL_DF[TOT_key]
-my_config = ANA_DF[ANA_DF.logdir==TOT_key]
-cck_num =mini_df[mini_df.AV_V_SC==max(mini_df.AV_V_SC)].index.item()
-checkpoint = "/checkpoint_"+str(cck_num).zfill(6)
-TOPCOR_PATH = TOT_key + checkpoint
-print('best cor check', flush=True)
-print(TOPCOR_PATH, flush=True)
-R_6_V = max(mini_df.AV_V_SC)
-R_6_V
-pred_list_0, ans_list_0 = copy.deepcopy(pred_6_CV0), copy.deepcopy(pred_6_CV0)
-pred_list_1, ans_list_1 = copy.deepcopy(pred_6_CV1), copy.deepcopy(pred_6_CV1)
-pred_list_2, ans_list_2 = copy.deepcopy(pred_6_CV2), copy.deepcopy(pred_6_CV2)
-pred_list_3, ans_list_3 = copy.deepcopy(pred_6_CV3), copy.deepcopy(pred_6_CV3)
-pred_list_4, ans_list_4 = copy.deepcopy(pred_6_CV4), copy.deepcopy(pred_6_CV4)
 
 
 

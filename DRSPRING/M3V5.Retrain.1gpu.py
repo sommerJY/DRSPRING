@@ -1,10 +1,4 @@
 
-# best 모델 가지고 trainval 데이터에 대해서 validation 없이 학습하고 test 진행하는 과정 필요
-# -> 그게 나은지 아니면 CV mean 으로 가는게 나은지 판단해야함 
-
-
-# checkpoint dir 설정 확인 
-
 import rdkit
 import os
 import os.path as osp
@@ -76,88 +70,11 @@ import os
 import pandas as pd
 
 
-
-#NETWORK_PATH = '/st06/jiyeonH/13.DD_SESS/HumanNetV3/'
-#LINCS_PATH = '/st06/jiyeonH/11.TOX/MY_TRIAL_5/' 
-#DATA_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V3_FULL/'
-#DC_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/'
-
-
 ray.init()
 
 NETWORK_PATH = '/home01/k020a01/01.Data/HumanNet/'
 LINCS_PATH = '/home01/k020a01/01.Data/LINCS/'
 DC_PATH = '/home01/k020a01/01.Data/DrugComb/'
-
-
-
-print('NETWORK')
-							# 978
-				hunet_gsp = pd.read_csv(NETWORK_PATH+'HumanNet-GSP.tsv', sep = '\t', header = None)
-				hunet_gsp.columns = ['G_A','G_B']
-
-				LINCS_gene_file = pd.read_csv(LINCS_PATH+'geneinfo_beta.txt', sep = '\t')
-				LINCS_978 = LINCS_gene_file[LINCS_gene_file.feature_space == 'landmark']
-				LINCS_978 = LINCS_978[['gene_id','gene_symbol']]
-				LINCS_978['new_node'] = [str(list(LINCS_978.gene_id)[i]) + "__" + list(LINCS_978.gene_symbol)[i] for i in range(978)]
-				LINCS_978 = LINCS_978.reset_index(drop=True)
-				lm_entrezs = list(LINCS_978.gene_id)
-
-
-				hnet_L1 = hunet_gsp[hunet_gsp['G_A'].isin(lm_entrezs)]
-				hnet_L2 = hnet_L1[hnet_L1['G_B'].isin(lm_entrezs)] # 3885
-
-				len(set(list(hnet_L2['G_A']) + list(hnet_L2['G_B']))) # 611
-
-				ID_G = nx.from_pandas_edgelist(hnet_L2, 'G_A', 'G_B')
-
-				MSSNG = [a for a in lm_entrezs if a not in list(ID_G.nodes)]
-
-				for nn in list(MSSNG):
-					ID_G.add_node(nn)
-
-
-				# edge 3871
-				ID_GENE_ORDER_mini = list(ID_G.nodes()) # 978
-				ID_ADJ = nx.adjacency_matrix(ID_G)
-				ID_ADJ_tmp = torch.LongTensor(ID_ADJ.toarray())
-				ID_ADJ_IDX = ID_ADJ_tmp.to_sparse().indices()  # [2, 7742]
-				ID_WEIGHT = [] # len : 3871 -> 7742
-
-				ID_WEIGHT_SCORE = [1 for a in range(ID_ADJ_IDX.shape[1])]
-
-
-ID_G = nx.from_pandas_edgelist(hnet_L2, 'G_A', 'G_B') # df 에서 가져오기 
-MSSNG = [a for a in lm_entrezs if a not in list(ID_G.nodes)]
-for nn in list(MSSNG):
-	ID_G.add_node(nn) # 없는 노드 추가 
-
-ID_ADJ = nx.adjacency_matrix(ID_G)
-# <978x978 sparse matrix of type '<class 'numpy.int64'>'
-# 	with 7742 stored elements in Compressed Sparse Row format>
-
-ID_ADJ_tmp = torch.LongTensor(ID_ADJ.toarray())
-		tensor([[0, 1, 0,  ..., 0, 0, 0],
-				[1, 0, 0,  ..., 0, 0, 0],
-				[0, 0, 0,  ..., 0, 0, 0],
-				...,
-				[0, 0, 0,  ..., 0, 0, 0],
-				[0, 0, 0,  ..., 0, 0, 0],
-				[0, 0, 0,  ..., 0, 0, 0]])
-
-ID_ADJ_IDX = ID_ADJ_tmp.to_sparse().indices()  # [2, 7742]
-		tensor([[  0,   0,   0,  ..., 608, 609, 610],
-       			 [  1,   9,  11,  ..., 489, 272, 423]]) -> GCN CONV 에 사용하는 형태 
-
-ID_WEIGHT = [] # len : 3871 -> 7742
-
-
-
-
-
-
-
-
 
 
 # HS Drug pathway DB 활용 -> 349
@@ -196,49 +113,6 @@ ID_WEIGHT = [] # len : 3871 -> 7742
 
 # 원래는 edge score 있지만 일단은...
 ID_WEIGHT_SCORE = [1 for a in range(ID_ADJ_IDX.shape[1])]
-
-
-
-
-
-
-					# HS Functional 활용 -> 845
-					print('NETWORK')
-					# HUMANNET 사용 
-
-					hunet_gsp = pd.read_csv(NETWORK_PATH+'HumanNet-FN.tsv', sep = '\t', header = None)
-					hunet_gsp.columns = ['G_A','G_B','SC']
-
-					LINCS_gene_file = pd.read_csv(LINCS_PATH+'geneinfo_beta.txt', sep = '\t')
-					LINCS_978 = LINCS_gene_file[LINCS_gene_file.feature_space == 'landmark']
-					LINCS_978 = LINCS_978[['gene_id','gene_symbol']]
-					LINCS_978['new_node'] = [str(list(LINCS_978.gene_id)[i]) + "__" + list(LINCS_978.gene_symbol)[i] for i in range(978)]
-					LINCS_978 = LINCS_978.reset_index(drop=True)
-					lm_entrezs = list(LINCS_978.gene_id)
-
-					hnet_L1 = hunet_gsp[hunet_gsp['G_A'].isin(lm_entrezs)]
-					hnet_L2 = hnet_L1[hnet_L1['G_B'].isin(lm_entrezs)] # 3885
-					hnet_L3 = hnet_L2[hnet_L2.SC >= 2.0]
-
-					len(set(list(hnet_L3['G_A']) + list(hnet_L3['G_B']))) # 611
-
-					ID_G = nx.from_pandas_edgelist(hnet_L3, 'G_A', 'G_B')
-
-					# MSSNG = [a for a in lm_entrezs if a not in list(ID_G.nodes)]
-
-					#for nn in list(MSSNG):
-					#	ID_G.add_node(nn)
-
-					# edge 
-					ID_GENE_ORDER_mini = list(ID_G.nodes()) # 978
-					ID_ADJ = nx.adjacency_matrix(ID_G)
-					ID_ADJ_tmp = torch.LongTensor(ID_ADJ.toarray())
-					ID_ADJ_IDX = ID_ADJ_tmp.to_sparse().indices()  # [2, 7742]
-					ID_WEIGHT = [] # len : 3871 -> 7742
-
-					# 원래는 edge score 있지만 일단은...
-					ID_WEIGHT_SCORE = [1 for a in range(ID_ADJ_IDX.shape[1])]
-
 
 
 
@@ -282,26 +156,16 @@ BETA_SYMBOL_ORDER = list(BETA_ORDER_DF.gene_symbol)
 BETA_NEWNOD_ORDER = list(BETA_ORDER_DF.new_node)
 
 
-MJ_NAME = 'M3V4'
-WORK_DATE = '23.03.19'
+
+MJ_NAME = 'M3V5'
+WORK_DATE = '23.04.16' # 349
 MISS_NAME = 'MIS2'
 
+SAVE_PATH = '/home01/k020a01/02.M3V5/M3V5_349_DATA/'
+# SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V5_349_FULL/'
 
-# SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V4_CCLE_FULL/'
+file_name = 'M3V5_349_MISS2_FULL'
 
-SAVE_PATH = '/home01/k020a01/02.VER3/M3V4_349_DATA/'
-# SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V4_349_FULL/'
-
-SAVE_PATH = '/home01/k020a01/02.VER3/M3V4_978_DATA/'
-# SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V4_978_FULL/'
-
-SAVE_PATH = '/home01/k020a01/02.VER3/M3V4_845_DATA/'
-# SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V4_845_FULL/'
-
-
-file_name = 'M3V4_349_MISS2_FULL'
-file_name = 'M3V4_978_MISS2_FULL'
-file_name = 'M3V4_845_MISS2_FULL'
 
 
 A_B_C_S_SET_ADD = pd.read_csv(SAVE_PATH+'{}.A_B_C_S_SET_ADD.csv'.format(file_name), low_memory=False)
@@ -322,10 +186,6 @@ MY_syn = torch.load(SAVE_PATH+'{}.MY_syn.pt'.format(file_name))
 
 # A_B_C_S SET filter check
 WORK_NAME = 'WORK_20v1' # 349
-WORK_NAME = 'WORK_20v2' # 978
-WORK_NAME = 'WORK_20v3' # 845
-
-
 
 
 #MISS_filter = ['AOBO']
@@ -340,6 +200,7 @@ A_B_C_S_SET = A_B_C_S_SET[A_B_C_S_SET.SYN_OX == 'O']
 A_B_C_S_SET = A_B_C_S_SET[A_B_C_S_SET.T1OX == 'O'] ####################### new targets 
 
 A_B_C_S_SET = A_B_C_S_SET[A_B_C_S_SET.type.isin(MISS_filter)]
+
 
 
 
@@ -451,8 +312,6 @@ A_B_C_S_SET_COH2 = pd.merge(A_B_C_S_SET_COH, DC_CELL_info_filt_re[['DC_cellname'
 cell_one_hot = torch.nn.functional.one_hot(torch.Tensor(A_B_C_S_SET_COH2['cell_onehot']).long())
 
 
-
-
 ###########################################################################################
 ###########################################################################################
 ###########################################################################################
@@ -556,7 +415,6 @@ len(set(data_nodup_df2.loc[TrainVal_list]['setset']))
 
 
 
-
 # CV split 
 data_nodup_df3 = data_nodup_df2.loc[TrainVal_list]
 data_nodup_df3 = data_nodup_df3.reset_index(drop=True)
@@ -621,6 +479,7 @@ len(set(data_nodup_df3.loc[CV_5_list]['setset']))
 
 len(data_nodup_df3.loc[CV_5_list + CV_1_list + CV_2_list + CV_3_list + CV_4_list]['setset'])
 len(set(data_nodup_df3.loc[CV_5_list + CV_1_list + CV_2_list + CV_3_list + CV_4_list]['setset']))
+
 
 
 # use just index 
@@ -704,6 +563,7 @@ cell_one_hot, MY_syn_RE2, norm ) :
 
 
 
+
 # just to check if it's going well 
 CV_num = 0
 train_key = 'CV{}_train'.format(CV_num)
@@ -745,9 +605,6 @@ print(len(set(ch2_checklist) - set(ch1_checklist))) # 20514
 
 
  
-
-
-
 
 
 class DATASET_GCN_W_FT(Dataset):
@@ -911,34 +768,6 @@ def make_merged_data(CV) :
 		)
 	#
 	return T_train, T_test
-
-
-				# DATA check  
-				def make_merged_data(CV) :
-					train_data = globals()['train_data_'+str(CV)]
-					test_data = globals()['test_data_'+str(CV)]
-					#
-					T_train = DATASET_GCN_W_FT(
-						torch.Tensor(train_data['drug1_feat'][0:256]), torch.Tensor(train_data['drug2_feat'][0:256]), 
-						torch.Tensor(train_data['drug1_adj'][0:256]), torch.Tensor(train_data['drug2_adj'][0:256]),
-						torch.Tensor(train_data['GENE_A'][0:256]), torch.Tensor(train_data['GENE_B'][0:256]), 
-						torch.Tensor(train_data['TARGET_A'][0:256]), torch.Tensor(train_data['TARGET_B'][0:256]), torch.Tensor(train_data['cell_BASAL'][0:256]), 
-						JY_ADJ_IDX, JY_IDX_WEIGHT_T, 
-						train_data['cell'][0:256].float(),
-						torch.Tensor(train_data['y'][0:256])
-						)
-					#
-					T_test = DATASET_GCN_W_FT(
-						torch.Tensor(test_data['drug1_feat']), torch.Tensor(test_data['drug2_feat']), 
-						torch.Tensor(test_data['drug1_adj']), torch.Tensor(test_data['drug2_adj']),
-						torch.Tensor(test_data['GENE_A']), torch.Tensor(test_data['GENE_B']), 
-						torch.Tensor(test_data['TARGET_A']), torch.Tensor(test_data['TARGET_B']), torch.Tensor(test_data['cell_BASAL']), 
-						JY_ADJ_IDX, JY_IDX_WEIGHT_T, 
-						test_data['cell'].float(),
-						torch.Tensor(test_data['y'])
-						)
-					#
-					return T_train, T_test
 
 
 
@@ -1119,18 +948,18 @@ class MY_expGCN_parallel_model(torch.nn.Module):
 
 
 
-
 ########################################################
 
 
 # CV 0 
 
 LOSS_WEIGHT_0 = get_loss_weight(0)
-# LOSS_WEIGHT_0 = get_loss_weight(0)[0:256]
+
 
 JY_IDX_WEIGHT_T = torch.Tensor(JY_IDX_WEIGHT).view(1,-1)
 
 T_train_0, T_test_0 = make_merged_data(0)
+
 
 
 
@@ -1209,6 +1038,9 @@ def CUDA_TEST( LOADER_DICT, THIS_MODEL , use_cuda = False) :
 
 def LEARN_MODEL (PRJ_PATH, my_config, n_epoch, use_cuda = True) :
 	#
+	ABCS_tv_ch.to_csv(os.path.join(PRJ_PATH,'RETRAIN.tvlist.csv'), index=False)
+	ABCS_test_ch.to_csv(os.path.join(PRJ_PATH,'RETRAIN.testlist.csv'), index=False)
+	#
 	train_loader = torch.utils.data.DataLoader(T_train_0, batch_size = my_config["config/batch_size"].item(), collate_fn = graph_collate_fn, shuffle =False, num_workers=my_config['config/n_workers'].item()) # 
 	test_loader = torch.utils.data.DataLoader(T_test_0, batch_size = my_config["config/batch_size"].item(), collate_fn = graph_collate_fn, shuffle =False, num_workers=my_config['config/n_workers'].item()) # 
 	batch_cut_weight = [LOSS_WEIGHT_0[i:i+my_config["config/batch_size"].item()] for i in range(0,len(LOSS_WEIGHT_0), my_config["config/batch_size"].item())]
@@ -1248,6 +1080,17 @@ def LEARN_MODEL (PRJ_PATH, my_config, n_epoch, use_cuda = True) :
 	THIS_OPT = torch.optim.Adam(best_model.parameters(), lr = my_config["config/lr"].item() )
 	#
 	# n_epoch = 3 ; use_cuda = False
+	train_df = pd.DataFrame(columns =['epoch','train_loss','train_pcor','train_scor'])
+	pred_result_1 = pd.DataFrame(columns =list(range(ABCS_test_ch.shape[0])))
+	pred_result_2 = pd.DataFrame(columns =['last_loss','test_PC','test_SC'])
+	print(train_df)
+	print(pred_result_1)
+	print(pred_result_2)
+	#
+	train_df.to_csv(os.path.join(PRJ_PATH,'RETRAIN.tv_RESULT.csv'), index=False)
+	pred_result_1.to_csv(os.path.join(PRJ_PATH,'RETRAIN.test_RESULT1.csv'), index=False)
+	pred_result_2.to_csv(os.path.join(PRJ_PATH,'RETRAIN.test_RESULT2.csv'), index=False)
+	#
 	train_loss_all = []
 	train_pearson_corr_all = []
 	train_spearman_corr_all = []
@@ -1263,51 +1106,77 @@ def LEARN_MODEL (PRJ_PATH, my_config, n_epoch, use_cuda = True) :
 		print('epoch : {}/1000, TrainLoss : {}, TrainPcor : {}, TrainScor : {}'.format(epoch, last_loss, train_pc, train_sc ), flush=True)
 		checkpoint_path = os.path.join(PRJ_PATH, 'RETRAIN', "checkpoint_{}".format(epoch))
 		torch.save((best_model.state_dict(), THIS_OPT.state_dict()), checkpoint_path)
-		torch.save(best_model.state_dict(), './model.pth')
-	#
-	train_df = pd.DataFrame({
-		'epoch' : list(range(n_epoch)),
-		'train_loss' : train_loss_all,
-		'train_pcor' : train_pearson_corr_all,
-		'train_scor' : train_spearman_corr_all,
+		torch.save(best_model.state_dict(), os.path.join(PRJ_PATH, 'model.pth'))
+		#
+		train_df = pd.DataFrame({
+		'epoch' : [epoch],
+		'train_loss' : [last_loss],
+		'train_pcor' : [train_pc],
+		'train_scor' : [train_sc]
 		})
-	train_df.to_csv(os.path.join(PRJ_PATH,'RETRAIN.tv_RESULT.csv'), index=False)
-	#
-	#
-	print('start TEST', flush = True)
-	best_model.eval()
-	last_loss, test_pc, test_sc, pred_list, ans_list = CUDA_TEST( LOADER_DICT, best_model , use_cuda)
-	pred_result_1 = pd.DataFrame({
-		'test_y' : ans_list,
-		'test_pred': pred_list
-	})
-	pred_result_2 = pd.DataFrame({
-		'last_loss' : [last_loss],
-		'test_PC' : [test_pc],
-		'test_SC' : [test_sc]
-	})
+		print(train_df)
+		train_df.to_csv(os.path.join(PRJ_PATH,'RETRAIN.tv_RESULT.csv'), mode='a', index=False, header = False)
+		#
+		###############################################
+		#
+		print('start TEST', flush = True)
+		best_model.eval()
+		last_loss, test_pc, test_sc, pred_list, ans_list = CUDA_TEST( LOADER_DICT, best_model , use_cuda)
+		pred_result_1 = pd.DataFrame({
+			'test_pred_{}'.format(epoch): pred_list
+		}).T
+		print(pred_result_1)
+		pred_result_2 = pd.DataFrame({
+			'last_loss' : [last_loss],
+			'test_PC' : [test_pc],
+			'test_SC' : [test_sc]
+		})
+		print(pred_result_2)
+		pred_result_1.to_csv(os.path.join(PRJ_PATH,'RETRAIN.test_RESULT1.csv'), mode='a', index=True, header = False)
+		pred_result_2.to_csv(os.path.join(PRJ_PATH,'RETRAIN.test_RESULT2.csv'), mode='a', index=False, header = False)
+		pred_result_1 = pd.DataFrame({'test_y' : ans_list}).T
+		pred_result_1.to_csv(os.path.join(PRJ_PATH,'RETRAIN.test_RESULT1.csv'), mode='a', index=True, header = False)
+		print('epoch : {}/1000, Test Loss : {}, Test Pcor : {}, Test Scor : {}'.format(epoch, last_loss, test_pc, test_sc ), flush=True)
+	
 	# 
-	pred_result_1.to_csv(os.path.join(PRJ_PATH,'RETRAIN.test_RESULT1.csv'), index=False)
-	pred_result_2.to_csv(os.path.join(PRJ_PATH,'RETRAIN.test_RESULT2.csv'), index=False)
-	ABCS_tv_ch.to_csv(os.path.join(PRJ_PATH,'RETRAIN.tvlist.csv'), index=False)
-	ABCS_test_ch.to_csv(os.path.join(PRJ_PATH,'RETRAIN.testlist.csv'), index=False)
-
+	
+	
 
 
 
 
 W_NAME = 'W20v1'
 
-PRJ_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V4_MIS2_W20v1/'
-os.makedirs( os.path.join(PRJ_PATH,'RETRAIN'), exist_ok = True)
-ANA_DF_CSV = pd.read_csv(os.path.join(PRJ_PATH,'RAY_ANA_DF.{}_{}_{}.csv'.format(MJ_NAME, MISS_NAME, W_NAME)))
 
-my_config = ANA_DF_CSV[ANA_DF_CSV.trial_id=='98d5812c']
+PRJ_PATH = '/home01/k020a01/02.M3V5/M3V5_349_MIS2/'
+os.makedirs( os.path.join(PRJ_PATH,'RETRAIN'), exist_ok = True)
+# ANA_DF_CSV = pd.read_csv(os.path.join(PRJ_PATH,'RAY_ANA_DF.{}_{}_{}.csv'.format(MJ_NAME, MISS_NAME, W_NAME)))
+ANA_DF_CSV = pd.read_csv(os.path.join(PRJ_PATH,'RAY_ANA_DF.{}.csv'.format('M3V5_349_MIS2')))
+
+my_config = ANA_DF_CSV[ANA_DF_CSV.trial_id=='dc5b32ee'] # 349 
 
 
 # LEARN_MODEL (PRJ_PATH, my_config, model_path, model_name, model_num, n_epoch, use_cuda = True)
-LEARN_MODEL (PRJ_PATH, my_config, 500 , use_cuda = False)
-LEARN_MODEL (PRJ_PATH, my_config, 3 , use_cuda = False)
+LEARN_MODEL (PRJ_PATH, my_config, 1000 , use_cuda = True)
+LEARN_MODEL (PRJ_PATH, my_config, 3 , use_cuda = True)
+
+
+tail ~/logs/M3V5W20_GPU1_10585.log
+tail ~/02.M3V5/M3V5_349_MIS2/RETRAIN.G1.txt 
+tail ~/02.M3V5/M3V5_349_MIS2/RETRAIN.test_RESULT1.csv
+tail ~/02.M3V5/M3V5_349_MIS2/RETRAIN.tv_RESULT.csv
+tail ~/02.M3V5/M3V5_349_MIS2/RETRAIN.test_RESULT2.csv
+
+진즉에 이렇게 할걸 
+
+
+#############################################################################
+
+
+
+
+
+
 
 
 

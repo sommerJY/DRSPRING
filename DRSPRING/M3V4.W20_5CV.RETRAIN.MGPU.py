@@ -16,17 +16,6 @@ from get_input import *
 from layers import *
 
 
-#class MyTrainDataset(Dataset):
-#	def __init__(self, size):
-#		self.size = size
-#		self.data = [(torch.rand(20), torch.rand(1)) for _ in range(size)]
-#	def __len__(self):
-#		return self.size
-#
-#	def __getitem__(self, index):
-#		return self.data[index]
-
-
 def ddp_setup():
 	init_process_group(backend="nccl")
 
@@ -233,15 +222,48 @@ def load_train_objs(args): # CSV 내용 추가해야함
 	train_set = T_train_0  # load your dataset
 	val_set = T_val_0
 	#
-	dsn1_layers = [128, 128, 128]
-	dsn2_layers = [64,64,64]
-	snp_layers = [32,32]
-	inDrop = 0.5
-	Drop = 0.2
+	#
+	# 아놔 test 비율 바꿨어야 하는데 시불
+	from ray.tune import Analysis
+	WORK_DATE = '23.04.10'
+	PRJ_NAME = 'M3V5'
+	MISS_NAME = 'MIS2'
+	WORK_NAME = 'WORK_20'
+	W_NAME = '349' # 349
+	#
+	anal_dir = "/home01/k020a01/ray_results/PRJ02.{}.{}.{}.{}/".format(WORK_DATE, PRJ_NAME, MISS_NAME, WORK_NAME)
+	list_dir = os.listdir(anal_dir)
+	exp_json = [a for a in list_dir if 'experiment_state' in a]
+	exp_json
+	# anal_df = ExperimentAnalysis(anal_dir+exp_json[2])
+	anal_df = Analysis(anal_dir)
+	#
+	ANA_DF = anal_df.dataframe()
+	ANA_ALL_DF = anal_df.trial_dataframes
+	#
+	# ## change by model##################################!!!!!!!!!!!!!!!!!!
+	print('best_model : {}'.format('model 5'))
+	max_cor = max(ANA_DF.sort_values('AV_V_SC')['AV_V_SC'])
+	DF_KEY = ANA_DF[ANA_DF.AV_V_SC == max_cor]['logdir'].item()
+	mini_df = ANA_ALL_DF[DF_KEY]
+	my_config = ANA_DF[ANA_DF.logdir==DF_KEY]
+	cck_num = mini_df[mini_df.AV_V_SC==max(mini_df.AV_V_SC)].index.item()
+	checkpoint = "/checkpoint_"+str(cck_num).zfill(6)
+	#
+	#
+	dsn1_layers = [my_config['config/feat_size_0'].item(), my_config['config/feat_size_1'].item(), my_config['config/feat_size_2'].item()]
+	dsn2_layers = [my_config['config/feat_size_0'].item(), my_config['config/feat_size_1'].item(), my_config['config/feat_size_2'].item()] 
+	snp_layers = [my_config['config/feat_size_3'].item() , my_config['config/feat_size_4'].item()]
+	inDrop = my_config['config/dropout_1'].item()
+	Drop = my_config['config/dropout_2'].item()
 	#
 	model = MY_expGCN_parallel_model(
-		3, T_train_0.gcn_drug1_F.shape[-1] , 4,      # G_layer_chem, G_indim_chem, G_hiddim_chem, 
-		3, 3 , 10,      # G_layer_exp, G_indim_exp, G_hiddim_exp, 
+		my_config['config/G_chem_layer'].item(), 
+		T_train_0.gcn_drug1_F.shape[-1] , 
+		my_config['config/G_chem_hdim'].item(),      # G_layer_chem, G_indim_chem, G_hiddim_chem, 
+		my_config['config/G_exp_layer'].item(), 
+		3 , 
+		my_config['config/G_exp_hdim'].item(),      # G_layer_exp, G_indim_exp, G_hiddim_exp, 
 		dsn1_layers, dsn2_layers, snp_layers,      # drug 1 layers, drug 2 layers, merged layer, 
 		len(set(A_B_C_S_SET_SM.DrugCombCCLE)), 1,      # cell_dim ,out_dim,
 		inDrop, Drop      # inDrop, drop

@@ -593,67 +593,67 @@ print('NETWORK')
 
 
 
-					# HS 다른 pathway 사용 
-					print('NETWORK')
-					# HUMANNET 사용 
+# HS 다른 pathway 사용 
+print('NETWORK')
+# HUMANNET 사용 
 
 
-					hunet_dir = '/st06/jiyeonH/13.DD_SESS/HumanNetV3/'
+hunet_dir = '/st06/jiyeonH/13.DD_SESS/HumanNetV3/'
 
-					hunet_gsp = pd.read_csv(hunet_dir+'HS-DB.tsv', sep = '\t', header = None)
-					hunet_gsp.columns = ['G_A','G_B','SC']
+hunet_gsp = pd.read_csv(hunet_dir+'HS-DB.tsv', sep = '\t', header = None)
+hunet_gsp.columns = ['G_A','G_B','SC']
 
-					BETA_GENE = pd.read_table('/st06/jiyeonH/11.TOX/LINCS/L_2020/geneinfo_beta.txt')
-					BETA_lm_genes = BETA_GENE[BETA_GENE.feature_space=='landmark'] # 978
-					BETA_lm_genes = BETA_lm_genes.reset_index()
-					lm_entrezs = list(BETA_lm_genes.gene_id)
+BETA_GENE = pd.read_table('/st06/jiyeonH/11.TOX/LINCS/L_2020/geneinfo_beta.txt')
+BETA_lm_genes = BETA_GENE[BETA_GENE.feature_space=='landmark'] # 978
+BETA_lm_genes = BETA_lm_genes.reset_index()
+lm_entrezs = list(BETA_lm_genes.gene_id)
 
-					hnet_L1 = hunet_gsp[hunet_gsp['G_A'].isin(BETA_lm_genes.gene_id)]
-					hnet_L2 = hnet_L1[hnet_L1['G_B'].isin(BETA_lm_genes.gene_id)] # 3885
-					hnet_L3 = hnet_L2[hnet_L2.SC >= 3.5]
-
-
-					len(set(list(hnet_L3['G_A']) + list(hnet_L3['G_B']))) # 611
-
-					ID_G = nx.from_pandas_edgelist(hnet_L3, 'G_A', 'G_B')
-
-					# MSSNG = [a for a in lm_entrezs if a not in list(ID_G.nodes)]
-
-					#for nn in list(MSSNG):
-					#	ID_G.add_node(nn)
-
-					# edge 
-					ID_GENE_ORDER_mini = list(ID_G.nodes()) # 978
-					ID_ADJ = nx.adjacency_matrix(ID_G)
-					ID_ADJ_tmp = torch.LongTensor(ID_ADJ.toarray())
-					ID_ADJ_IDX = ID_ADJ_tmp.to_sparse().indices()  # [2, 7742]
-					ID_WEIGHT = [] # len : 3871 -> 7742
-
-					# 원래는 edge score 있지만 일단은...
-					ID_WEIGHT_SCORE = [1 for a in range(ID_ADJ_IDX.shape[1])]
+hnet_L1 = hunet_gsp[hunet_gsp['G_A'].isin(BETA_lm_genes.gene_id)]
+hnet_L2 = hnet_L1[hnet_L1['G_B'].isin(BETA_lm_genes.gene_id)] # 3885
+hnet_L3 = hnet_L2[hnet_L2.SC >= 3.5]
 
 
-					# 유전자 이름으로 붙이기 
-					LINCS_PATH = '/st06/jiyeonH/11.TOX/MY_TRIAL_5/' 
-					LINCS_gene_file = pd.read_csv(LINCS_PATH+'geneinfo_beta.txt', sep = '\t')
-					LINCS_978 = LINCS_gene_file[LINCS_gene_file.feature_space == 'landmark']
-					LINCS_978 = LINCS_978[['gene_id','gene_symbol']]
-					LINCS_978['new_node'] = [str(list(LINCS_978.gene_id)[i]) + "__" + list(LINCS_978.gene_symbol)[i] for i in range(978)]
-					LINCS_978 = LINCS_978.reset_index(drop=True)
+len(set(list(hnet_L3['G_A']) + list(hnet_L3['G_B']))) # 611
+
+ID_G = nx.from_pandas_edgelist(hnet_L3, 'G_A', 'G_B')
+
+# MSSNG = [a for a in lm_entrezs if a not in list(ID_G.nodes)]
+
+#for nn in list(MSSNG):
+#	ID_G.add_node(nn)
+
+# edge 
+ID_GENE_ORDER_mini = list(ID_G.nodes()) # 978
+ID_ADJ = nx.adjacency_matrix(ID_G)
+ID_ADJ_tmp = torch.LongTensor(ID_ADJ.toarray())
+ID_ADJ_IDX = ID_ADJ_tmp.to_sparse().indices()  # [2, 7742]
+ID_WEIGHT = [] # len : 3871 -> 7742
+
+# 원래는 edge score 있지만 일단은...
+ID_WEIGHT_SCORE = [1 for a in range(ID_ADJ_IDX.shape[1])]
 
 
-					new_node_names = []
-					for a in ID_G.nodes():
-						tmp_name = LINCS_978[LINCS_978.gene_id == a ]['gene_symbol'].item() # 6118
-						new_node_name = str(a) + '__' + tmp_name
-						new_node_names = new_node_names + [new_node_name]
+# 유전자 이름으로 붙이기 
+LINCS_PATH = '/st06/jiyeonH/11.TOX/MY_TRIAL_5/' 
+LINCS_gene_file = pd.read_csv(LINCS_PATH+'geneinfo_beta.txt', sep = '\t')
+LINCS_978 = LINCS_gene_file[LINCS_gene_file.feature_space == 'landmark']
+LINCS_978 = LINCS_978[['gene_id','gene_symbol']]
+LINCS_978['new_node'] = [str(list(LINCS_978.gene_id)[i]) + "__" + list(LINCS_978.gene_symbol)[i] for i in range(978)]
+LINCS_978 = LINCS_978.reset_index(drop=True)
 
-					mapping = {list(ID_G.nodes())[a]:new_node_names[a] for a in range(len(new_node_names))}
 
-					ID_G_RE = nx.relabel_nodes(ID_G, mapping)
+new_node_names = []
+for a in ID_G.nodes():
+    tmp_name = LINCS_978[LINCS_978.gene_id == a ]['gene_symbol'].item() # 6118
+    new_node_name = str(a) + '__' + tmp_name
+    new_node_names = new_node_names + [new_node_name]
 
-					MY_G = ID_G_RE 
-					MY_WEIGHT_SCORE = ID_WEIGHT_SCORE # SCORE
+mapping = {list(ID_G.nodes())[a]:new_node_names[a] for a in range(len(new_node_names))}
+
+ID_G_RE = nx.relabel_nodes(ID_G, mapping)
+
+MY_G = ID_G_RE 
+MY_WEIGHT_SCORE = ID_WEIGHT_SCORE # SCORE
 
 
 
@@ -754,20 +754,20 @@ JY_IDX_WEIGHT = MY_WEIGHT_SCORE
 
 (1) NONE MISSING : MISS_0
 
-A_B_C_S = DATA_AO_BO.reset_index(drop = True) # 11379
+A_B_C_S = DATA_AO_BO.reset_index(drop = True) # 
 A_B_C_S[['drug_row_CID','drug_col_CID', 'DrugCombCCLE']].drop_duplicates()
 
 
 (2) one missing : MISS_1
 A_B_C_S = pd.concat([DATA_AO_BO, DATA_AX_BO, DATA_AO_BX])
-A_B_C_S = A_B_C_S.reset_index(drop = True) # 38344 
+A_B_C_S = A_B_C_S.reset_index(drop = True) #  
 A_B_C_S[['drug_row_CID','drug_col_CID', 'DrugCombCCLE']].drop_duplicates()
 
 
 (3) two missing : MISS_2
 A_B_C_S = pd.concat([DATA_AO_BO, DATA_AX_BO, DATA_AO_BX, DATA_AX_BX])
-A_B_C_S = A_B_C_S.reset_index(drop = True) # 622809
-A_B_C_S[['drug_row_CID','drug_col_CID', 'DrugCombCCLE']].drop_duplicates()
+A_B_C_S = A_B_C_S.reset_index(drop = True) # 532554
+A_B_C_S[['drug_row_CID','drug_col_CID', 'DrugCombCCLE']].drop_duplicates() # 455528
 
 
 # 일단 missing 까지 다 포함하는 Drugcomb 관련 block 을 저장하겠어 
@@ -782,7 +782,7 @@ A_B_C_S[['drug_row_CID','drug_col_CID', 'DrugCombCCLE']].drop_duplicates()
 
 A_B_C_S_SET = copy.deepcopy(A_B_C_S)
 A_B_C_S_SET = A_B_C_S_SET.drop('synergy_loewe', axis = 1).drop_duplicates()
-A_B_C_S_SET = A_B_C_S_SET.reset_index(drop = True)
+A_B_C_S_SET = A_B_C_S_SET.reset_index(drop = True) # 456422
 
 
 # 50으로 제대로 자르기 위함 
@@ -828,7 +828,7 @@ max_len = max(list(A_B_C_S_SET['ROW_len'])+list(A_B_C_S_SET['COL_len']))
 A_B_C_S_SET_rlen = A_B_C_S_SET[A_B_C_S_SET.ROW_len<=50]
 A_B_C_S_SET_clen = A_B_C_S_SET_rlen[A_B_C_S_SET_rlen.COL_len<=50]
 
-A_B_C_S_SET = A_B_C_S_SET_clen.reset_index(drop=True) # 
+A_B_C_S_SET = A_B_C_S_SET_clen.reset_index(drop=True) # 378615
 
 
 
@@ -943,6 +943,7 @@ MJ_request_ANS = pd.read_csv(MJ_DIR+'PRJ2_EXP_ccle_fugcn_hst1.csv') # M3V4 node 
 MJ_request_ANS = pd.read_csv(MJ_DIR+'PRJ2_EXP_ccle_fugcn_a3t4.csv') # M3V4 node 978
 MJ_request_ANS = pd.read_csv(MJ_DIR+'PRJ2_EXP_ccle_fugcn_fnt1.csv') # M3V4 node 845
 
+MJ_request_ANS = pd.read_csv(MJ_DIR+'PRJ2_EXP_ccle_fugcn_hsc50.csv') # M3V5 node 349
 
 
 
@@ -958,7 +959,7 @@ MJ_request_ANS = pd.read_csv(MJ_DIR+'PRJ2_EXP_ccle_fugcn_fnt1.csv') # M3V4 node 
 # fu (M3 & M33 & M3V3 & M3V4) 
 A_B_C_S_SET_MJ = A_B_C_S_SET[A_B_C_S_SET.ROWCHECK.isin(MJ_request_ANS.columns)]
 A_B_C_S_SET_MJ = A_B_C_S_SET_MJ[A_B_C_S_SET_MJ.COLCHECK.isin(MJ_request_ANS.columns)]
-A_B_C_S_SET_MJ = A_B_C_S_SET_MJ.reset_index(drop = True)
+A_B_C_S_SET_MJ = A_B_C_S_SET_MJ.reset_index(drop = True) # 90678
 
 
 
