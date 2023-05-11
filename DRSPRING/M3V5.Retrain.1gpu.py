@@ -506,6 +506,7 @@ cell_one_hot, MY_syn_RE2, norm ) :
 	#train_ind = list(ABCS_train.index)
 	#val_ind = list(ABCS_val.index)
 	tv_ind = list(ABCS_tv.index)
+	random.shuffle(tv_ind)
 	test_ind = list(ABCS_test.index)
 	# 
 	chem_feat_A_tv = MY_chem_A_feat_RE2[tv_ind]; chem_feat_A_test = MY_chem_A_feat_RE2[test_ind]
@@ -575,7 +576,7 @@ val_no_dup = data_nodup_df3.loc[CV_ND_INDS[val_key]] # train val df
 tv_no_dup = pd.concat([train_no_dup, val_no_dup])
 test_no_dup = data_nodup_df2.loc[CV_ND_INDS[test_key]] # from test included df 
 #
-ABCS_tv_ch = A_B_C_S_SET_SM[A_B_C_S_SET_SM.SM_C_CHECK.isin(val_no_dup.setset)]
+ABCS_tv_ch = A_B_C_S_SET_SM[A_B_C_S_SET_SM.SM_C_CHECK.isin(list(train_no_dup.setset) + list(val_no_dup.setset))]
 ABCS_test_ch = A_B_C_S_SET_SM[A_B_C_S_SET_SM.SM_C_CHECK.isin(test_no_dup.setset)]
 
 ch1 = ABCS_tv_ch.reset_index(drop=True)
@@ -597,6 +598,7 @@ SM_C_CHECK_2 = [bb[i] + '___' + aa[i]+ '___' + cc[i] for i in ch2_ind]
 ch2_checklist = list(set(SM_C_CHECK_1+SM_C_CHECK_2)) #20733 -> 20526
 
 print('trainval : test')
+print(len(set(ch1_checklist)))
 print(len(set(ch2_checklist)))
 print(len(set(ch2_checklist) - set(ch1_checklist))) # 20514
 
@@ -955,7 +957,6 @@ class MY_expGCN_parallel_model(torch.nn.Module):
 
 LOSS_WEIGHT_0 = get_loss_weight(0)
 
-
 JY_IDX_WEIGHT_T = torch.Tensor(JY_IDX_WEIGHT).view(1,-1)
 
 T_train_0, T_test_0 = make_merged_data(0)
@@ -1041,7 +1042,7 @@ def LEARN_MODEL (PRJ_PATH, my_config, n_epoch, use_cuda = True) :
 	ABCS_tv_ch.to_csv(os.path.join(PRJ_PATH,'RETRAIN.tvlist.csv'), index=False)
 	ABCS_test_ch.to_csv(os.path.join(PRJ_PATH,'RETRAIN.testlist.csv'), index=False)
 	#
-	train_loader = torch.utils.data.DataLoader(T_train_0, batch_size = my_config["config/batch_size"].item(), collate_fn = graph_collate_fn, shuffle =False, num_workers=my_config['config/n_workers'].item()) # 
+	train_loader = torch.utils.data.DataLoader(T_train_0, batch_size = my_config["config/batch_size"].item(), collate_fn = graph_collate_fn, shuffle = True, num_workers=my_config['config/n_workers'].item()) # 
 	test_loader = torch.utils.data.DataLoader(T_test_0, batch_size = my_config["config/batch_size"].item(), collate_fn = graph_collate_fn, shuffle =False, num_workers=my_config['config/n_workers'].item()) # 
 	batch_cut_weight = [LOSS_WEIGHT_0[i:i+my_config["config/batch_size"].item()] for i in range(0,len(LOSS_WEIGHT_0), my_config["config/batch_size"].item())]
 	#
@@ -1161,7 +1162,10 @@ LEARN_MODEL (PRJ_PATH, my_config, 1000 , use_cuda = True)
 LEARN_MODEL (PRJ_PATH, my_config, 3 , use_cuda = True)
 
 
-tail ~/logs/M3V5W20_GPU1_10585.log
+
+
+
+tail ~/logs/M3V5W20_GPU1_10590.log
 tail ~/02.M3V5/M3V5_349_MIS2/RETRAIN.G1.txt 
 tail ~/02.M3V5/M3V5_349_MIS2/RETRAIN.test_RESULT1.csv
 tail ~/02.M3V5/M3V5_349_MIS2/RETRAIN.tv_RESULT.csv
@@ -1173,8 +1177,344 @@ tail ~/02.M3V5/M3V5_349_MIS2/RETRAIN.test_RESULT2.csv
 #############################################################################
 
 
+RETRAIN 결과 확인 
 
 
+
+진행할때는 163 말고 500대로 하기 
+
+# W20 
+get /home01/k020a01/02.M3V5/M3V5_349_MIS2/RETRAIN/checkpoint_598 RETRAIN_CCK
+get /home01/k020a01/02.M3V5/M3V5_349_MIS2/RETRAIN.t* 
+
+# W21
+get /home01/k020a01/02.M3V5/M3V5_W21_349_MIS2/RETRAIN/checkpoint_394 RETRAIN_CCK
+get /home01/k020a01/02.M3V5/M3V5_W21_349_MIS2/RETRAIN.t*  
+
+
+# W20 
+PRJ_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V5_W20_MIS2_349/'
+
+# W21 
+PRJ_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V5_W21_MIS2_349/'
+PRJ_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V5_W21_MIS2_978/RETRAIN/'
+
+
+RET_tv_result = pd.read_csv(os.path.join(PRJ_PATH, 'RETRAIN.tv_RESULT.csv' ))
+RET_test_result = pd.read_csv(os.path.join(PRJ_PATH, 'RETRAIN.test_RESULT2.csv' ))
+RET_test_value = pd.read_csv(os.path.join(PRJ_PATH, 'RETRAIN.test_RESULT1.csv' )) 
+RET_test_data = pd.read_csv(os.path.join(PRJ_PATH, 'RETRAIN.testlist.csv' ))  
+
+RET_test_value = RET_test_value.drop_duplicates()
+cck_answer = RET_test_value.loc['test_y']
+
+# W21 349
+# cck_result = RET_test_value.loc['test_pred_598']
+cck_result = RET_test_value.loc['test_pred_394']
+
+# W21 978
+cck_result = RET_test_value.loc['test_pred_332']
+
+
+
+cell_tissue = [ '_'.join(a.split('_')[1:]) if type(a) == str else 'NA' for a in list(RET_test_data['DrugCombCCLE'])]
+
+result_merge_df = pd.DataFrame({
+	'y_data' : cck_answer, 'pred_result' : cck_result,
+	'cell_name' : list(RET_test_data.DC_cellname), 'cell_tissue' : cell_tissue,
+	'drug_row_CID' : list(RET_test_data.drug_row_CID), 'drug_col_CID': list(RET_test_data.drug_col_CID),
+	'type' : list(RET_test_data.type)
+	})
+
+
+
+
+
+
+
+def plot_three(big_title, train_loss, valid_loss, train_Pcorr, valid_Pcorr, train_Scorr, valid_Scorr, path, plotname, epoch = 0 ):
+	fig, (ax1, ax2, ax3) = plt.subplots(1,3, figsize=(30, 8))
+	#
+	# loss plot 
+	ax1.plot(range(1,len(train_loss)+1),train_loss, label='Training Loss', color = 'Blue', linewidth=4 )
+	ax1.plot(range(1,len(valid_loss)+1),valid_loss,label='Validation Loss', color = 'Red', linewidth=4)
+	ax1.set_xlabel('epochs', fontsize=20)
+	ax1.set_ylabel('loss', fontsize=20)
+	ax1.tick_params(axis='both', which='major', labelsize=20 )
+	ax1.set_ylim(0, math.ceil(max(train_loss+valid_loss))) # 일정한 scale
+	ax1.set_xlim(0, len(train_loss)+1) # 일정한 scale
+	ax1.grid(True)
+	if epoch > 0 : 
+		ax1.axvline(x = epoch, color = 'green', linestyle = '--', linewidth = 3)
+	ax1.set_title('5CV Average Loss', fontsize=20)
+	#
+	# Pearson Corr 
+	ax2.plot(range(1,len(train_Pcorr)+1), train_Pcorr, label='Training PCorr', color = 'Blue', linewidth=4 )
+	ax2.plot(range(1,len(valid_Pcorr)+1),valid_Pcorr,label='Validation PCorr', color = 'Red', linewidth=4)
+	ax2.set_xlabel('epochs', fontsize=20)
+	ax2.set_ylabel('PCor', fontsize=20)
+	ax2.tick_params(axis='both', which='major', labelsize=20 )
+	ax2.set_ylim(0, math.ceil(max(train_Pcorr+valid_Pcorr))) # 일정한 scale
+	ax2.set_xlim(0, len(train_Pcorr)+1) # 일정한 scale
+	ax2.grid(True)
+	if epoch > 0 : 
+		ax2.axvline(x = epoch, color = 'green', linestyle = '--', linewidth = 3)
+	#
+	ax2.set_title('5CV Average Pearson', fontsize=20)
+	#
+	# Spearman Corr 
+	ax3.plot(range(1,len(train_Scorr)+1), train_Scorr, label='Training SCorr', color = 'Blue', linewidth=4 )
+	ax3.plot(range(1,len(valid_Scorr)+1),valid_Scorr,label='Validation SCorr', color = 'Red', linewidth=4)
+	ax3.set_xlabel('epochs', fontsize=20)
+	ax3.set_ylabel('SCor', fontsize=20)
+	ax3.tick_params(axis='both', which='major', labelsize=20 )
+	ax3.set_ylim(0, math.ceil(max(train_Scorr+valid_Scorr))) # 일정한 scale
+	ax3.set_xlim(0, len(train_Scorr)+1) # 일정한 scale
+	ax3.grid(True)
+	if epoch > 0 : 
+		ax3.axvline(x = epoch, color = 'green', linestyle = '--', linewidth = 3)
+	#
+	ax3.set_title('5CV Average Spearman', fontsize=20)
+	#
+	fig.suptitle(big_title, fontsize=18)
+	plt.tight_layout()
+	fig.savefig('{}/{}.three_plot.png'.format(path, plotname), bbox_inches = 'tight')
+
+
+
+####### W 20 
+# 아놔 test 비율 바꿨어야 하는데 시불
+WORK_DATE = '23.04.10'
+PRJ_NAME = 'M3V5'
+MISS_NAME = 'MIS2'
+WORK_NAME = 'WORK_20'
+W_NAME = 'W20'
+PPI_NAME = '349' # 349
+MJ_NAME = 'M3V5'
+
+plot_three(
+	"Model F2 Retrain version",
+	list(RET_tv_result.train_loss), list(RET_test_result.last_loss), 
+	list(RET_tv_result.train_pcor), list(RET_test_result.test_PC), 
+	list(RET_tv_result.train_scor), list(RET_test_result.test_SC), 
+	PRJ_PATH, '{}_{}_{}__F_RET'.format(MJ_NAME, MISS_NAME, WORK_NAME), epoch = 598 )
+
+
+
+####### W 21
+# 아놔 test 비율 바꿨어야 하는데 시불
+PRJ_NAME = 'M3V5'
+MISS_NAME = 'MIS2'
+WORK_NAME = 'WORK_21'
+W_NAME = 'W21'
+PPI_NAME = '349' # 349
+MJ_NAME = 'M3V5'
+
+
+# 버전 이름 바꿔줘야해 
+plot_three(
+	"Model 5 Retrain version",
+	list(RET_tv_result.train_loss), list(RET_test_result.last_loss), 
+	list(RET_tv_result.train_pcor), list(RET_test_result.test_PC), 
+	list(RET_tv_result.train_scor), list(RET_test_result.test_SC), 
+	PRJ_PATH, '{}_{}_{}__5_RET'.format(MJ_NAME, MISS_NAME, WORK_NAME), epoch = 394 )
+
+
+
+
+
+####### W 21 978
+# 아놔 test 비율 바꿨어야 하는데 시불
+PRJ_NAME = 'M3V5'
+MISS_NAME = 'MIS2'
+WORK_NAME = 'WORK_21'
+W_NAME = 'W21'
+PPI_NAME = '978' #
+MJ_NAME = 'M3V5'
+
+
+# 버전 이름 바꿔줘야해 
+plot_three(
+	"Model 5 Retrain version",
+	list(RET_tv_result.train_loss), list(RET_test_result.last_loss), 
+	list(RET_tv_result.train_pcor), list(RET_test_result.test_PC), 
+	list(RET_tv_result.train_scor), list(RET_test_result.test_SC), 
+	PRJ_PATH, '{}_{}_{}__5_RET'.format(MJ_NAME, MISS_NAME, WORK_NAME), epoch = 332 )
+
+
+
+
+
+
+
+
+
+
+
+tissue_set = ['CENTRAL_NERVOUS_SYSTEM', 'LUNG', 'BREAST', 'BONE', 'OVARY', 'PROSTATE', 'HAEMATOPOIETIC_AND_LYMPHOID_TISSUE', 'LARGE_INTESTINE', 'SKIN' ] # list(set(test_cell_df['tissue']))
+color_set = ['#CF3476','#FF7514','#025669','#308446','#84C3BE','#D53032','#4ddcfd','#ffcd36','#ac8cff'] # "#20603D","#828282","#1E1E1E"
+color_dict = {a : color_set[tissue_set.index(a)] for a in tissue_set}
+
+result_merge_df['tissue_oh'] = [color_dict[a] for a in list(result_merge_df['cell_tissue'])]
+
+tmptmp = result_merge_df[['cell_name','tissue_oh']].drop_duplicates()
+tmptmp.columns = ['DC_cellname','tissue_oh']
+
+
+
+test_cell_df = pd.DataFrame({'DC_cellname' : list(set(result_merge_df.cell_name))})
+
+cell_P = []
+cell_S = []
+cell_num = []
+
+for cell in list(test_cell_df.DC_cellname) :
+	tmp_test_re = result_merge_df[result_merge_df.cell_name == cell]
+	cell_P_corr, _ = stats.pearsonr(tmp_test_re.y_data, tmp_test_re.pred_result)
+	cell_S_corr, _ = stats.spearmanr(tmp_test_re.y_data, tmp_test_re.pred_result)
+	cell_nums = tmp_test_re.shape[0]
+	cell_P.append(cell_P_corr)
+	cell_S.append(cell_S_corr)
+	cell_num.append(cell_nums)
+
+
+test_cell_df['P_COR'] = cell_P
+test_cell_df['S_COR'] = cell_S
+test_cell_df['cell_num'] = cell_num
+
+test_cell_df = pd.merge(test_cell_df, tmptmp, on = 'DC_cellname', how='left')
+
+
+# Pearson corr
+test_cell_df = test_cell_df.sort_values('P_COR')
+
+fig = plt.figure(figsize=(15,8))
+x_pos = [a*2 for a in range(test_cell_df.shape[0])]
+
+plt.bar(x_pos, test_cell_df['P_COR'], color=test_cell_df['tissue_oh']) # 
+plt.xticks(x_pos,list(test_cell_df['DC_cellname']), rotation=90, fontsize= 18)
+plt.yticks(np.arange(0, 1, step=0.2),np.round(np.arange(0, 1, step=0.2),2), fontsize= 18)
+for i in range(test_cell_df.shape[0]):
+	#plt.annotate(str(list(test_cell_df['cell_num'])[i]), xy=(x_pos[i],list(test_cell_df['P_COR'])[i]), ha='center', va='bottom', fontsize= 18)
+	plt.annotate(str(list(np.round(test_cell_df['P_COR'],1))[i]), xy=(x_pos[i],list(test_cell_df['P_COR'])[i]), ha='center', va='bottom', fontsize= 18)
+
+plt.legend(loc = 'upper left')
+plt.tight_layout()
+fig.savefig('{}/{}.png'.format(PRJ_PATH, 'new_plot_pearson_RET'), bbox_inches = 'tight')
+plt.close()
+
+
+
+
+
+
+
+
+
+# 추가적으로 궁금해져서 
+# AXBX 의 비율을 살펴보기로 함 
+# total 10552
+
+5CV 때 애를 살펴봐야함 
+
+
+TEST_ALL_O = result_merge_df[result_merge_df.type.isin(['AOBO'])] # 1348
+TEST_HALF_O = result_merge_df[result_merge_df.type.isin(['AXBO','AOBX'])] # 2179
+TEST_NO_O = result_merge_df[result_merge_df.type.isin(['AXBX'])] # 7025
+
+
+
+def give_test_result_corDF (MISS_DF) : 
+	test_cell_df = pd.DataFrame({'cell_name' : list(set(MISS_DF.cell_name))})
+	#
+	cell_P = []
+	cell_S = []
+	cell_num = []
+	#
+	for cell in list(test_cell_df.cell_name) :
+		tmp_test_re = MISS_DF[MISS_DF.cell_name == cell]
+		if tmp_test_re.shape[0] > 1 :
+			cell_P_corr, _ = stats.pearsonr(tmp_test_re.y_data, tmp_test_re.pred_result)
+			cell_S_corr, _ = stats.spearmanr(tmp_test_re.y_data, tmp_test_re.pred_result)
+			cell_nums = tmp_test_re.shape[0]
+			cell_P.append(cell_P_corr)
+			cell_S.append(cell_S_corr)
+			cell_num.append(cell_nums)
+		else :
+			cell_nums = tmp_test_re.shape[0]
+			cell_P.append(0)
+			cell_S.append(0)
+			cell_num.append(cell_nums)
+	#
+	test_cell_df['P_COR'] = cell_P
+	test_cell_df['S_COR'] = cell_S
+	test_cell_df['cell_num'] = cell_num
+	#
+	test_cell_df = pd.merge(test_cell_df, result_merge_df[['cell_name','cell_tissue']].drop_duplicates(), on = 'cell_name', how = 'left'  )
+	#
+	test_cell_df = test_cell_df.sort_values('S_COR')
+	return test_cell_df
+
+
+TEST_ALL_O_RESULT = give_test_result_corDF(TEST_ALL_O)
+TEST_HALF_O_RESULT = give_test_result_corDF(TEST_HALF_O)
+TEST_NO_O_RESULT = give_test_result_corDF(TEST_NO_O)
+
+
+
+
+
+
+
+
+##### 
+
+애초에 원래 예측하려고 했던 데이터의 분포가 어떤데? 
+
+result_merge_df
+
+for_split_vio_1 = result_merge_df[['cell_name','cell_tissue','y_data']]
+for_split_vio_1.columns = ['cell_name','cell_tissue','value'] 
+for_split_vio_1['label'] = 'y_data'
+
+for_split_vio_2 = result_merge_df[['cell_name','cell_tissue','pred_result']]
+for_split_vio_2.columns = ['cell_name','cell_tissue','value'] 
+for_split_vio_2['label'] = 'pred_result'
+
+for_split_vio = pd.concat([for_split_vio_1, for_split_vio_2])
+
+
+fig, ax = plt.subplots(figsize=(20, 8))
+sns.violinplot(
+	ax =ax, data  = for_split_vio, 
+	x = 'cell_name', y = 'value', 
+	split = True, hue = 'label',
+	inner = 'quart',
+	palette = {'y_data' : '0.85', 'pred_result' : 'b'},
+	linewidth=1,  edgecolor="dimgrey")
+
+ax.set_xlabel('cell names', fontsize=20)
+ax.set_ylabel('value', fontsize=20)
+ax.set_xticks(ax.get_xticks())
+ax.set_xticklabels(ax.get_xticklabels(), rotation = 90)
+ax.tick_params(axis='y', which='major', labelsize=20 )
+plt.tight_layout()
+plt.savefig(os.path.join(PRJ_PATH,'cell_compare.png'), dpi = 300)
+plt.close()
+
+
+
+
+
+
+
+
+
+for cell_name in list(set(result_merge_df.cell_name)) :
+	cell_name
+	min(result_merge_df[result_merge_df.cell_name==cell_name]['y_data'])
+	max(result_merge_df[result_merge_df.cell_name==cell_name]['y_data'])
+	np.std(result_merge_df[result_merge_df.cell_name==cell_name]['y_data'])
 
 
 

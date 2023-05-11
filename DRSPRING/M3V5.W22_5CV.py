@@ -86,40 +86,40 @@ LINCS_PATH = '/home01/k020a01/01.Data/LINCS/'
 DC_PATH = '/home01/k020a01/01.Data/DrugComb/'
 
 
-print('NETWORK')
-			# 978
-hunet_gsp = pd.read_csv(NETWORK_PATH+'HumanNet-GSP.tsv', sep = '\t', header = None)
-hunet_gsp.columns = ['G_A','G_B']
+								print('NETWORK')
+											# 978
+								hunet_gsp = pd.read_csv(NETWORK_PATH+'HumanNet-GSP.tsv', sep = '\t', header = None)
+								hunet_gsp.columns = ['G_A','G_B']
 
-LINCS_gene_file = pd.read_csv(LINCS_PATH+'geneinfo_beta.txt', sep = '\t')
-LINCS_978 = LINCS_gene_file[LINCS_gene_file.feature_space == 'landmark']
-LINCS_978 = LINCS_978[['gene_id','gene_symbol']]
-LINCS_978['new_node'] = [str(list(LINCS_978.gene_id)[i]) + "__" + list(LINCS_978.gene_symbol)[i] for i in range(978)]
-LINCS_978 = LINCS_978.reset_index(drop=True)
-lm_entrezs = list(LINCS_978.gene_id)
-
-
-hnet_L1 = hunet_gsp[hunet_gsp['G_A'].isin(lm_entrezs)]
-hnet_L2 = hnet_L1[hnet_L1['G_B'].isin(lm_entrezs)] # 3885
-
-len(set(list(hnet_L2['G_A']) + list(hnet_L2['G_B']))) # 611
-
-ID_G = nx.from_pandas_edgelist(hnet_L2, 'G_A', 'G_B')
-
-MSSNG = [a for a in lm_entrezs if a not in list(ID_G.nodes)]
-
-for nn in list(MSSNG):
-	ID_G.add_node(nn)
+								LINCS_gene_file = pd.read_csv(LINCS_PATH+'geneinfo_beta.txt', sep = '\t')
+								LINCS_978 = LINCS_gene_file[LINCS_gene_file.feature_space == 'landmark']
+								LINCS_978 = LINCS_978[['gene_id','gene_symbol']]
+								LINCS_978['new_node'] = [str(list(LINCS_978.gene_id)[i]) + "__" + list(LINCS_978.gene_symbol)[i] for i in range(978)]
+								LINCS_978 = LINCS_978.reset_index(drop=True)
+								lm_entrezs = list(LINCS_978.gene_id)
 
 
-# edge 3871
-ID_GENE_ORDER_mini = list(ID_G.nodes()) # 978
-ID_ADJ = nx.adjacency_matrix(ID_G)
-ID_ADJ_tmp = torch.LongTensor(ID_ADJ.toarray())
-ID_ADJ_IDX = ID_ADJ_tmp.to_sparse().indices()  # [2, 7742]
-ID_WEIGHT = [] # len : 3871 -> 7742
+								hnet_L1 = hunet_gsp[hunet_gsp['G_A'].isin(lm_entrezs)]
+								hnet_L2 = hnet_L1[hnet_L1['G_B'].isin(lm_entrezs)] # 3885
 
-ID_WEIGHT_SCORE = [1 for a in range(ID_ADJ_IDX.shape[1])]
+								len(set(list(hnet_L2['G_A']) + list(hnet_L2['G_B']))) # 611
+
+								ID_G = nx.from_pandas_edgelist(hnet_L2, 'G_A', 'G_B')
+
+								MSSNG = [a for a in lm_entrezs if a not in list(ID_G.nodes)]
+
+								for nn in list(MSSNG):
+									ID_G.add_node(nn)
+
+
+								# edge 3871
+								ID_GENE_ORDER_mini = list(ID_G.nodes()) # 978
+								ID_ADJ = nx.adjacency_matrix(ID_G)
+								ID_ADJ_tmp = torch.LongTensor(ID_ADJ.toarray())
+								ID_ADJ_IDX = ID_ADJ_tmp.to_sparse().indices()  # [2, 7742]
+								ID_WEIGHT = [] # len : 3871 -> 7742
+
+								ID_WEIGHT_SCORE = [1 for a in range(ID_ADJ_IDX.shape[1])]
 
 
 
@@ -248,67 +248,22 @@ BETA_SYMBOL_ORDER = list(BETA_ORDER_DF.gene_symbol)
 BETA_NEWNOD_ORDER = list(BETA_ORDER_DF.new_node)
 
 
-MJ_NAME = 'M3V4'
-WORK_DATE = '23.03.19'
-MISS_NAME = 'MIS2'
-
-
 MJ_NAME = 'M3V5'
-WORK_DATE = '23.04.10' # 349
-MISS_NAME = 'MIS2'
-
-MJ_NAME = 'M3V5'
-WORK_DATE = '23.04.12' # 978
-MISS_NAME = 'MIS2'
-
-
-MJ_NAME = 'M3V5'
-WORK_DATE = '23.04.13' # 349
-MISS_NAME = 'MIS2'
-
-
-MJ_NAME = 'M3V5'
-WORK_DATE = '23.04.18' # 978
-MISS_NAME = 'MIS2'
-
-
-
-
-# SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V4_CCLE_FULL/'
-
-SAVE_PATH = '/home01/k020a01/02.VER3/M3V4_349_DATA/'
-# SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V4_349_FULL/'
-
-SAVE_PATH = '/home01/k020a01/02.VER3/M3V4_978_DATA/'
-# SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V4_978_FULL/'
-
-SAVE_PATH = '/home01/k020a01/02.VER3/M3V4_845_DATA/'
-# SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V4_845_FULL/'
-
-file_name = 'M3V4_349_MISS2_FULL'
-file_name = 'M3V4_978_MISS2_FULL'
-file_name = 'M3V4_845_MISS2_FULL'
-
-
-
-
-
-# W20 & W21
-SAVE_PATH = '/home01/k020a01/02.M3V5/M3V5_349_DATA/'
-# SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V5_349_FULL/'
-
-SAVE_PATH = '/home01/k020a01/02.M3V5/M3V5_978_DATA/'
-# SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V5_978_FULL/'
-
-file_name = 'M3V5_349_MISS2_FULL'
-file_name = 'M3V5_978_MISS2_FULL'
+WORK_DATE = '23.05.01' # 349
+MISS_NAME = 'MIS4'
 
 
 
 
 
 
-A_B_C_S_SET_ADD = pd.read_csv(SAVE_PATH+'{}.A_B_C_S_SET_ADD.csv'.format(file_name), low_memory=False)
+SAVE_PATH = '/home01/k020a01/02.VER3/M3V5_W22_349_DATA/'
+# SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V5_349_MIS4_FULL/'
+
+file_name = 'M3V5_349_MISS4_FULL'
+
+
+A_B_C_S_SET_ADD = pd.read_csv(SAVE_PATH+'{}.A_B_C_S_SET_ADD.csv'.format(file_name), low_memory=False, sep = '\t')
 MY_chem_A_feat = torch.load(SAVE_PATH+'{}.MY_chem_A_feat.pt'.format(file_name))
 MY_chem_B_feat = torch.load(SAVE_PATH+'{}.MY_chem_B_feat.pt'.format(file_name))
 MY_chem_A_adj = torch.load(SAVE_PATH+'{}.MY_chem_A_adj.pt'.format(file_name))
@@ -317,29 +272,16 @@ MY_g_EXP_A = torch.load(SAVE_PATH+'{}.MY_g_EXP_A.pt'.format(file_name))
 MY_g_EXP_B = torch.load(SAVE_PATH+'{}.MY_g_EXP_B.pt'.format(file_name))
 MY_Target_1_A = torch.load(SAVE_PATH+'{}.MY_Target_1_A.pt'.format(file_name))
 MY_Target_1_B = torch.load(SAVE_PATH+'{}.MY_Target_1_B.pt'.format(file_name))
-MY_Target_2_A = torch.load(SAVE_PATH+'{}.MY_Target_2_A.pt'.format(file_name))
-MY_Target_2_B = torch.load(SAVE_PATH+'{}.MY_Target_2_B.pt'.format(file_name))
 MY_CellBase = torch.load(SAVE_PATH+'{}.MY_CellBase.pt'.format(file_name))
 MY_syn = torch.load(SAVE_PATH+'{}.MY_syn.pt'.format(file_name))
 
 
 
 # A_B_C_S SET filter check
-WORK_NAME = 'WORK_20v1' # 349
-WORK_NAME = 'WORK_20v2' # 978
-WORK_NAME = 'WORK_20v3' # 845
-
-WORK_NAME = 'WORK_20' # 349
-WORK_NAME = 'WORK_20' # 978
-
-WORK_NAME = 'WORK_21' # 349
-WORK_NAME = 'WORK_21' # 978
+WORK_NAME = 'WORK_22' # 349
+WORK_NAME = 'WORK_22' # 978
 
 
-
-#MISS_filter = ['AOBO']
-#MISS_filter = ['AOBO','AXBO','AOBX']
-MISS_filter = ['AOBO','AXBO','AOBX','AXBX']
 
 A_B_C_S_SET = A_B_C_S_SET_ADD[A_B_C_S_SET_ADD.Basal_Exp == 'O']
 
@@ -348,7 +290,6 @@ A_B_C_S_SET = A_B_C_S_SET[A_B_C_S_SET.SYN_OX == 'O']
 ## A_B_C_S_SET = A_B_C_S_SET[A_B_C_S_SET.T2OX == 'O'] ###################### old targets 
 A_B_C_S_SET = A_B_C_S_SET[A_B_C_S_SET.T1OX == 'O'] ####################### new targets 
 
-A_B_C_S_SET = A_B_C_S_SET[A_B_C_S_SET.type.isin(MISS_filter)]
 
 
 
@@ -472,7 +413,15 @@ C_freq_filter = C_df[C_df.freq > CELL_CUT ]
 
 A_B_C_S_SET_COH = A_B_C_S_SET_COH[A_B_C_S_SET_COH.DC_cellname.isin(C_freq_filter.cell)]
 
+
+#########  하나 더 추가해야함 
+Cell_25_list = ["A375_SKIN","A549_LUNG","A673_BONE","BT474_BREAST","DLD1_LARGE_INTESTINE","ES2_OVARY","HCT116_LARGE_INTESTINE","HS578T_BREAST","HT29_LARGE_INTESTINE","K562_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE","LOVO_LARGE_INTESTINE","MCF7_BREAST","MDAMB231_BREAST","MDAMB468_BREAST","MELHO_SKIN","OVCAR8_OVARY","PC3_PROSTATE","RKO_LARGE_INTESTINE","SKMEL28_SKIN","SKMEL5_SKIN","SW620_LARGE_INTESTINE","T47D_BREAST","U251MG_CENTRAL_NERVOUS_SYSTEM","VCAP_PROSTATE","ZR751_BREAST"]
+A_B_C_S_SET_COH = A_B_C_S_SET_COH[A_B_C_S_SET_COH.DrugCombCCLE.isin(Cell_25_list)]
+
 DC_CELL_info_filt_re = DC_CELL_info_filt[DC_CELL_info_filt.DC_cellname.isin(C_freq_filter.cell)]
+DC_CELL_info_filt_re = DC_CELL_info_filt_re[DC_CELL_info_filt_re.DrugCombCCLE.isin(Cell_25_list)]
+
+
 DC_CELL_info_filt_re['cell_onehot'] = [a for a in range(len(set(DC_CELL_info_filt_re.DrugCombCCLE)))]
 
 DC_CELL_info_filt_re = DC_CELL_info_filt_re.reset_index(drop = True)
@@ -587,28 +536,6 @@ for i, g in grouped_df:
 		Test_list = Test_list + res[9].index.tolist()
 	else :
 		print(i)
-
-
-					# 20% test 
-					TrainVal_list = []; Test_list =[]
-
-					for i, g in grouped_df:
-						if len(g) > CELL_CUT :
-							nums = int(.20 * len(g)) 
-							bins = []
-							g2 = sklearn.utils.shuffle(g, random_state=42)
-							for ii in list(range(0, len(g2), nums)):
-								if len(bins)< 5 :
-									bins.append(ii)
-							#
-							bins = bins[1:]
-							res = np.split(g2, bins)
-							TrainVal_list = TrainVal_list + res[0].index.tolist() + res[1].index.tolist() + res[2].index.tolist() + res[3].index.tolist()
-							Test_list = Test_list + res[4].index.tolist()
-						else :
-							print(i)
-
-
 
 
 
@@ -1122,8 +1049,8 @@ def inner_train( LOADER_DICT, THIS_MODEL, THIS_OPTIMIZER , use_cuda=False) :
 		THIS_OPTIMIZER.step()
 		#
 		running_loss = running_loss + loss.item()
-		pred_list = pred_list + output.squeeze().tolist()
-		ans_list = ans_list + y.squeeze().tolist()
+		pred_list = pred_list + output.squeeze(1).tolist()
+		ans_list = ans_list + y.squeeze(1).tolist()
 	#
 	last_loss = running_loss / (batch_idx_t+1)
 	train_sc, _ = stats.spearmanr(pred_list, ans_list)
@@ -1153,8 +1080,8 @@ def inner_val( LOADER_DICT, THIS_MODEL , use_cuda = False) :
 			loss = MSE(output, y) # train 이 아니라서 weight 안넣어줌. 그냥 nn.MSE 넣어주기 
 			# update average validation loss 
 			running_loss = running_loss + loss.item()
-			pred_list = pred_list + output.squeeze().tolist()
-			ans_list = ans_list + y.squeeze().tolist()
+			pred_list = pred_list + output.squeeze(1).tolist()
+			ans_list = ans_list + y.squeeze(1).tolist()
 		#
 	last_loss = running_loss / (batch_idx_v+1)
 	val_sc, _ = stats.spearmanr(pred_list, ans_list)
@@ -1345,7 +1272,7 @@ class MY_expGCN_parallel_model(torch.nn.Module):
 def RAY_MY_train(config, checkpoint_dir=None):
 	n_epochs = 1000
 	criterion = weighted_mse_loss
-	use_cuda = False  #  #  #  #  #  #  # True
+	use_cuda = True  #  #  #  #  #  #  # True
 	#
 	dsn1_layers = [config["feat_size_0"], config["feat_size_1"] , config["feat_size_2"] ]
 	dsn2_layers = [config["feat_size_0"], config["feat_size_1"] , config["feat_size_2"] ]
@@ -1653,41 +1580,23 @@ def MAIN(ANAL_name, WORK_PATH, PRJ_PATH, PRJ_NAME, MISS_NAME, num_samples= 10, m
 	return ANALYSIS
 
 
-W_NAME = 'W20'
+W_NAME = 'W22'
 #WORK_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/{}_{}_{}/'.format(MJ_NAME, MISS_NAME, W_NAME )
-WORK_PATH = '/home01/k020a01/02.VER3/M3V4_MIS2_W20v1/'
-
+WORK_PATH = '/home01/k020a01/02.M3V5/M3V5_W22_349_MIS4/'
+PPI_NAME = '349'
 
 # cpu
-MAIN('PRJ02.{}.{}.{}.{}'.format(WORK_DATE, MJ_NAME, MISS_NAME, WORK_NAME), WORK_PATH, WORK_PATH, WORK_NAME, MISS_NAME, 4, 10, 1, 16, 1)
+MAIN('PRJ02.{}.{}.{}.{}.{}'.format(WORK_DATE, MJ_NAME, WORK_NAME, PPI_NAME, MISS_NAME), WORK_PATH, WORK_PATH, WORK_NAME, MISS_NAME, 4, 10, 1, 16, 1)
 
 
 #8gpu
-MAIN('PRJ02.{}.{}.{}.{}'.format(WORK_DATE, MJ_NAME, MISS_NAME, WORK_NAME), WORK_PATH, WORK_PATH, WORK_NAME, MISS_NAME, 50, 1000, 150, 16, 1)
+MAIN('PRJ02.{}.{}.{}.{}.{}'.format(WORK_DATE, MJ_NAME, WORK_NAME, PPI_NAME, MISS_NAME), WORK_PATH, WORK_PATH, WORK_NAME, MISS_NAME, 50, 1000, 150, 16, 1)
 
 
 
 
 
-
-그래서 성공하면 다시 W20 으로 해서 넣어야 하는데 trial 하나 당 지금 5CV 를 해야하는거니까
-범위를 많이 못줄것 같음 
-음 그럼 최소한의 범위에서 알고리즘 비교용으로 해보고
-마지막에 괜찮게 나온 애를 hyper parameter tuning 해보는게 맞는것 같다는 생각이 듬
-그러면 5CV 에서 다시 random split 을 해서 learning 하게 하면 될것 같음..! 
-
-
-그래서 우리꺼에서 해보니까 대충 64개 데이터에 대한 5CV 평균내는 내용이 대충 
-batch 16 에서 120~300 초대가 나오는것 같음 
-
-
-node 8개 잡는 방법 연구를 해야하는데 이거를 ray 버전 안높이고 그냥 일단 해볼까 
-그러고 나서 같은 내용이 어떻게 적용될 수 있는지를 생각해봐야할듯 
-
--> 일단 민지가 다시 보내주는 내용 기반으로 해봐야함 
-300대로 줄인거 preprocessing 중 
-
-
+M3V5_MIS4_WORK22.349.py
 
 
 
@@ -1708,72 +1617,17 @@ import torch
 import os 
 import copy
 
-WORK_DATE = '23.03.19'
-PRJ_NAME = 'M3V4'
-MISS_NAME = 'MIS2'
-WORK_NAME = 'WORK_20v1'
-W_NAME = 'W20v1' # 349
-
-
-WORK_DATE = '23.03.19'
-PRJ_NAME = 'M3V4'
-MISS_NAME = 'MIS2'
-WORK_NAME = 'WORK_20v2'
-W_NAME = 'W20v2' # 978
-
-# 아놔 날짜 바꿨어야하는데 시불 
-WORK_DATE = '23.03.19'
-PRJ_NAME = 'M3V4'
-MISS_NAME = 'MIS2'
-WORK_NAME = 'WORK_20v1'
-W_NAME = 'W20v1' # 349
-
-
-# 아놔 날짜 바꿨어야하는데 시불 
-WORK_DATE = '23.03.19'
-PRJ_NAME = 'M3V4'
-MISS_NAME = 'MIS2'
-WORK_NAME = 'WORK_20v2'
-W_NAME = 'W20v2' # 978
-
 #######
-# 아놔 test 비율 바꿨어야 하는데 시불
-WORK_DATE = '23.04.10'
+WORK_DATE = '23.05.01'
 PRJ_NAME = 'M3V5'
-MISS_NAME = 'MIS2'
-WORK_NAME = 'WORK_20'
-W_NAME = '349' # 349
+MISS_NAME = 'MIS4'
+WORK_NAME = 'WORK_22'
+W_NAME = 'W22'
+PPI_NAME = '349' 
 
+# PRJ02.23.05.01.M3V5.WORK_22.349.MIS4
 
-#######
-WORK_DATE = '23.04.12'
-PRJ_NAME = 'M3V5'
-MISS_NAME = 'MIS2'
-WORK_NAME = 'WORK_20'
-W_NAME = '978' 
-
-
-#######
-WORK_DATE = '23.04.13'
-PRJ_NAME = 'M3V5'
-MISS_NAME = 'MIS2'
-WORK_NAME = 'WORK_21'
-W_NAME = 'W21'
-NODE_NAME = '349' 
-
-
-#######
-WORK_DATE = '23.04.18'
-PRJ_NAME = 'M3V5'
-MISS_NAME = 'MIS2'
-WORK_NAME = 'WORK_21'
-W_NAME = 'W21'
-NODE_NAME = '978' 
-
-
-
- 
-anal_dir = "/home01/k020a01/ray_results/PRJ02.{}.{}.{}.{}/".format(WORK_DATE, PRJ_NAME, MISS_NAME, WORK_NAME)
+anal_dir = "/home01/k020a01/ray_results/PRJ02.{}.{}.{}.{}.{}/".format(WORK_DATE, PRJ_NAME, WORK_NAME, PPI_NAME, MISS_NAME)
 
 list_dir = os.listdir(anal_dir)
 exp_json = [a for a in list_dir if 'experiment_state' in a]
@@ -1787,47 +1641,14 @@ ANA_ALL_DF = anal_df.trial_dataframes
 
 
 
-
-# W20 VER
-ANA_DF.to_csv('/home01/k020a01/02.M3V5/{}_{}_{}/RAY_ANA_DF.{}_{}_{}.csv'.format(PRJ_NAME, W_NAME, MISS_NAME,  PRJ_NAME, W_NAME, MISS_NAME))
-import pickle
-with open("/home01/k020a01/02.M3V5/{}_{}_{}/RAY_ANA_DF.{}_{}_{}.pickle".format(PRJ_NAME, W_NAME, MISS_NAME, PRJ_NAME, W_NAME, MISS_NAME), "wb") as fp:
-	pickle.dump(ANA_ALL_DF,fp) 
-
-'/home01/k020a01/02.M3V5/{}_{}_{}/RAY_ANA_DF.{}_{}_{}.csv'.format(PRJ_NAME, W_NAME, MISS_NAME, PRJ_NAME, W_NAME, MISS_NAME)
-"/home01/k020a01/02.M3V5/{}_{}_{}/RAY_ANA_DF.{}_{}_{}.pickle".format(PRJ_NAME, W_NAME, MISS_NAME, PRJ_NAME, W_NAME, MISS_NAME)
-
-
-
-
 # W21 VER
-ANA_DF.to_csv('/home01/k020a01/02.M3V5/{}_{}_{}_{}/RAY_ANA_DF.{}_{}_{}_{}.csv'.format(PRJ_NAME, W_NAME, NODE_NAME, MISS_NAME,  PRJ_NAME, W_NAME, NODE_NAME, MISS_NAME))
+ANA_DF.to_csv('/home01/k020a01/02.M3V5/{}_{}_{}_{}/RAY_ANA_DF.{}_{}_{}_{}.csv'.format(PRJ_NAME, W_NAME, PPI_NAME, MISS_NAME,  PRJ_NAME, W_NAME, NODE_NAME, MISS_NAME))
 import pickle
-with open("/home01/k020a01/02.M3V5/{}_{}_{}_{}/RAY_ANA_DF.{}_{}_{}_{}.pickle".format(PRJ_NAME, W_NAME, NODE_NAME, MISS_NAME, PRJ_NAME, W_NAME, NODE_NAME, MISS_NAME), "wb") as fp:
+with open("/home01/k020a01/02.M3V5/{}_{}_{}_{}/RAY_ANA_DF.{}_{}_{}_{}.pickle".format(PRJ_NAME, W_NAME, PPI_NAME, MISS_NAME, PRJ_NAME, W_NAME, NODE_NAME, MISS_NAME), "wb") as fp:
 	pickle.dump(ANA_ALL_DF,fp) 
 
-'/home01/k020a01/02.M3V5/{}_{}_{}_{}/RAY_ANA_DF.{}_{}_{}_{}.csv'.format(PRJ_NAME, W_NAME, NODE_NAME, MISS_NAME,  PRJ_NAME, W_NAME, NODE_NAME, MISS_NAME)
-"/home01/k020a01/02.M3V5/{}_{}_{}_{}/RAY_ANA_DF.{}_{}_{}_{}.pickle".format(PRJ_NAME, W_NAME, NODE_NAME, MISS_NAME, PRJ_NAME, W_NAME, NODE_NAME, MISS_NAME)
-
-
-
-
-# 다시돌린거 확인을 위해서는 아예 GPU 에서 새로 matrix 저장해주는게 맞는것 같음 
-ANA_TF_CHECK = [a.split('_')[0]>'2023-03-27' for a in ANA_DF['date'] ] # 문제는 중간에 버린애들도 포함.. 알아서 걸릴듯
-ANA_DF_RE = ANA_DF[ANA_TF_CHECK]
-new_key = list(ANA_DF_RE.logdir)
-ANA_ALL_DF_RE = {k : v for k,v in ANA_ALL_DF.items() if k in new_key}
-
-ANA_DF_RE.to_csv('/home01/k020a01/02.VER3/{}_{}_{}/RAY_ANA_DF.{}_{}_{}.csv'.format(PRJ_NAME, MISS_NAME, W_NAME, PRJ_NAME, MISS_NAME, W_NAME))
-import pickle
-with open("/home01/k020a01/02.VER3/{}_{}_{}/RAY_ANA_DF.{}_{}_{}.pickle".format(PRJ_NAME, MISS_NAME, W_NAME, PRJ_NAME, MISS_NAME, W_NAME), "wb") as fp:
-	pickle.dump(ANA_ALL_DF_RE,fp) 
-
-'/home01/k020a01/02.VER3/{}_{}_{}/RAY_ANA_DF.{}_{}_{}.csv'.format(PRJ_NAME, MISS_NAME, W_NAME, PRJ_NAME, MISS_NAME, W_NAME)
-"/home01/k020a01/02.VER3/{}_{}_{}/RAY_ANA_DF.{}_{}_{}.pickle".format(PRJ_NAME, MISS_NAME, W_NAME, PRJ_NAME, MISS_NAME, W_NAME)
-
-ANA_DF = copy.deepcopy(ANA_DF_RE)
-ANA_ALL_DF = copy.deepcopy(ANA_ALL_DF_RE)
+'/home01/k020a01/02.M3V5/{}_{}_{}_{}/RAY_ANA_DF.{}_{}_{}_{}.csv'.format(PRJ_NAME, W_NAME, PPI_NAME, MISS_NAME,  PRJ_NAME, W_NAME, NODE_NAME, MISS_NAME)
+"/home01/k020a01/02.M3V5/{}_{}_{}_{}/RAY_ANA_DF.{}_{}_{}_{}.pickle".format(PRJ_NAME, W_NAME, PPI_NAME, MISS_NAME, PRJ_NAME, W_NAME, NODE_NAME, MISS_NAME)
 
 
 
@@ -1922,33 +1743,6 @@ TOPCOR_PATH
 
 
 
-
-7) full iteration 끝난거 확인기준 
-
-W20 349 기준 : 66a6baec
-W20 978 필요 ㄴㄴ
-W21 349 기준 : 28b3f0dc
-W21 978 기준 : 0c6b066a
-
-trial_id = '0c6b066a'
-
-DF_KEY = ANA_DF[ANA_DF.trial_id == trial_id]['logdir'].item()
-DF_KEY
-
-
-8) full iteration 끝난거 확인기준 -> best corr epoch 
-mini_df = ANA_ALL_DF[DF_KEY]
-cck_num = mini_df[mini_df.AV_V_SC==max(mini_df.AV_V_SC)].index.item()
-checkpoint = "/checkpoint_"+str(cck_num).zfill(6)
-TOPCOR_PATH = DF_KEY + checkpoint
-TOPCOR_PATH
-
-9) full iteration 끝난거 확인기준 -> best corr epoch 
-mini_df = ANA_ALL_DF[DF_KEY]
-cck_num = mini_df[mini_df.AV_V_LS==min(mini_df.AV_V_LS)].index.item()
-checkpoint = "/checkpoint_"+str(cck_num).zfill(6)
-MINLOS_PATH = DF_KEY + checkpoint
-MINLOS_PATH
 
 
 
@@ -2159,76 +1953,19 @@ def TEST_CPU (PRJ_PATH, CV_num, my_config, model_path, model_name, model_num) :
 
 
 
-
-WORK_DATE = '23.03.19'
-PRJ_NAME = 'M3V4'
-MISS_NAME = 'MIS2'
-WORK_NAME = 'WORK_20v1'
-W_NAME = 'W20v1' # 349
-
-
-
-WORK_DATE = '23.03.19'
-PRJ_NAME = 'M3V4'
-MISS_NAME = 'MIS2'
-WORK_NAME = 'WORK_20v2'
-W_NAME = 'W20v2' # 978
-
-
-#######
-# 아놔 test 비율 바꿨어야 하는데 시불
-WORK_DATE = '23.04.10'
+WORK_DATE = '23.05.01'
 PRJ_NAME = 'M3V5'
-MISS_NAME = 'MIS2'
-WORK_NAME = 'WORK_20'
-W_NAME = 'W20'
-PPI_NAME = '349' # 349
-MJ_NAME = 'M3V5'
-
-
-#######
-WORK_DATE = '23.04.12'
-PRJ_NAME = 'M3V5'
-MISS_NAME = 'MIS2'
-WORK_NAME = 'WORK_20'
-W_NAME = 'W20' 
-PPI_NAME = '978'
-MJ_NAME = 'M3V5'
-
-
-#######
-WORK_DATE = '23.04.13'
-PRJ_NAME = 'M3V5'
-MISS_NAME = 'MIS2'
-WORK_NAME = 'WORK_21'
-W_NAME = 'W21'
+MISS_NAME = 'MIS4'
+WORK_NAME = 'WORK_22'
+W_NAME = 'W22'
 PPI_NAME = '349' 
 MJ_NAME = 'M3V5'
 
 
-#######
-WORK_DATE = '23.04.18'
-PRJ_NAME = 'M3V5'
-MISS_NAME = 'MIS2'
-WORK_NAME = 'WORK_21'
-W_NAME = 'W21'
-PPI_NAME = '978' 
-MJ_NAME = 'M3V5'
 
+# /st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V5_W22_MIS4_349
 
-
-# W20 
-PRJ_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/{}_{}_{}_{}/'.format(PRJ_NAME, W_NAME, MISS_NAME,  PPI_NAME)
-ANA_DF = pd.read_csv(PRJ_PATH+'RAY_ANA_DF.{}_{}_{}.csv'.format(PRJ_NAME, PPI_NAME, MISS_NAME))
-with open(PRJ_PATH+'RAY_ANA_DF.{}_{}_{}.pickle'.format(PRJ_NAME, PPI_NAME, MISS_NAME), 'rb') as f:
-	ANA_ALL_DF = pickle.load(f)
-
-
-TOPVAL_PATH = PRJ_PATH
-
-
-
-# W21
+# W22
 PRJ_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/{}_{}_{}_{}/'.format(PRJ_NAME, W_NAME, MISS_NAME, PPI_NAME)
 ANA_DF = pd.read_csv(PRJ_PATH+'RAY_ANA_DF.{}_{}_{}_{}.csv'.format(PRJ_NAME, W_NAME, PPI_NAME, MISS_NAME))
 with open(PRJ_PATH+'RAY_ANA_DF.{}_{}_{}_{}.pickle'.format(PRJ_NAME, W_NAME, PPI_NAME, MISS_NAME), 'rb') as f:
@@ -2445,98 +2182,8 @@ plot_three(
 
 #final_result(R_1_V, R_1_T, R_1_1, R_1_2, R_2_V, R_2_T, R_2_1, R_2_2, R_3_V, R_3_T, R_3_1, R_3_2,R_4_V, R_4_T, R_4_1, R_4_2, R_5_V, R_5_T, R_5_1, R_5_2, R_6_V, R_6_T, R_6_1, R_6_2)
 
-final_result(R_1_V, R_1_T_CV0, R_1_T_CV1, R_1_T_CV2, R_1_T_CV3, R_1_T_CV4, R_1_1_CV0, R_1_1_CV1, R_1_1_CV2, R_1_1_CV3, R_1_1_CV4, R_1_2_CV0, R_1_2_CV1, R_1_2_CV2, R_1_2_CV3, R_1_2_CV4,
-	R_2_V, R_2_T_CV0, R_2_T_CV1, R_2_T_CV2, R_2_T_CV3, R_2_T_CV4, R_2_1_CV0, R_2_1_CV1, R_2_1_CV2, R_2_1_CV3, R_2_1_CV4, R_2_2_CV0, R_2_2_CV1, R_2_2_CV2, R_2_2_CV3, R_2_2_CV4,
-	R_3_V, R_3_T_CV0, R_3_T_CV1, R_3_T_CV2, R_3_T_CV3, R_3_T_CV4, R_3_1_CV0, R_3_1_CV1, R_3_1_CV2, R_3_1_CV3, R_3_1_CV4, R_3_2_CV0, R_3_2_CV1, R_3_2_CV2, R_3_2_CV3, R_3_2_CV4,
-	R_4_V, R_4_T_CV0, R_4_T_CV1, R_4_T_CV2, R_4_T_CV3, R_4_T_CV4, R_4_1_CV0, R_4_1_CV1, R_4_1_CV2, R_4_1_CV3, R_4_1_CV4, R_4_2_CV0, R_4_2_CV1, R_4_2_CV2, R_4_2_CV3, R_4_2_CV4,
-	R_5_V, R_5_T_CV0, R_5_T_CV1, R_5_T_CV2, R_5_T_CV3, R_5_T_CV4, R_5_1_CV0, R_5_1_CV1, R_5_1_CV2, R_5_1_CV3, R_5_1_CV4, R_5_2_CV0, R_5_2_CV1, R_5_2_CV2, R_5_2_CV3, R_5_2_CV4,
-	R_6_V, R_6_T_CV0, R_6_T_CV1, R_6_T_CV2, R_6_T_CV3, R_6_T_CV4, R_6_1_CV0, R_6_1_CV1, R_6_1_CV2, R_6_1_CV3, R_6_1_CV4, R_6_2_CV0, R_6_2_CV1, R_6_2_CV2, R_6_2_CV3, R_6_2_CV4)
 
 
-
-
-
-
-
-
-
-
-# 어차피 config 는 여기서부터 동일
-7) full iteration 끝난거 확인기준 
-
-W20 349 기준 : 66a6baec
-W20 978 필요 ㄴㄴ
-W21 349 기준 : 28b3f0dc
-W21 978 기준 : 0c6b066a
-
-trial_id = '0c6b066a'
-
-DF_KEY = ANA_DF[ANA_DF.trial_id == trial_id]['logdir'].item()
-DF_KEY
-mini_df = ANA_ALL_DF[DF_KEY]
-my_config = ANA_DF[ANA_DF.logdir==DF_KEY]
-R_7_V = list(mini_df.AV_V_PC)[-1]
-
-R_7_T_CV0, R_7_1_CV0, R_7_2_CV0, pred_7_CV0, ans_7_CV0 = TEST_CPU(PRJ_PATH, 'CV_0', my_config, PRJ_PATH, 'F1_CV_0_model.pth', 'F1')
-R_7_T_CV1, R_7_1_CV1, R_7_2_CV1, pred_7_CV1, ans_7_CV1 = TEST_CPU(PRJ_PATH, 'CV_1', my_config, PRJ_PATH, 'F1_CV_1_model.pth', 'F1')
-R_7_T_CV2, R_7_1_CV2, R_7_2_CV2, pred_7_CV2, ans_7_CV2 = TEST_CPU(PRJ_PATH, 'CV_2', my_config, PRJ_PATH, 'F1_CV_2_model.pth', 'F1')
-R_7_T_CV3, R_7_1_CV3, R_7_2_CV3, pred_7_CV3, ans_7_CV3 = TEST_CPU(PRJ_PATH, 'CV_3', my_config, PRJ_PATH, 'F1_CV_3_model.pth', 'F1')
-R_7_T_CV4, R_7_1_CV4, R_7_2_CV4, pred_7_CV4, ans_7_CV4 = TEST_CPU(PRJ_PATH, 'CV_4', my_config, PRJ_PATH, 'F1_CV_4_model.pth', 'F1')
-
-
-8) full iteration 끝난거 확인기준 -> best corr epoch 
-mini_df = ANA_ALL_DF[DF_KEY]
-cck_num = mini_df[mini_df.AV_V_SC==max(mini_df.AV_V_SC)].index.item()
-checkpoint = "/checkpoint_"+str(cck_num).zfill(6)
-TOPCOR_PATH = DF_KEY + checkpoint
-TOPCOR_PATH
-
-R_8_V = max(mini_df.AV_V_SC)
-R_8_T_CV0, R_8_1_CV0, R_8_2_CV0, pred_8_CV0, ans_8_CV0 = TEST_CPU(PRJ_PATH, 'CV_0', my_config, PRJ_PATH, 'F2_CV_0_model.pth', 'F2')
-R_8_T_CV1, R_8_1_CV1, R_8_2_CV1, pred_8_CV1, ans_8_CV1 = TEST_CPU(PRJ_PATH, 'CV_1', my_config, PRJ_PATH, 'F2_CV_1_model.pth', 'F2')
-R_8_T_CV2, R_8_1_CV2, R_8_2_CV2, pred_8_CV2, ans_8_CV2 = TEST_CPU(PRJ_PATH, 'CV_2', my_config, PRJ_PATH, 'F2_CV_2_model.pth', 'F2')
-R_8_T_CV3, R_8_1_CV3, R_8_2_CV3, pred_8_CV3, ans_8_CV3 = TEST_CPU(PRJ_PATH, 'CV_3', my_config, PRJ_PATH, 'F2_CV_3_model.pth', 'F2')
-R_8_T_CV4, R_8_1_CV4, R_8_2_CV4, pred_8_CV4, ans_8_CV4 = TEST_CPU(PRJ_PATH, 'CV_4', my_config, PRJ_PATH, 'F2_CV_4_model.pth', 'F2')
-
-
-
-9) full iteration 끝난거 확인기준 -> min loss epoch 
-mini_df = ANA_ALL_DF[DF_KEY]
-cck_num = mini_df[mini_df.AV_V_LS==min(mini_df.AV_V_LS)].index.item()
-checkpoint = "/checkpoint_"+str(cck_num).zfill(6)
-MINLOS_PATH = DF_KEY + checkpoint
-MINLOS_PATH
-
-R_9_V = min(mini_df.AV_V_LS)
-R_9_T_CV0, R_9_1_CV0, R_9_2_CV0, pred_9_CV0, ans_9_CV0 = TEST_CPU(PRJ_PATH, 'CV_0', my_config, PRJ_PATH, 'F3_CV_0_model.pth', 'F3')
-R_9_T_CV1, R_9_1_CV1, R_9_2_CV1, pred_9_CV1, ans_9_CV1 = TEST_CPU(PRJ_PATH, 'CV_1', my_config, PRJ_PATH, 'F3_CV_1_model.pth', 'F3')
-R_9_T_CV2, R_9_1_CV2, R_9_2_CV2, pred_9_CV2, ans_9_CV2 = TEST_CPU(PRJ_PATH, 'CV_2', my_config, PRJ_PATH, 'F3_CV_2_model.pth', 'F3')
-R_9_T_CV3, R_9_1_CV3, R_9_2_CV3, pred_9_CV3, ans_9_CV3 = TEST_CPU(PRJ_PATH, 'CV_3', my_config, PRJ_PATH, 'F3_CV_3_model.pth', 'F3')
-R_9_T_CV4, R_9_1_CV4, R_9_2_CV4, pred_9_CV4, ans_9_CV4 = TEST_CPU(PRJ_PATH, 'CV_4', my_config, PRJ_PATH, 'F3_CV_4_model.pth', 'F3')
-
-
-
-plot_three(
-	"Model 7,8,9",
-	list(mini_df.AV_T_LS), list(mini_df.AV_V_LS), 
-	list(mini_df.AV_T_PC), list(mini_df.AV_V_PC), 
-	list(mini_df.AV_T_SC), list(mini_df.AV_V_SC), 
-	PRJ_PATH, '{}_{}_{}__Full_iter'.format(MJ_NAME, MISS_NAME, WORK_NAME), epoch = cck_num )
-
-
-
-np.mean([R_9_T_CV0, R_9_T_CV1, R_9_T_CV2, R_9_T_CV3, R_9_T_CV4])
-np.std([R_9_T_CV0, R_9_T_CV1, R_9_T_CV2, R_9_T_CV3, R_9_T_CV4])
-np.mean([R_9_1_CV0, R_9_1_CV1, R_9_1_CV2, R_9_1_CV3, R_9_1_CV4])
-np.std([R_9_1_CV0, R_9_1_CV1, R_9_1_CV2, R_9_1_CV3, R_9_1_CV4])
-np.mean([R_9_2_CV0, R_9_2_CV1, R_9_2_CV2, R_9_2_CV3, R_9_2_CV4])
-np.std([R_9_2_CV0, R_9_2_CV1, R_9_2_CV2, R_9_2_CV3, R_9_2_CV4])
-
-
-final_result_reit (
-	R_7_V, R_7_T_CV0, R_7_T_CV1, R_7_T_CV2, R_7_T_CV3, R_7_T_CV4, R_7_1_CV0, R_7_1_CV1, R_7_1_CV2, R_7_1_CV3, R_7_1_CV4, R_7_2_CV0, R_7_2_CV1, R_7_2_CV2, R_7_2_CV3, R_7_2_CV4,
-	R_8_V, R_8_T_CV0, R_8_T_CV1, R_8_T_CV2, R_8_T_CV3, R_8_T_CV4, R_8_1_CV0, R_8_1_CV1, R_8_1_CV2, R_8_1_CV3, R_8_1_CV4, R_8_2_CV0, R_8_2_CV1, R_8_2_CV2, R_8_2_CV3, R_8_2_CV4,
-	R_9_V, R_9_T_CV0, R_9_T_CV1, R_9_T_CV2, R_9_T_CV3, R_9_T_CV4, R_9_1_CV0, R_9_1_CV1, R_9_1_CV2, R_9_1_CV3, R_9_1_CV4, R_9_2_CV0, R_9_2_CV1, R_9_2_CV2, R_9_2_CV3, R_9_2_CV4)
 
 
 
@@ -2596,6 +2243,14 @@ def final_result(
 	print('- Test Pearson STD : {:.4f}'.format(np.std([R_6_1_CV0, R_6_1_CV1, R_6_1_CV2, R_6_1_CV3, R_6_1_CV4])), flush=True)
 	print('- Test Spearman MEAN: {:.4f}'.format(np.mean([R_6_2_CV0, R_6_2_CV1, R_6_2_CV2, R_6_2_CV3, R_6_2_CV4])), flush=True)
 	print('- Test Spearman STD: {:.4f}'.format(np.std([R_6_2_CV0, R_6_2_CV1, R_6_2_CV2, R_6_2_CV3, R_6_2_CV4])), flush=True)
+
+
+final_result(R_1_V, R_1_T_CV0, R_1_T_CV1, R_1_T_CV2, R_1_T_CV3, R_1_T_CV4, R_1_1_CV0, R_1_1_CV1, R_1_1_CV2, R_1_1_CV3, R_1_1_CV4, R_1_2_CV0, R_1_2_CV1, R_1_2_CV2, R_1_2_CV3, R_1_2_CV4,
+	R_2_V, R_2_T_CV0, R_2_T_CV1, R_2_T_CV2, R_2_T_CV3, R_2_T_CV4, R_2_1_CV0, R_2_1_CV1, R_2_1_CV2, R_2_1_CV3, R_2_1_CV4, R_2_2_CV0, R_2_2_CV1, R_2_2_CV2, R_2_2_CV3, R_2_2_CV4,
+	R_3_V, R_3_T_CV0, R_3_T_CV1, R_3_T_CV2, R_3_T_CV3, R_3_T_CV4, R_3_1_CV0, R_3_1_CV1, R_3_1_CV2, R_3_1_CV3, R_3_1_CV4, R_3_2_CV0, R_3_2_CV1, R_3_2_CV2, R_3_2_CV3, R_3_2_CV4,
+	R_4_V, R_4_T_CV0, R_4_T_CV1, R_4_T_CV2, R_4_T_CV3, R_4_T_CV4, R_4_1_CV0, R_4_1_CV1, R_4_1_CV2, R_4_1_CV3, R_4_1_CV4, R_4_2_CV0, R_4_2_CV1, R_4_2_CV2, R_4_2_CV3, R_4_2_CV4,
+	R_5_V, R_5_T_CV0, R_5_T_CV1, R_5_T_CV2, R_5_T_CV3, R_5_T_CV4, R_5_1_CV0, R_5_1_CV1, R_5_1_CV2, R_5_1_CV3, R_5_1_CV4, R_5_2_CV0, R_5_2_CV1, R_5_2_CV2, R_5_2_CV3, R_5_2_CV4,
+	R_6_V, R_6_T_CV0, R_6_T_CV1, R_6_T_CV2, R_6_T_CV3, R_6_T_CV4, R_6_1_CV0, R_6_1_CV1, R_6_1_CV2, R_6_1_CV3, R_6_1_CV4, R_6_2_CV0, R_6_2_CV1, R_6_2_CV2, R_6_2_CV3, R_6_2_CV4)
 
 
 
@@ -2670,25 +2325,6 @@ pred_list_1, ans_list_1 = copy.deepcopy(pred_5_CV1), copy.deepcopy(ans_5_CV0)
 pred_list_2, ans_list_2 = copy.deepcopy(pred_5_CV2), copy.deepcopy(ans_5_CV0)
 pred_list_3, ans_list_3 = copy.deepcopy(pred_5_CV3), copy.deepcopy(ans_5_CV0)
 pred_list_4, ans_list_4 = copy.deepcopy(pred_5_CV4), copy.deepcopy(ans_5_CV0)
-
-pred_list_0, ans_list_0 = copy.deepcopy(pred_6_CV0), copy.deepcopy(ans_6_CV0)
-pred_list_1, ans_list_1 = copy.deepcopy(pred_6_CV1), copy.deepcopy(ans_6_CV0)
-pred_list_2, ans_list_2 = copy.deepcopy(pred_6_CV2), copy.deepcopy(ans_6_CV0)
-pred_list_3, ans_list_3 = copy.deepcopy(pred_6_CV3), copy.deepcopy(ans_6_CV0)
-pred_list_4, ans_list_4 = copy.deepcopy(pred_6_CV4), copy.deepcopy(ans_6_CV0)
-
-pred_list_0, ans_list_0 = copy.deepcopy(pred_8_CV0), copy.deepcopy(ans_8_CV0)
-pred_list_1, ans_list_1 = copy.deepcopy(pred_8_CV1), copy.deepcopy(ans_8_CV0)
-pred_list_2, ans_list_2 = copy.deepcopy(pred_8_CV2), copy.deepcopy(ans_8_CV0)
-pred_list_3, ans_list_3 = copy.deepcopy(pred_8_CV3), copy.deepcopy(ans_8_CV0)
-pred_list_4, ans_list_4 = copy.deepcopy(pred_8_CV4), copy.deepcopy(ans_8_CV0)
-
-pred_list_0, ans_list_0 = copy.deepcopy(pred_9_CV0), copy.deepcopy(ans_9_CV0)
-pred_list_1, ans_list_1 = copy.deepcopy(pred_9_CV1), copy.deepcopy(ans_9_CV0)
-pred_list_2, ans_list_2 = copy.deepcopy(pred_9_CV2), copy.deepcopy(ans_9_CV0)
-pred_list_3, ans_list_3 = copy.deepcopy(pred_9_CV3), copy.deepcopy(ans_9_CV0)
-pred_list_4, ans_list_4 = copy.deepcopy(pred_9_CV4), copy.deepcopy(ans_9_CV0)
-
 
 
 
@@ -2785,7 +2421,7 @@ test_ind = list(ABCS_test.index)
 
 
 
-ABCS_test_result = ABCS_test[['DrugCombCCLE','type','cell_onehot' ]]
+ABCS_test_result = ABCS_test[['DrugCombCCLE','cell_onehot' ]]
 ABCS_test_result['ANS'] = ans_list_0
 ABCS_test_result['PRED_0'] = pred_list_0
 ABCS_test_result['PRED_1'] = pred_list_1
@@ -3816,12 +3452,6 @@ plt.tight_layout()
 plotname = 'FINAL_cell_box'
 fig.savefig('{}/{}.png'.format(cell_path, plotname), bbox_inches = 'tight')
 plt.close()
-
-
-
-
-
-
 
 
 
