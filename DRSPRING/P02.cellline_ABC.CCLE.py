@@ -222,7 +222,7 @@ IN_DC_pairs = IN_DC_pairs_1 + IN_DC_pairs_2 # 187734
 
 DC_FULL_CID = [a for a in DC_DRUG_DF_FULL.CID if a > 0 ]
 
-avail_cell_list
+avail_cell_list # 필터링된 37개 cell line 밖에 안됨 
 
 aa = product(DC_FULL_CID, avail_cell_list)
 aaa = list(product(DC_FULL_CID, avail_cell_list))
@@ -235,7 +235,14 @@ with open('/st06/jiyeonH/13.DD_SESS/01.PRJ2/'+'MJ_REQUEST_VER2.CCLE1.json', 'w')
 
 
 
-# 아예 가능한 모든 cell line 달라고 하면? 
+
+with open('/st06/jiyeonH/13.DD_SESS/01.PRJ2/'+'MJ_REQUEST_VER2.CCLE1.json', 'w') as f:
+    json.dump(aaa,f)
+
+
+
+
+# 아예 가능한 모든 cell line 달라고 하면? -> 190개 
 tot_cell_list_1 = list(set(DC_DATA_filter5.DrugCombCCLE))
 tot_cell_list_2 = tot_cell_list_1[1:]
 tot_cell_list_3 = [a for a in tot_cell_list_2 if a != 'NA']

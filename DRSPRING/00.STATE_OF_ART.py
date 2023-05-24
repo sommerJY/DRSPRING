@@ -353,6 +353,12 @@ cosmic_id = list(set(cell_anno[cell_anno.Name=='A2058']['COSMIC_ID']))[0]
 cell_rma[['GENE_SYMBOLS']+['DATA.'+str(cosmic_id)]]
 
 
+
+
+
+
+
+
 # R 3.6.1
 
 library(farms)
@@ -361,32 +367,88 @@ library(affy)
 
 
 Data <- ReadAffy()
+            AffyBatch object
+            size of arrays=744x744 features (388 kb)
+            cdf=HG-U219 (49386 affyids)
+            number of samples=1018
+            number of genes=49386
+            annotation=hgu219
+            notes=
+eset <- rma(Data) # 이게 원래 RMA norm 진행하는 방식임 
+write.exprs(eset, file="mydata.txt")
+# 근데, 여기서 진행한 내용은 음 quantile norm 이용하고 나서 farms 이용해서 3984 개 유의미한 gene feature 가져왔다는거
+# 근데 quantile norm 은 뭐로진행한거지 
+# farms uses quantile normalization as default normalization procedure because it is computational efficient
+# qFarms is a wrapper function to expresso and uses no background correction and quantile
+# normalization as default normalization procedure.
+# 옹 그럼 그냥 qFarms 쓰면 됨 
+# Data_df = data.frame(Data) -> 이런식으로 활용은 불가능 
+
+1) 기본진행 
+eset_qfarm = qFarms(Data)
+INIs <- INIcalls(eset_qfarm)
+I_data <- getI_Eset(INIs)
+I_data_DF = data.frame(I_data) # 1018 27728 으잉 3984 개 아닌데..? 왜 27728 개가 남는겨 
+
+2) 음.. 다시 진행
+eset_qfarm_L = qFarms(Data,  laplacian=TRUE)
+INIs_L <- INIcalls(eset_qfarm_L)
+I_data_L <- getI_Eset(INIs_L)
+I_data_L_DF = data.frame(I_data_L) # 1018 * 39868 ???? ㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋ 아니 대체 왜 
+
+3) RMA 해보고 진행해야하나..?  아닌것 같음. 일단 이렇게 되면 cel 데이터인걸 인식을 못해 
+eset_qfarm_3 = qFarms(eset)
+INIs_3 <- INIcalls(eset_qfarm_3)
+I_data_3 <- getI_Eset(INIs_3)
+I_data_DF_3 = data.frame(I_data_3)
 
 
+
+
+
+
+일단 튜토리얼 내용은 이랬어. 
 # 1) 
 data(Dilution)
-eset <- qFarms(Dilution)
-eset <- expFarms(Dilution , bgcorrect.method = "rma", pmcorrect.method = "pmonly",
+test_eset_1 <- qFarms(Dilution)
+test_eset_1 <- expFarms(Dilution , bgcorrect.method = "rma", pmcorrect.method = "pmonly", 
 normalize.method = "constant")
 
 # 2) 
 data(Dilution)
-eset <- qFarms(Dilution, laplacian=TRUE)
+test_eset_2 <- qFarms(Dilution, laplacian=TRUE)
 
 
 # informative / non informative 
 data(Dilution)
-eset<-qFarms(Dilution)
+test_eset_3<-qFarms(Dilution)
+INIs <- INIcalls(test_eset_3)
 I_data <- getI_Eset(INIs) # affybatch containing only informative probe sets
-I_data
+NI_data <- getNI_Eset(INIs) # affybatch containing only non-informative probe sets
+
+I_data_DF = data.frame(I_data)
+
+자 이게 대체 왜 안되는지 확인해보자 
+
+
+
+
+
+
+
+
+
 
 
 
 ##### pychem 사용하기 위한 방법 
 sys.path.append('/home/jiyeonH/utils/pychem-1.0/src/pychem')
 import pychem
+from pychem import pychem
 from pychem import Chem
 from pychem import pybel
+
+
 
 
 
@@ -402,17 +464,54 @@ conda install -c conda-forge openbabel
 
 
 ##### 아예 다른 논문에서 가져온 toxicophore 랑 ECFP 확인 
-
+-> then we don't have to make all things 
 
 toxicophore = pd.read_csv(os.path.join(TOOL_PATH, 'DATA_dir', 'toxicophores.csv')) # 1456020* 2276
 all_chembl = list(toxicophore['Unnamed: 0'])
 
-dense_feat = pd.read_csv(os.path.join(TOOL_PATH, 'DATA_dir', 'dense.csv')) # 1456020 * 833?
+dense_feat = pd.read_csv(os.path.join(TOOL_PATH, 'DATA_dir', 'dense.csv')) # 1456020 * 833????
 
-ecfp6_feat = pd.read_csv(os.path.join(TOOL_PATH, 'DATA_dir', 'ECFC6_ES.fpf')) # 
+ecfp6_feat = pd.read_csv(os.path.join(TOOL_PATH, 'DATA_dir', 'ECFC6_ES.fpf'), header = None) # 
 와 근데 이거 포맷을 읽기가 너무 어려운데? -> 미친 C++ 코드가 뭐 또 따로 있음 시바 
 아닠ㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋ
 다른 사람들 대체 이걸 어떻게 해결해서 돌린거야 
+해결해보자 진짜 후 하 
+아니 이거만 해결하면 될것 같은데 
+
+
+normal ECFP6 format?
+from rdkit.Chem import AllChem
+from rdkit import Chem, DataStructs
+
+# CHEMBL153534
+# -1588406296:1 -1588406285:2 -1578356240:1 -1578236978:1 -1458478794:1 -1435092110:1 -1189050329:1 -817203721:1 -644218583:1 -415800397:1 -392806765:1 -363457846:1 -279414466:1 -275714175:1 -147573862:1 1028:10 1039:5 1044:1 1942248:1 1942259:1 1952819:2 29860525:1 144538471:1 790372325:1 1347803534:1 1426021514:1 1454565402:1 1731858544:1 1866620644:1 1866620655:1 1866620660:1 1876660118:1 1876779375:1 1881396980:1 1962993589:1 2026111378:1 2041133097:1
+sm = 'CC1=CC(=CN1C)C2=CSC(=N2)N=C(N)N'
+smsm = rdkit.Chem.MolFromSmiles(sm)
+ecfp = AllChem.GetMorganFingerprintAsBitVect(smsm, radius = 6)
+
+self.mols = [Chem.MolFromSmiles(i) for i in smiles]
+fp = AllChem.GetMorganFingerprintAsBitVect(mol, radius = radius)
+array = np.zeros((1,))
+DataStructs.ConvertToNumpyArray(fp, array)
+bit_headers = ['bit' + str(i) for i in range(2048)]
+arr = np.empty((0,2048), int).astype(int)
+
+
+
+PyData_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/other_tools/01.DeepSynergy/DeepSynergy-master/DATA_dir/dataPythonReduced/'
+
+with open(PyData_PATH+'ecfp6.pckl', 'rb') as f:
+	ecfp6 = pickle.load(f)
+
+with open(PyData_PATH+'samples.pckl', 'rb') as f:
+	samples = pickle.load(f)
+
+
+python_data = 
+
+
+
+
 
 
 
@@ -482,3 +581,6 @@ CHEMBL2068387 MW 424.19
 
 
 
+##########################
+다 떠나서 Oneil 만 진행했으면 되는거였네 
+갑자기 현타오네 

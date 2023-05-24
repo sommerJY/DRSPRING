@@ -266,7 +266,7 @@ BETA_SIG_info = pd.read_table('/st06/jiyeonH/13.DD_SESS/LINCS_BETA/'+'siginfo_be
 
 
 # pert type 확인 
-filter1 = BETA_SIG_info[BETA_SIG_info.pert_type.isin(['ctl_vehicle', 'ctl_untrt' ,'trt_cp' ])]
+filter1 = BETA_SIG_info[BETA_SIG_info.pert_type.isin([ 'ctl_vehicle', 'ctl_untrt' ,'trt_cp' ])]
 # 764996 
 filter2 = filter1[filter1.is_exemplar_sig==1]
 # 136460 samples, 58 cells, 30456 compounds 
@@ -353,6 +353,10 @@ LINCS_PERT_MATCH_cids = list(set(LINCS_PERT_MATCH.CID))
 # aa = list(LINCS_PERT_MATCH.CID)
 # [a for a in aa if aa.count(a)>1]
 # 10172943
+
+
+
+
 
 # merge with exemplar sigid 
 BETA_EXM = pd.merge(filter2, LINCS_PERT_MATCH, on='pert_id', how = 'left')
@@ -823,12 +827,18 @@ for a in range(A_B_C_S_SET.shape[0]):
 A_B_C_S_SET['ROW_len'] = [int(a) for a in tf_list_A]
 A_B_C_S_SET['COL_len'] = [int(a) for a in tf_list_B]
 
+A_B_C_S_SET.to_csv('/st06/jiyeonH/11.TOX/DR_SPRING/trials/A_B_C_S_SET_ALL.csv', sep = '\t', index = False )
+# A_B_C_S_SET = pd.read_csv('/st06/jiyeonH/11.TOX/DR_SPRING/trials/A_B_C_S_SET_ALL.csv', sep = '\t', low_memory = False)
+
+
 max_len = max(list(A_B_C_S_SET['ROW_len'])+list(A_B_C_S_SET['COL_len']))
 
 A_B_C_S_SET_rlen = A_B_C_S_SET[A_B_C_S_SET.ROW_len<=50]
 A_B_C_S_SET_clen = A_B_C_S_SET_rlen[A_B_C_S_SET_rlen.COL_len<=50]
 
 A_B_C_S_SET = A_B_C_S_SET_clen.reset_index(drop=True) # 
+
+
 
 
 
@@ -946,7 +956,19 @@ MJ_request_ANS = pd.read_csv(MJ_DIR+'PRJ2_EXP_ccle_fugcn_fnt1.csv') # M3V4 node 
 MJ_request_ANS = pd.read_csv(MJ_DIR+'PRJ2_EXP_ccle_fugcn_hsc50.csv') # M3V5 node 349
 MJ_request_ANS = pd.read_csv(MJ_DIR+'PRJ2_EXP_ccle_fugcn_hu50.csv') # M3V5 node 978
 
+MJ_request_ANS_RE = pd.read_csv(MJ_DIR+'PRJ2_EXP_ccle_all_fugcn_hsc50.csv') # M3V5 원래 모델로 없는 애들 예측한거 
+MJ_request_ANS_RE = pd.read_csv(MJ_DIR+'PRJ2_EXP_ccle_all_fugcn_hu50.csv') # M3V5 원래 모델로 없는 애들 예측한거 
 
+MJ_request_ANS_RE = pd.read_csv(MJ_DIR+'PRJ2_EXP_ccle_all_fugcn_hsc50.csv') # M3V5 strip h350 으로 해야함 
+MJ_request_ANS_RE = pd.read_csv(MJ_DIR+'PRJ2_EXP_ccle_all_fugcn_hu50.csv') # M3V5 strip h950 으로 해야함 
+
+
+
+
+
+
+MJ_cell_lines = [a for a in list(MJ_request_ANS.columns) if '__' in a]
+MJ_cell_lines_re = list(set([a.split('__')[1] for a in MJ_cell_lines ])) # 민지가 보내준게 38 개 cell line 
 
 
 
@@ -962,6 +984,15 @@ MJ_request_ANS = pd.read_csv(MJ_DIR+'PRJ2_EXP_ccle_fugcn_hu50.csv') # M3V5 node 
 A_B_C_S_SET_MJ = A_B_C_S_SET[A_B_C_S_SET.ROWCHECK.isin(MJ_request_ANS.columns)]
 A_B_C_S_SET_MJ = A_B_C_S_SET_MJ[A_B_C_S_SET_MJ.COLCHECK.isin(MJ_request_ANS.columns)]
 A_B_C_S_SET_MJ = A_B_C_S_SET_MJ.reset_index(drop = True)
+
+
+
+# fu (M3 & M33 & M3V3 & M3V4) 
+A_B_C_S_SET_MJ2 = A_B_C_S_SET[A_B_C_S_SET.ROWCHECK.isin(MJ_request_ANS_RE.columns)]
+A_B_C_S_SET_MJ2 = A_B_C_S_SET_MJ2[A_B_C_S_SET_MJ2.COLCHECK.isin(MJ_request_ANS_RE.columns)]
+A_B_C_S_SET_MJ2 = A_B_C_S_SET_MJ2.reset_index(drop = True)
+
+
 
 
 
