@@ -1,21 +1,4 @@
 
-
-# 정말 smiles 분리를 안해서 생긴 문제라면 
-# 코드를 다시 짜야함 
-# 이번엔 왠만하면 모든 EXP 다 포함해서 한 파일을 만들고 그랬으면 좋겠음 지연아 
-# 그럼 그냥 그중에서 index 순서만 따지면 되잖아 
-# BASAL EXP 추가하는 방법 같이 넣어주기 
-
-# 그러고 나서 이젠 또 CCLE 버전으로 바꿔서 해보기로 함 
-
-# 민지한테서 받은 PRJ2_EXP_ccle_fugcn_a3t2_16384 가 기준임 
-# 내꺼에서는 M3V4 로 통일 
-# DrugComb 말고 ccle 로 통일 
-
-
-
-
-
 import rdkit
 import os
 import os.path as osp
@@ -86,6 +69,10 @@ from rdkit.Chem.QED import qed
 import sys
 import os
 import pandas as pd
+
+
+
+# 786O 만 쓸거임 
 
 
 
@@ -181,8 +168,6 @@ DC_CELL_DF2.columns = ['cell_line_id', 'DC_cellname','DrugCombCello', 'DrugCombC
 
 
 
-
-
 print("DC filtering")
 
 DC_DATA_filter = DC_tmp_DF2[['drug_row_id_re','drug_col_id_re','cell_line_id','synergy_loewe']] # 1457561
@@ -194,6 +179,29 @@ DC_DATA_filter4.cell_line_id # unique 295
 DC_DATA_filter4[['drug_row_id_re','drug_col_id_re','cell_line_id']].drop_duplicates() # 648516
 DC_DATA_filter4[['drug_row_id_re','drug_col_id_re']].drop_duplicates() # 75174
 len(list(set(list(DC_DATA_filter4.drug_row_id_re) + list(DC_DATA_filter4.drug_col_id_re)))) # 4327
+
+
+# 근데 여기서는 786O 만 가지고 만들거임 
+DC_DATA_filter4 = DC_DATA_filter4[DC_DATA_filter4.cell_line_id == 1] # 5247
+
+
+
+DC_DATA_filter_chch = DC_DATA_filter4[['drug_row_id_re','drug_col_id_re','cell_line_id']].drop_duplicates()
+dc_ch_1 = list(DC_DATA_filter_chch['drug_row_id_re'])
+dc_ch_2 = list(DC_DATA_filter_chch['drug_col_id_re'])
+dc_ch_3 = list(DC_DATA_filter_chch['cell_line_id'])
+
+
+# 순서 고려해서 unique 아이디 만들기 (크기 비교가 str 사이에서도 성립한다는거 아니?)
+DC_DATA_filter_chch['id_id_cell'] = [str(int(dc_ch_1[i])) + '___' + str(int(dc_ch_2[i]))+ '___' + str(int(dc_ch_3[i])) if dc_ch_1[i] < dc_ch_2[i] else str(int(dc_ch_2[i])) + '___' + str(int(dc_ch_1[i]))+ '___' + str(int(dc_ch_3[i])) for i in range(DC_DATA_filter_chch.shape[0])]
+
+# DC 에서는 앞뒤가 섞인적이 없음 
+# CID 붙이고 나서 섞였을수는 있는거
+# 근데 그건 DC 가 알바는 아니지. 
+
+
+
+
 
 
 
@@ -211,6 +219,9 @@ DC_DATA6 = pd.merge(DC_DATA5, DC_DRUG_DF2, on ='drug_col_id_re', how='left') # 7
 #  Add cell data and cid filter
 DC_DATA7_1 = pd.merge(DC_DATA6, DC_CELL_DF2 , on= 'cell_line_id', how = 'left') # 751450 -> 740884
 DC_DATA7_1 = DC_DATA7_1[['drug_row_CID','drug_col_CID','DrugCombCCLE','synergy_loewe']].drop_duplicates() # 740882
+
+
+
 
 
 # filtering 
@@ -233,47 +244,28 @@ DC_ccle_final_cids = list(set(list(DC_ccle_final_dup.drug_row_CID) + list(DC_ccl
 
 
 
-                            # 민지한테 그래서 이걸 기반으로 다시 DC full 진행해달라고 해야함 
-                            # 
 
-							tmp = DC_DATA7_3[['drug_row_CID','drug_col_CID','DrugCombCCLE']].drop_duplicates()
-							tf_ch = [True if type(a) == str else False for a in tmp.DrugCombCCLE]
-							tmp2  = tmp[tf_ch]
-							tmp3 = tmp2[tmp2.DrugCombCCLE != 'NA']
-							request_mj_2 = tmp3[['drug_row_CID','DrugCombCCLE']]
-							request_mj_3 = tmp3[['drug_col_CID','DrugCombCCLE']]
-							request_mj_2.columns = ['CID','DrugCombCCLE']
-							request_mj_3.columns = ['CID','DrugCombCCLE']
-							request_mj = pd.concat([request_mj_2, request_mj_3]).drop_duplicates()
-							request_mj.to_csv('/st06/jiyeonH/13.DD_SESS/01.PRJ2/EXP_request_CCLEver.0227.csv', sep ='\t')
+# 한번만 더 확인 
+DC_DATA_filter_chch = DC_ccle_final[['drug_row_CID','drug_col_CID','DrugCombCCLE']].drop_duplicates()
+dc_ch_1 = list(DC_DATA_filter_chch['drug_row_CID'])
+dc_ch_2 = list(DC_DATA_filter_chch['drug_col_CID'])
+dc_ch_3 = list(DC_DATA_filter_chch['DrugCombCCLE'])
 
 
-							# 786-O 의 난..... 
-							tmp = DC_DATA7_3[['drug_row_CID','drug_col_CID','DrugCombCCLE']].drop_duplicates()
-							tf_ch = [True if type(a) == str else False for a in tmp.DrugCombCCLE]
-							tmp2  = tmp[tf_ch]
-							tmp3 = tmp2[tmp2.DrugCombCCLE != 'NA']
-							request_mj_2 = tmp3[['drug_row_CID','DrugCombCCLE']]
-							request_mj_3 = tmp3[['drug_col_CID','DrugCombCCLE']]
-							request_mj_2.columns = ['CID','DrugCombCCLE']
-							request_mj_3.columns = ['CID','DrugCombCCLE']
-							request_mj = pd.concat([request_mj_2, request_mj_3]).drop_duplicates()
-							cell_786O = request_mj[request_mj.DrugCombCCLE=='786O_KIDNEY']
-							cell_786O.to_csv('/st06/jiyeonH/13.DD_SESS/01.PRJ2/EXP_request_CCLEver.786O.csv', sep ='\t')
+# 순서 고려해서 unique 아이디 만들기 (크기 비교가 str 사이에서도 성립한다는거 아니?)
+DC_DATA_filter_chch['id_id_cell'] = [str(int(dc_ch_1[i])) + '___' + str(int(dc_ch_2[i]))+ '___' + str(dc_ch_3[i]) if dc_ch_1[i] < dc_ch_2[i] else str(int(dc_ch_2[i])) + '___' + str(int(dc_ch_1[i]))+ '___' + str(dc_ch_3[i]) for i in range(DC_DATA_filter_chch.shape[0])]
 
-							# 제대로 된 final 
-							tmp = DC_DATA7_3[['drug_row_CID','drug_col_CID','DrugCombCCLE']].drop_duplicates()
-							tf_ch = [True if type(a) == str else False for a in tmp.DrugCombCCLE]
-							tmp2  = tmp[tf_ch]
-							tmp3 = tmp2[tmp2.DrugCombCCLE != 'NA']
-							request_mj_2 = tmp3[['drug_row_CID','DrugCombCCLE']]
-							request_mj_3 = tmp3[['drug_col_CID','DrugCombCCLE']]
-							request_mj_2.columns = ['CID','DrugCombCCLE']
-							request_mj_3.columns = ['CID','DrugCombCCLE']
-							request_mj = pd.concat([request_mj_2, request_mj_3]).drop_duplicates()
-							request_mj.to_csv('/st06/jiyeonH/13.DD_SESS/01.PRJ2/EXP_request_CCLEver.0602.csv', sep ='\t')
+len(DC_DATA_filter_chch.id_id_cell)
+len(set(DC_DATA_filter_chch.id_id_cell))
 
+# 그렇습니다. DC ID 상에서는 안겹쳤었는데 CID 로는 겹치는게 있네욤 
+DC_dup_total = DC_DATA_filter_chch[DC_DATA_filter_chch['id_id_cell'].duplicated(keep = False)].sort_values('id_id_cell') # 21140 개 인거지. 
+#DC_dup_total.to_csv('/st06/jiyeonH/11.TOX/DR_SPRING/trials/DC_duplicates.csv', sep = '\t', index = False)
+# 그러면, CID - CCLE 가 같은건 평균 내는걸로 하고 
+# sig_id 다른건 다른 세트로 취급하자 
 
+# 근데 이게 sig_id 때문에 dup 되는거랑 구분이 안되니까
+# 따로 저장해서 확인해줘야함 
 
 
 
@@ -286,7 +278,6 @@ BETA_BIND = pd.read_csv('/st06/jiyeonH/11.TOX/MY_TRIAL_5/'+"BETA_DATA_for_202207
 BETA_CP_info = pd.read_table('/st06/jiyeonH/13.DD_SESS/LINCS_BETA/'+'compoundinfo_beta.txt') # pert 34419 , cansmiles : 
 BETA_CEL_info = pd.read_table('/st06/jiyeonH/13.DD_SESS/LINCS_BETA/'+'cellinfo_beta.txt')
 BETA_SIG_info = pd.read_table('/st06/jiyeonH/13.DD_SESS/LINCS_BETA/'+'siginfo_beta.txt', low_memory = False)
-
 
 
 # pert type 확인 
@@ -380,21 +371,39 @@ LINCS_PERT_MATCH_cids = list(set(LINCS_PERT_MATCH.CID))
 
 
 
-
-
 # merge with exemplar sigid 
 BETA_EXM = pd.merge(filter2, LINCS_PERT_MATCH, on='pert_id', how = 'left')
 BETA_EXM2 = BETA_EXM[BETA_EXM.CID > 0] # 128038 # 이건 늘어났음 
 
 BETA_CEL_info2 = BETA_CEL_info[['cell_iname','cellosaurus_id','ccle_name']] # 240 
 BETA_SELEC_SIG_wCell = pd.merge(BETA_EXM2, BETA_CEL_info2, on = 'cell_iname', how = 'left') # 128038
-BETA_SELEC_SIG_wCell2 = BETA_SELEC_SIG_wCell[['pert_id','CID','cellosaurus_id','ccle_name','sig_id']]
+BETA_SELEC_SIG_wCell2 = BETA_SELEC_SIG_wCell[['pert_id','CID','cell_iname','cellosaurus_id','ccle_name','sig_id']]
 BETA_SELEC_SIG_wCell2 = BETA_SELEC_SIG_wCell2.drop_duplicates() # 128038
 
 
-ccle_tt=[True if type(a)==str else False for a in list(BETA_SELEC_SIG_wCell2.ccle_name)] 
-# sum(ccle_tt) : 109720
-BETA_CID_CCLE_SIG = BETA_SELEC_SIG_wCell2[ccle_tt][['pert_id','CID','ccle_name','sig_id']].drop_duplicates() # 111012
+# cell_iname check 
+
+splitname = [a.split('_')[0] if type(a) == str else 'NA' for a in BETA_SELEC_SIG_wCell2.ccle_name]
+tmp_tmp = BETA_SELEC_SIG_wCell2[(BETA_SELEC_SIG_wCell2.cell_iname == splitname) == False][['cell_iname','ccle_name']].drop_duplicates()
+# 그래서 iname 으로 하면 CCLE_names 도 다 챙기고 새로운 애들만 더 생긴다는거 확인함 
+# iname 으로만 진행해도 됨. 
+
+
+# 근데 잠깐, MJ_request 에도 그런 애들 있는지 한번만 더 확인
+# DC_NA = DC_CELL_DF[DC_CELL_DF.ccle_name=='NA']
+# DC_syn = list(DC_NA.synonyms)
+# DC_syn2 = [a.split('; ') for a in DC_syn ]
+# DC_syn3 = list(set(sum(DC_syn2,[])))
+# tmp_tmp = BETA_SELEC_SIG_wCell2[(BETA_SELEC_SIG_wCell2.cell_iname == splitname) == False][['cell_iname','ccle_name']].drop_duplicates()
+# tmp_tmp[tmp_tmp.cell_iname.isin(DC_syn3)]
+# 그렇게 나온게 TMD8, LNCAP, BJAB 인데, ccle 에 아예 처음부터 없는 애들임. 걱정 안해도 될듯 
+
+
+
+
+ciname_tt = [True if type(a)==str else False for a in list(BETA_SELEC_SIG_wCell2.cell_iname)] 
+# sum(ccle_tt) : 109720 -> 128038
+BETA_CID_CCLE_SIG = BETA_SELEC_SIG_wCell2[ciname_tt][['pert_id','CID','cell_iname','ccle_name','sig_id']].drop_duplicates() # 111012
 beta_cid_ccle_sig_tf = [ True if a>0 else False for a in list(BETA_CID_CCLE_SIG.CID)]
 BETA_CID_CCLE_SIG = BETA_CID_CCLE_SIG[beta_cid_ccle_sig_tf]
 BETA_CID_CCLE_SIG['CID'] = [int(a) for a in list(BETA_CID_CCLE_SIG['CID']) ] # 111012 
@@ -402,6 +411,42 @@ BETA_CID_CCLE_SIG['CID'] = [int(a) for a in list(BETA_CID_CCLE_SIG['CID']) ] # 1
 
 # -> CCLE 필터까지 완료 / DC CID 고정 완료 
 
+
+
+# 아예 CCLE 이름이랑 여기서부터 매치시켜줘야함 
+CCLE_PATH = '/st06/jiyeonH/13.DD_SESS/CCLE.22Q1/'
+
+ccle_exp = pd.read_csv(CCLE_PATH+'CCLE_expression.csv', low_memory=False)
+
+ccle_ori_col = list(ccle_exp.columns)
+ccle_new_col =['DepMap_ID'] + [int(a.split(')')[0].split('(')[1]) for a in ccle_ori_col[1:]]
+
+ccle_exp.columns = ccle_new_col
+
+# ccle_mut = pd.read_csv(CCLE_PATH+'CCLE_mutations.csv', low_memory=False)
+ccle_info= pd.read_csv(CCLE_PATH+'sample_info.csv', low_memory=False)
+
+
+# CCLE ver! 
+ccle_cell_info = ccle_info[['DepMap_ID','stripped_cell_line_name','CCLE_Name']]
+ccle_cell_info.columns = ['DepMap_ID','STR_ID','DrugCombCCLE']
+ccle_exp2 = pd.merge(ccle_exp, ccle_cell_info, on = 'DepMap_ID' , how='left')
+
+# ccle_exp3 = ccle_exp2[['DepMap_ID','DrugCombCCLE']+BETA_ENTREZ_ORDER]
+# ccle_names = [a for a in ccle_exp3.DrugCombCCLE if type(a) == str]
+
+
+BETA_CID_CCLE_SIG_NEW = copy.deepcopy(BETA_CID_CCLE_SIG)
+BETA_CID_CCLE_SIG_NEW.columns = ['pert_id', 'CID', 'STR_ID', 'ccle_name', 'sig_id']
+BETA_CID_CCLE_SIG_NEW2 = pd.merge(BETA_CID_CCLE_SIG_NEW, ccle_cell_info, on = 'STR_ID', how = 'left')
+
+# set(BETA_CID_CCLE_SIG_NEW2.DrugCombCCLE) - set(BETA_CID_CCLE_SIG_NEW2.ccle_name)
+# {'MCF10A_BREAST', 'HELA_CERVIX', 'HAP1_ENGINEERED'} # 어차피 MCF10A_BREAST 는 drugcomb 에 없음 
+
+BETA_CID_CCLE_SIG_NEW3  = BETA_CID_CCLE_SIG_NEW2[['pert_id','CID','DrugCombCCLE','sig_id']] # 다시. 
+ciname_tt2 = [True if type(a)==str else False for a in list(BETA_CID_CCLE_SIG_NEW3.DrugCombCCLE)] 
+BETA_CID_CCLE_SIG_NEW4 = BETA_CID_CCLE_SIG_NEW3[ciname_tt2] 
+BETA_CID_CCLE_SIG_NEW5 = BETA_CID_CCLE_SIG_NEW4[BETA_CID_CCLE_SIG_NEW4.CID>0] #  113016
 
 
 
@@ -423,9 +468,6 @@ DC_ccle_final_dup['ROWCHECK'] = [str(int(DC_ccle_final_dup_ROW_CHECK[i]))+'__'+D
 DC_ccle_final_dup['COLCHECK'] = [str(int(DC_ccle_final_dup_COL_CHECK[i]))+'__'+DC_ccle_final_dup_CELL_CHECK[i] for i in range(DC_ccle_final_dup.shape[0])]
 
 
-
-
-
 # 공식 smiles 
 
 for_CAN_smiles = pd.read_csv(PC_PATH+'CID_SMILES.csv', low_memory = False)
@@ -439,7 +481,6 @@ for_CAN_smiles.columns = ['CID','CAN_SMILES']
 
 
 
-
 # CAN_SMILES NA 있음?  
 CAN_TF_1 = [True if type(a) == float else False for a in list(DC_ccle_final_dup.ROW_CAN_SMILES)]
 CAN_TF_DF_1 = DC_ccle_final_dup[CAN_TF_1]
@@ -448,21 +489,21 @@ CAN_TF_DF_2 = DC_ccle_final_dup[CAN_TF_2]
 # DC 기준으로는 없음. LINCS 기준에서는 있었음 
 
 
-BETA_CID_CCLE_SIG_ID_CHECK = list(BETA_CID_CCLE_SIG.CID)
-BETA_CID_CCLE_SIG_CELL_CHECK = list(BETA_CID_CCLE_SIG.ccle_name)
 
-BETA_CID_CCLE_SIG['IDCHECK'] = [str(int(BETA_CID_CCLE_SIG_ID_CHECK[i]))+'__'+BETA_CID_CCLE_SIG_CELL_CHECK[i] for i in range(BETA_CID_CCLE_SIG.shape[0])]
+BETA_CID_CCLE_SIG_ID_CHECK = list(BETA_CID_CCLE_SIG_NEW5.CID)
+BETA_CID_CCLE_SIG_CELL_CHECK = list(BETA_CID_CCLE_SIG_NEW5.DrugCombCCLE)
+
+BETA_CID_CCLE_SIG_NEW5['IDCHECK'] = [str(int(BETA_CID_CCLE_SIG_ID_CHECK[i]))+'__'+BETA_CID_CCLE_SIG_CELL_CHECK[i] for i in range(BETA_CID_CCLE_SIG_NEW5.shape[0])]
 # 이렇게 되면 , IDCHECK 에 중복이 생기긴 함. pert 때문에. 
 
 
-BETA_CID_CCLE_SIG.columns=['ROW_pert_id', 'drug_row_CID', 'DrugCombCCLE', 'ROW_BETA_sig_id',  'ROWCHECK']
-CCLE_DC_BETA_1 = pd.merge(DC_ccle_final_dup, BETA_CID_CCLE_SIG[['ROW_pert_id', 'ROW_BETA_sig_id',  'ROWCHECK']], left_on = 'ROWCHECK', right_on = 'ROWCHECK', how = 'left') # 720619
+BETA_CID_CCLE_SIG_NEW5.columns=['ROW_pert_id', 'drug_row_CID', 'DrugCombCCLE', 'ROW_BETA_sig_id',  'ROWCHECK']
+CCLE_DC_BETA_1 = pd.merge(DC_ccle_final_dup, BETA_CID_CCLE_SIG_NEW5[['ROW_pert_id', 'ROW_BETA_sig_id',  'ROWCHECK']], left_on = 'ROWCHECK', right_on = 'ROWCHECK', how = 'left') # 720619
 
-BETA_CID_CCLE_SIG.columns=['COL_pert_id', 'drug_col_CID', 'DrugCombCCLE', 'COL_BETA_sig_id', 'COLCHECK']
-CCLE_DC_BETA_2 = pd.merge(CCLE_DC_BETA_1, BETA_CID_CCLE_SIG[['COL_pert_id', 'COL_BETA_sig_id', 'COLCHECK']], left_on = 'COLCHECK', right_on = 'COLCHECK', how = 'left') # 721206
+BETA_CID_CCLE_SIG_NEW5.columns=['COL_pert_id', 'drug_col_CID', 'DrugCombCCLE', 'COL_BETA_sig_id', 'COLCHECK']
+CCLE_DC_BETA_2 = pd.merge(CCLE_DC_BETA_1, BETA_CID_CCLE_SIG_NEW5[['COL_pert_id', 'COL_BETA_sig_id', 'COLCHECK']], left_on = 'COLCHECK', right_on = 'COLCHECK', how = 'left') # 721206
 
-BETA_CID_CCLE_SIG.columns=['pert_id', 'pubchem_cid', 'ccle_name', 'sig_id', 'IDCHECK']
-
+BETA_CID_CCLE_SIG_NEW5.columns=['pert_id', 'pubchem_cid', 'DrugCombCCLE', 'sig_id', 'IDCHECK']
 
 
 
@@ -539,86 +580,10 @@ DATA_AX_BO['type'] = 'AXBO' # 11967
 DATA_AO_BX['type'] = 'AOBX' # 14998
 DATA_AX_BX['type'] = 'AXBX' # 584465
 
+# 아? HELA 랑 HAP1 이... 상관이 없네? 
+# 왜냐면 이미 synergy 실험내용이 없음
 
-
-(5) AXBO + AOBX
-
-DATA_AB_ONE = pd.concat([DATA_AO_BX, DATA_AX_BO])
-DATA_AB_ONE[['drug_row_CID','drug_col_CID','DrugCombCCLE']].drop_duplicates() # 22354
-DATA_AB_ONE[['ROW_BETA_sig_id','COL_BETA_sig_id','DrugCombCCLE']].drop_duplicates() # 901
-DATA_AB_ONE[['ROW_pert_id','COL_pert_id','DrugCombCCLE']].drop_duplicates() #  901
-DATA_AB_ONE[['ROW_CAN_SMILES','COL_CAN_SMILES','DrugCombCCLE']].drop_duplicates() #  22329 
-
-
-67440, 8422, 10552,
-
-#################################################################################################
-##################################################################################################
-
-
-# 이게 원래 network 
-print('NETWORK')
-# HUMANNET 사용 
-
-
-				hunet_dir = '/st06/jiyeonH/13.DD_SESS/HumanNetV3/'
-
-				hunet_gsp = pd.read_csv(hunet_dir+'HumanNet-GSP.tsv', sep = '\t', header = None)
-				hunet_gsp.columns = ['G_A','G_B']
-
-				BETA_GENE = pd.read_table('/st06/jiyeonH/11.TOX/LINCS/L_2020/geneinfo_beta.txt')
-				BETA_lm_genes = BETA_GENE[BETA_GENE.feature_space=='landmark'] # 978
-				BETA_lm_genes = BETA_lm_genes.reset_index()
-				lm_entrezs = list(BETA_lm_genes.gene_id)
-
-				hnet_L1 = hunet_gsp[hunet_gsp['G_A'].isin(BETA_lm_genes.gene_id)]
-				hnet_L2 = hnet_L1[hnet_L1['G_B'].isin(BETA_lm_genes.gene_id)] # 3885
-
-				len(set(list(hnet_L2['G_A']) + list(hnet_L2['G_B']))) # 611
-
-				ID_G = nx.from_pandas_edgelist(hnet_L2, 'G_A', 'G_B')
-
-				MSSNG = [a for a in lm_entrezs if a not in list(ID_G.nodes)]
-
-				for nn in list(MSSNG):
-					ID_G.add_node(nn)
-
-				# edge 3871
-				ID_GENE_ORDER_mini = list(ID_G.nodes()) # 978
-				ID_ADJ = nx.adjacency_matrix(ID_G)
-				ID_ADJ_tmp = torch.LongTensor(ID_ADJ.toarray())
-				ID_ADJ_IDX = ID_ADJ_tmp.to_sparse().indices()  # [2, 7742]
-				ID_WEIGHT = [] # len : 3871 -> 7742
-
-				ID_WEIGHT_SCORE = [1 for a in range(ID_ADJ_IDX.shape[1])]
-
-
-				# 유전자 이름으로 붙이기 
-				LINCS_PATH = '/st06/jiyeonH/11.TOX/MY_TRIAL_5/' 
-				LINCS_gene_file = pd.read_csv(LINCS_PATH+'geneinfo_beta.txt', sep = '\t')
-				LINCS_978 = LINCS_gene_file[LINCS_gene_file.feature_space == 'landmark']
-				LINCS_978 = LINCS_978[['gene_id','gene_symbol']]
-				LINCS_978['new_node'] = [str(list(LINCS_978.gene_id)[i]) + "__" + list(LINCS_978.gene_symbol)[i] for i in range(978)]
-				LINCS_978 = LINCS_978.reset_index(drop=True)
-
-
-				new_node_names = []
-				for a in ID_G.nodes():
-					tmp_name = LINCS_978[LINCS_978.gene_id == a ]['gene_symbol'].item() # 6118
-					new_node_name = str(a) + '__' + tmp_name
-					new_node_names = new_node_names + [new_node_name]
-
-				mapping = {list(ID_G.nodes())[a]:new_node_names[a] for a in range(len(new_node_names))}
-
-				ID_G_RE = nx.relabel_nodes(ID_G, mapping)
-
-				MY_G = ID_G_RE 
-				MY_WEIGHT_SCORE = ID_WEIGHT_SCORE # SCORE
-
-
-
-
-
+############################################################
 
 
 # HS 다른 pathway 사용 
@@ -626,10 +591,11 @@ print('NETWORK')
 # HUMANNET 사용 
 
 
+
 hunet_dir = '/st06/jiyeonH/13.DD_SESS/HumanNetV3/'
 
-hunet_gsp = pd.read_csv(hunet_dir+'HS-DB.tsv', sep = '\t', header = None)
-hunet_gsp.columns = ['G_A','G_B','SC']
+hunet_gsp = pd.read_csv(hunet_dir+'HumanNet-GSP.tsv', sep = '\t', header = None)
+hunet_gsp.columns = ['G_A','G_B']
 
 BETA_GENE = pd.read_table('/st06/jiyeonH/11.TOX/LINCS/L_2020/geneinfo_beta.txt')
 BETA_lm_genes = BETA_GENE[BETA_GENE.feature_space=='landmark'] # 978
@@ -638,26 +604,23 @@ lm_entrezs = list(BETA_lm_genes.gene_id)
 
 hnet_L1 = hunet_gsp[hunet_gsp['G_A'].isin(BETA_lm_genes.gene_id)]
 hnet_L2 = hnet_L1[hnet_L1['G_B'].isin(BETA_lm_genes.gene_id)] # 3885
-hnet_L3 = hnet_L2[hnet_L2.SC >= 3.5]
 
+len(set(list(hnet_L2['G_A']) + list(hnet_L2['G_B']))) # 611
 
-len(set(list(hnet_L3['G_A']) + list(hnet_L3['G_B']))) # 611
+ID_G = nx.from_pandas_edgelist(hnet_L2, 'G_A', 'G_B')
 
-ID_G = nx.from_pandas_edgelist(hnet_L3, 'G_A', 'G_B')
+MSSNG = [a for a in lm_entrezs if a not in list(ID_G.nodes)]
 
-# MSSNG = [a for a in lm_entrezs if a not in list(ID_G.nodes)]
+for nn in list(MSSNG):
+	ID_G.add_node(nn)
 
-#for nn in list(MSSNG):
-#	ID_G.add_node(nn)
-
-# edge 
+# edge 3871
 ID_GENE_ORDER_mini = list(ID_G.nodes()) # 978
 ID_ADJ = nx.adjacency_matrix(ID_G)
 ID_ADJ_tmp = torch.LongTensor(ID_ADJ.toarray())
 ID_ADJ_IDX = ID_ADJ_tmp.to_sparse().indices()  # [2, 7742]
 ID_WEIGHT = [] # len : 3871 -> 7742
 
-# 원래는 edge score 있지만 일단은...
 ID_WEIGHT_SCORE = [1 for a in range(ID_ADJ_IDX.shape[1])]
 
 
@@ -686,81 +649,6 @@ MY_WEIGHT_SCORE = ID_WEIGHT_SCORE # SCORE
 
 
 
-
-
-					# HS Drug pathway Functional 활용
-					print('NETWORK')
-					hunet_dir = '/st06/jiyeonH/13.DD_SESS/HumanNetV3/'
-
-					hunet_gsp = pd.read_csv(hunet_dir+'HumanNet-FN.tsv', sep = '\t', header = None)
-					hunet_gsp.columns = ['G_A','G_B','SC']
-
-					BETA_GENE = pd.read_table('/st06/jiyeonH/11.TOX/LINCS/L_2020/geneinfo_beta.txt')
-					BETA_lm_genes = BETA_GENE[BETA_GENE.feature_space=='landmark'] # 978
-					BETA_lm_genes = BETA_lm_genes.reset_index()
-					lm_entrezs = list(BETA_lm_genes.gene_id)
-
-					hnet_L1 = hunet_gsp[hunet_gsp['G_A'].isin(BETA_lm_genes.gene_id)]
-					hnet_L2 = hnet_L1[hnet_L1['G_B'].isin(BETA_lm_genes.gene_id)] # 3885
-					hnet_L3 = hnet_L2[hnet_L2.SC >= 2.0]
-
-
-					len(set(list(hnet_L3['G_A']) + list(hnet_L3['G_B']))) # 611
-
-					ID_G = nx.from_pandas_edgelist(hnet_L3, 'G_A', 'G_B')
-
-					# MSSNG = [a for a in lm_entrezs if a not in list(ID_G.nodes)]
-
-					#for nn in list(MSSNG):
-					#	ID_G.add_node(nn)
-
-					# edge 
-					ID_GENE_ORDER_mini = list(ID_G.nodes()) # 978
-					ID_ADJ = nx.adjacency_matrix(ID_G)
-					ID_ADJ_tmp = torch.LongTensor(ID_ADJ.toarray())
-					ID_ADJ_IDX = ID_ADJ_tmp.to_sparse().indices()  # [2, 7742]
-					ID_WEIGHT = [] # len : 3871 -> 7742
-
-					# 원래는 edge score 있지만 일단은...
-					ID_WEIGHT_SCORE = [1 for a in range(ID_ADJ_IDX.shape[1])]
-
-
-					# 유전자 이름으로 붙이기 
-					LINCS_PATH = '/st06/jiyeonH/11.TOX/MY_TRIAL_5/' 
-					LINCS_gene_file = pd.read_csv(LINCS_PATH+'geneinfo_beta.txt', sep = '\t')
-					LINCS_978 = LINCS_gene_file[LINCS_gene_file.feature_space == 'landmark']
-					LINCS_978 = LINCS_978[['gene_id','gene_symbol']]
-					LINCS_978['new_node'] = [str(list(LINCS_978.gene_id)[i]) + "__" + list(LINCS_978.gene_symbol)[i] for i in range(978)]
-					LINCS_978 = LINCS_978.reset_index(drop=True)
-
-
-					new_node_names = []
-					for a in ID_G.nodes():
-						tmp_name = LINCS_978[LINCS_978.gene_id == a ]['gene_symbol'].item() # 6118
-						new_node_name = str(a) + '__' + tmp_name
-						new_node_names = new_node_names + [new_node_name]
-
-					mapping = {list(ID_G.nodes())[a]:new_node_names[a] for a in range(len(new_node_names))}
-
-					ID_G_RE = nx.relabel_nodes(ID_G, mapping)
-
-					MY_G = ID_G_RE 
-					MY_WEIGHT_SCORE = ID_WEIGHT_SCORE # SCORE
-
-
-
-
-
-
-
-
-
-
-
-#########################################################################
-#########################################################################
-#########################################################################
-#########################################################################
 
 
 
@@ -798,19 +686,12 @@ A_B_C_S = A_B_C_S.reset_index(drop = True) # 622809
 A_B_C_S[['drug_row_CID','drug_col_CID', 'DrugCombCCLE']].drop_duplicates()
 
 
-# 일단 missing 까지 다 포함하는 Drugcomb 관련 block 을 저장하겠어 
-# 이대로는 진짜 모대 
-# 일단 50 길이로만 필터링을 하고 
-
-# 그래서 버전을 M1 이랑 M3 두가지로 만들어서 전체 저장을 
-# chem adj, chem feat, exp 에 대해서 진행하고, 
-
-# ABCS 를 차라리 저장해서 cell line 이나 target 이나 그런 
-# 관련된건 다시 붙이는걸로 하는게 시간이 덜 걸릴듯 
-
 A_B_C_S_SET = copy.deepcopy(A_B_C_S)
 A_B_C_S_SET = A_B_C_S_SET.drop('synergy_loewe', axis = 1).drop_duplicates()
-A_B_C_S_SET = A_B_C_S_SET.reset_index(drop = True)
+A_B_C_S_SET = A_B_C_S_SET.reset_index(drop = True) # 456422 
+
+
+
 
 
 # 50으로 제대로 자르기 위함 
@@ -837,6 +718,8 @@ def check_len_num(SMILES):
 
 
 
+
+
 tf_list_A = []
 tf_list_B = []
 for a in range(A_B_C_S_SET.shape[0]):
@@ -851,8 +734,12 @@ for a in range(A_B_C_S_SET.shape[0]):
 A_B_C_S_SET['ROW_len'] = [int(a) for a in tf_list_A]
 A_B_C_S_SET['COL_len'] = [int(a) for a in tf_list_B]
 
-A_B_C_S_SET.to_csv('/st06/jiyeonH/11.TOX/DR_SPRING/trials/A_B_C_S_SET_ALL.csv', sep = '\t', index = False )
-# A_B_C_S_SET = pd.read_csv('/st06/jiyeonH/11.TOX/DR_SPRING/trials/A_B_C_S_SET_ALL.csv', sep = '\t', low_memory = False)
+
+A_B_C_S_SET.to_csv('/st06/jiyeonH/11.TOX/DR_SPRING/trials/A_B_C_S_SET_786O_0602.csv', sep = '\t', index = False )
+
+
+
+# A_B_C_S_SET = pd.read_csv('/st06/jiyeonH/11.TOX/DR_SPRING/trials/A_B_C_S_SET_ALL_0523.csv', sep = '\t', low_memory = False)
 
 
 max_len = max(list(A_B_C_S_SET['ROW_len'])+list(A_B_C_S_SET['COL_len']))
@@ -866,7 +753,6 @@ A_B_C_S_SET = A_B_C_S_SET_clen.reset_index(drop=True) #
 
 
 
-
 # LINCS exp order 따지기 
 
 
@@ -875,8 +761,6 @@ BETA_ORDER_DF = LINCS_978.iloc[BETA_ORDER_pre] # 어차피 ref 다르고 같은 
 BETA_ENTREZ_ORDER = list(BETA_ORDER_DF.gene_id)
 BETA_SYMBOL_ORDER = list(BETA_ORDER_DF.gene_symbol)
 BETA_NEWNOD_ORDER = list(BETA_ORDER_DF.new_node)
-
-
 
 
 def get_LINCS_data(DRUG_SIG):
@@ -961,78 +845,42 @@ def get_synergy_data(DrugA_CID, DrugB_CID, Cell):
 	return synergy_score
 
 
+# 시간이 오지게 걸리는것 같아서 아예 DC 전체에 대해서 진행한거를 가지고 하기로 했음 
+
+DC_ALL_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/'
+
+all_chem_DF = pd.read_csv(DC_ALL_PATH+'DC_ALL_7555_ORDER.csv')
+all_chem_feat_TS = torch.load(DC_ALL_PATH+'DC_ALL.MY_chem_feat.pt')
+all_chem_feat_adj = torch.load(DC_ALL_PATH+'DC_ALL.MY_chem_adj.pt')
 
 
+def check_drug_f_ts(CID) :
+	INDEX = all_chem_DF[all_chem_DF.CID == CID].index.item()
+	adj_pre = all_chem_feat_adj[INDEX]
+	# adj_proc = adj_pre.long().to_sparse().indices()
+	return all_chem_feat_TS[INDEX], adj_pre
 
 
 
 
 MJ_DIR = '/st06/jiyeonH/13.DD_SESS/01.PRJ2/'
 
-# MJ_request_ANS = pd.read_csv(MJ_DIR+'PRJ2_EXP_ccle_fugcn_a3t1_16384.csv') # M3V3 -> CCLE ver 
-# MJ_request_ANS = pd.read_csv(MJ_DIR+'PRJ2_EXP_ccle_fugcn_a3t1_16384.csv') # M3V3 -> CCLE ver 
-# MJ_request_ANS = pd.read_csv(MJ_DIR+'PRJ2_EXP_ccle_fugcn_a3t2_16384.csv') # M3V4 CCLEver 0310 
-
-MJ_request_ANS = pd.read_csv(MJ_DIR+'PRJ2_EXP_ccle_fugcn_hst1.csv') # M3V4 node 349
-MJ_request_ANS = pd.read_csv(MJ_DIR+'PRJ2_EXP_ccle_fugcn_a3t4.csv') # M3V4 node 978
-MJ_request_ANS = pd.read_csv(MJ_DIR+'PRJ2_EXP_ccle_fugcn_fnt1.csv') # M3V4 node 845
-
-MJ_request_ANS = pd.read_csv(MJ_DIR+'PRJ2_EXP_ccle_fugcn_hsc50.csv') # M3V5 node 349
-MJ_request_ANS = pd.read_csv(MJ_DIR+'PRJ2_EXP_ccle_fugcn_hu50.csv') # M3V5 node 978
-
-MJ_request_ANS_RE = pd.read_csv(MJ_DIR+'PRJ2_EXP_ccle_all_fugcn_hsc50.csv') # M3V5 원래 모델로 없는 애들 예측한거 
-MJ_request_ANS_RE = pd.read_csv(MJ_DIR+'PRJ2_EXP_ccle_all_fugcn_hu50.csv') # M3V5 원래 모델로 없는 애들 예측한거 
-
-MJ_request_ANS_RE = pd.read_csv(MJ_DIR+'PRJ2_EXP_ccle_all_fugcn_hsc50.csv') # M3V5 strip h350 으로 해야함 
-MJ_request_ANS_RE = pd.read_csv(MJ_DIR+'PRJ2_EXP_ccle_all_fugcn_hu50.csv') # M3V5 strip h950 으로 해야함 
-
-
-
+MJ_request_ANS = pd.read_csv(MJ_DIR+'/PRJ2_EXP_ccle_cell786O_fugcn_hhh9.csv') # GSP 978 
 
 
 
 MJ_cell_lines = [a for a in list(MJ_request_ANS.columns) if '__' in a]
-MJ_cell_lines_re = list(set([a.split('__')[1] for a in MJ_cell_lines ])) # 민지가 보내준게 38 개 cell line 
+MJ_cell_lines_re = list(set([a.split('__')[1] for a in MJ_cell_lines ])) # 민지가 보내준게 170 개 cell line 
 
 
 
-                                    MJ_request_ANS2 = copy.deepcopy(MJ_request_ANS)
-                                    MJ_request_ANS_COL = list(MJ_request_ANS2.columns)
 
-                                    MJ_request_ANS_re_col = MJ_request_ANS_COL[0:3]+[int(a.split('__')[0])  for a in MJ_request_ANS_COL[3:]]
-                                    MJ_request_ANS2.columns = MJ_request_ANS_re_col 
-                                    MJ_request_ANS3 = MJ_request_ANS2.T.drop_duplicates().T
 
- 
+
 # fu (M3 & M33 & M3V3 & M3V4) 
 A_B_C_S_SET_MJ = A_B_C_S_SET[A_B_C_S_SET.ROWCHECK.isin(MJ_request_ANS.columns)]
 A_B_C_S_SET_MJ = A_B_C_S_SET_MJ[A_B_C_S_SET_MJ.COLCHECK.isin(MJ_request_ANS.columns)]
 A_B_C_S_SET_MJ = A_B_C_S_SET_MJ.reset_index(drop = True)
-
-
-
-				# fu (M3 & M33 & M3V3 & M3V4) 
-				A_B_C_S_SET_MJ2 = A_B_C_S_SET[A_B_C_S_SET.ROWCHECK.isin(MJ_request_ANS_RE.columns)]
-				A_B_C_S_SET_MJ2 = A_B_C_S_SET_MJ2[A_B_C_S_SET_MJ2.COLCHECK.isin(MJ_request_ANS_RE.columns)]
-				A_B_C_S_SET_MJ2 = A_B_C_S_SET_MJ2.reset_index(drop = True)
-
-
-
-
-
-                                    # DESIDE(M1) / mu1 (M2)
-                                    def get_MJ_data( CID ): 
-                                        if CID in list(MJ_request_ANS3.columns) :
-                                            MJ_DATA = MJ_request_ANS3[['entrez_id',CID]]
-                                            ord = [list(MJ_DATA.entrez_id).index(a) for a in BETA_ENTREZ_ORDER]
-                                            MJ_DATA_re = MJ_DATA.loc[ord] 
-                                            RES = MJ_DATA_re[CID]
-                                            OX = 'O'
-                                        else : 
-                                            RES = [0]*978
-                                            OX = 'X'
-                                        return list(RES), OX
-
 
 
 
@@ -1047,12 +895,10 @@ def get_MJ_data( CHECK ):
 		OX = 'O'
 	else : 
 		RES = [0]*978        ##############
-		#RES = [0]*349        ##############
-		#RES = [0]*845        ##############
+		# RES = [0]*349        ##############
+		# RES = [0]*845        ##############
 		OX = 'X'
 	return list(RES), OX
-
-
 
 
 
@@ -1065,14 +911,18 @@ MY_chem_A_adj = torch.empty(size=(A_B_C_S_SET_MJ.shape[0], max_len, max_len))
 MY_chem_B_adj= torch.empty(size=(A_B_C_S_SET_MJ.shape[0], max_len, max_len))
 MY_syn =  torch.empty(size=(A_B_C_S_SET_MJ.shape[0],1))
 
-#MY_g_EXP_A = torch.empty(size=(A_B_C_S_SET_MJ.shape[0], 978, 1)) ##############
-#MY_g_EXP_B = torch.empty(size=(A_B_C_S_SET_MJ.shape[0], 978, 1))##############
+MY_g_EXP_A = torch.empty(size=(A_B_C_S_SET_MJ.shape[0], 978, 1)) ##############
+MY_g_EXP_B = torch.empty(size=(A_B_C_S_SET_MJ.shape[0], 978, 1))##############
 
-MY_g_EXP_A = torch.empty(size=(A_B_C_S_SET_MJ.shape[0], 349, 1))##############
-MY_g_EXP_B = torch.empty(size=(A_B_C_S_SET_MJ.shape[0], 349, 1))##############
+#MY_g_EXP_A = torch.empty(size=(A_B_C_S_SET_MJ.shape[0], 349, 1))##############
+#MY_g_EXP_B = torch.empty(size=(A_B_C_S_SET_MJ.shape[0], 349, 1))##############
 
 #MY_g_EXP_A = torch.empty(size=(A_B_C_S_SET_MJ.shape[0], 845, 1))##############
 #MY_g_EXP_B = torch.empty(size=(A_B_C_S_SET_MJ.shape[0], 845, 1))##############
+
+check_L_in_out_A = []
+check_L_in_out_B = []
+
 
 
 
@@ -1096,8 +946,8 @@ for IND in range(MY_chem_A_feat.shape[0]): #  100
 	dat_type = A_B_C_S_SET_MJ.iloc[IND,]['type']
 	#
 	k=1
-	DrugA_Feat, DrugA_ADJ = get_CHEM(DrugA_CID, k)
-	DrugB_Feat, DrugB_ADJ = get_CHEM(DrugB_CID, k)
+	DrugA_Feat, DrugA_ADJ = check_drug_f_ts(DrugA_CID)
+	DrugB_Feat, DrugB_ADJ = check_drug_f_ts(DrugB_CID)
 	# 
 	if dat_type == 'AOBO' :
 		EXP_A = get_LINCS_data(DrugA_SIG)
@@ -1130,8 +980,6 @@ for IND in range(MY_chem_A_feat.shape[0]): #  100
 	MY_syn[IND] = torch.Tensor([AB_SYN])
 
 
-하는중! 
-근데 시너지 점수에 NaN 들어가는 애들 이유 뭔지 확인해보기 -> 아니었음. 제대로 돌아갔음 
 
 
 selec_ind = A_B_C_S_SET_MJ.index.isin(Fail_ind)==False
@@ -1145,26 +993,8 @@ MY_g_EXP_B_re = MY_g_EXP_B[selec_ind]
 MY_syn_re = MY_syn[selec_ind]
 
 
-# SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V3_CCLE_FULL/'
-# SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V4_CCLE_FULL/' wrong ver
-#SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V4_349_FULL/' # small ver 
-#SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V4_978_FULL/' # small ver 
-#SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V4_845_FULL/' # small ver 
-
-
-SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V5_349_FULL/' # small ver 
-SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V5_978_FULL/' # small ver 
-
-
-
-# PRJ_NAME = 'M3V3ccle_MISS2_FULL'
-# PRJ_NAME = 'M3V4ccle_MISS2_FULL'
-# PRJ_NAME = 'M3V4_349_MISS2_FULL'
-# PRJ_NAME = 'M3V4_978_MISS2_FULL'
-# PRJ_NAME = 'M3V4_845_MISS2_FULL'
-
-PRJ_NAME = 'M3V5_349_MISS2_FULL'
-PRJ_NAME = 'M3V5_978_MISS2_FULL'
+PRJ_NAME = 'M3V5_978_MISS2_FULL_786O'
+SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V5_W32_978_FULL/'
 
 
 torch.save(MY_chem_A_feat_re, SAVE_PATH+'{}.MY_chem_A_feat.pt'.format(PRJ_NAME))
@@ -1182,6 +1012,70 @@ A_B_C_S.to_csv(SAVE_PATH+'{}.A_B_C_S.csv'.format(PRJ_NAME))
 
 
 
+############# 
+                        아무리 생각해봐도 duplicated 가 신경쓰여서 한번만 확인함 
+
+                        원래는 311871
+
+                        # 311046
+                        ABCS_cid_dup_rm = A_B_C_S_SET_MJ_FAFILT[['drug_row_CID','drug_col_CID','DrugCombCCLE']].drop_duplicates()
+
+                        # 310789
+                        ABCS_sm_dup_rm = A_B_C_S_SET_MJ_FAFILT[['ROW_CAN_SMILES','COL_CAN_SMILES','DrugCombCCLE']].drop_duplicates()
+
+                        # 거의 1000여개가 dup 이라서 over learning 되는거 
+                        # 흠
+                        # 게다가 순서까지 따지면... 흠..... 
+
+                        A_B_C_S_SET_MJ_FAFILT
+
+                        A_B_C_S_SET_MJ_FAFILT['ori_index'] = list(A_B_C_S_SET_MJ_FAFILT.index)
+                        aaa = list(A_B_C_S_SET_MJ_FAFILT['drug_row_CID'])
+                        bbb = list(A_B_C_S_SET_MJ_FAFILT['drug_col_CID'])
+                        aa = list(A_B_C_S_SET_MJ_FAFILT['ROW_CAN_SMILES'])
+                        bb = list(A_B_C_S_SET_MJ_FAFILT['COL_CAN_SMILES'])
+                        cc = list(A_B_C_S_SET_MJ_FAFILT['DrugCombCCLE'])
+
+                        # 순서 고려해서 unique 아이디 만들기 (크기 비교가 str 사이에서도 성립한다는거 아니?)
+                        A_B_C_S_SET_MJ_FAFILT['CID_CID_CCLE'] = [str(int(aaa[i])) + '___' + str(int(bbb[i]))+ '___' + cc[i] if aaa[i] < bbb[i] else str(int(bbb[i])) + '___' + str(int(aaa[i]))+ '___' + cc[i] for i in range(A_B_C_S_SET_MJ_FAFILT.shape[0])]
+                        A_B_C_S_SET_MJ_FAFILT['SM_C_CHECK'] = [aa[i] + '___' + bb[i]+ '___' + cc[i] if aa[i] < bb[i] else bb[i] + '___' + aa[i]+ '___' + cc[i] for i in range(A_B_C_S_SET_MJ_FAFILT.shape[0])]
+
+                        len(set(A_B_C_S_SET_MJ_FAFILT['CID_CID_CCLE'])) # 303719
+                        len(set(A_B_C_S_SET_MJ_FAFILT['SM_C_CHECK'])) # 303390
+
+                        # 그러니까 앞뒤로도 겹치는 애들이 있음
+                        # 흐으으으음 거의 8000 여개가 그런데.. 
+                        # 여기서부터 아예 median 해줘야할지 확인을 좀 해보자 
+                        # 일단 뭐랄까 그 syn 값들이 너무 차이나지 말아야해 
+                                            
+                                            all_SM_C = list(A_B_C_S_SET_MJ_FAFILT['SM_C_CHECK'])
+                                            너무 오래걸려 
+                                            dup_SM = []
+                                            for ind in range(len(all_SM_C)) :
+                                                if ind % 1000 == 0 :
+                                                    print(ind)
+                                                a = all_SM_C[ind]
+                                                if all_SM_C.count(a) > 1 :
+                                                    dup_SM.append(a)
+
+
+
+
+                        dup_SM_C = list(A_B_C_S_SET_MJ_FAFILT[A_B_C_S_SET_MJ_FAFILT['SM_C_CHECK'].duplicated()]['SM_C_CHECK'])
+                        dup_ex = dup_SM_C[100]
+                        A_B_C_S_SET_MJ_FAFILT[A_B_C_S_SET_MJ_FAFILT.SM_C_CHECK == dup_ex]
+                        # index 7 , 8 -> chemB 가 pert id 가 다름 
+                        pr,pp = stats.pearsonr(MY_g_EXP_B_re[7].squeeze().tolist(), MY_g_EXP_B_re[8].squeeze().tolist())
+                        # index 1310 , 1311 -> chemA 가 pert id 가 다름 
+                        pr,pp = stats.pearsonr(MY_g_EXP_A_re[1310].squeeze().tolist(), MY_g_EXP_A_re[1311].squeeze().tolist())
+                        # 평균 내기에는 sig id 가 다르면 feature 값이 너무 다름 
+
+
+# 그렇습니다. DC ID 상에서는 안겹쳤었는데 CID 로는 겹치는게 있네욤 
+# 그러면, CID - CCLE 가 같은건 평균 내는걸로 하고 
+# sig_id 다른건 다른 세트로 취급하자 
+
+
 
 ##########################################
 ##########################################
@@ -1191,20 +1085,6 @@ A_B_C_S.to_csv(SAVE_PATH+'{}.A_B_C_S.csv'.format(PRJ_NAME))
 
 A_B_C_S_SET = copy.deepcopy(A_B_C_S_SET_MJ_FAFILT)
 A_B_C_S = copy.deepcopy(A_B_C_S)
-
-
-
-
-
-                    sig_id = 'LJP009_A375_24H:O24'
-                    DrugA_SIG = 'LJP009_A375_24H:O24'
-                    DrugB_SIG = 'PBIOA016_A375_24H:D11'
-                    DrugA_CID = 3385.0
-                    DrugB_CID = 24856436.0
-                    Cell = 'CVCL_0132'
-
-
-
 
 
 
@@ -1236,69 +1116,21 @@ ccle_cell_ids = set(ccle_cell_info.DrugCombCCLE) # 1827
 # ccle_cell_ids - DC_CELL_DF_ids = 365
 
 
-
-
-					# 978
-
-					cell_basal_exp_list = []
-					# give vector 
-					for i in range(A_B_C_S_SET.shape[0]) :
-						if i%100 == 0 :
-							print(str(i)+'/'+str(A_B_C_S_SET.shape[0]) )
-							datetime.now()
-						ccle = A_B_C_S_SET.loc[i]['DrugCombCCLE']
-						if ccle in ccle_names : 
-							ccle_exp_df = ccle_exp3[ccle_exp3.DrugCombCCLE==ccle][BETA_ENTREZ_ORDER]
-							ccle_exp_vector = ccle_exp_df.values[0].tolist()
-							cell_basal_exp_list.append(ccle_exp_vector)
-						else : # 'TC32_BONE', 'DU145_PROSTATE' -> 0 으로 진행하게 됨. public expression 없음 참고해야함. 
-							ccle_exp_vector = [0]*978
-							cell_basal_exp_list.append(ccle_exp_vector)
-
-									# 349 
-									cell_basal_exp_list = []
-									# give vector 
-									for i in range(A_B_C_S_SET.shape[0]) :
-										if i%100 == 0 :
-											print(str(i)+'/'+str(A_B_C_S_SET.shape[0]) )
-											datetime.now()
-										ccle = A_B_C_S_SET.loc[i]['DrugCombCCLE']
-										if ccle in ccle_names : 
-											ccle_exp_df = ccle_exp3[ccle_exp3.DrugCombCCLE==ccle][BETA_ENTREZ_ORDER]
-											ccle_exp_vector = ccle_exp_df.values[0].tolist()
-											cell_basal_exp_list.append(ccle_exp_vector)
-										else : # 'TC32_BONE', 'DU145_PROSTATE' -> 0 으로 진행하게 됨. public expression 없음 참고해야함. 
-											ccle_exp_vector = [0]*349
-											cell_basal_exp_list.append(ccle_exp_vector)
-
-
-
-					# 845
-					cell_basal_exp_list = []
-					# give vector 
-					for i in range(A_B_C_S_SET.shape[0]) :
-						if i%100 == 0 :
-							print(str(i)+'/'+str(A_B_C_S_SET.shape[0]) )
-							datetime.now()
-						ccle = A_B_C_S_SET.loc[i]['DrugCombCCLE']
-						if ccle in ccle_names : 
-							ccle_exp_df = ccle_exp3[ccle_exp3.DrugCombCCLE==ccle][BETA_ENTREZ_ORDER]
-							ccle_exp_vector = ccle_exp_df.values[0].tolist()
-							cell_basal_exp_list.append(ccle_exp_vector)
-						else : # 'TC32_BONE', 'DU145_PROSTATE' -> 0 으로 진행하게 됨. public expression 없음 참고해야함. 
-							ccle_exp_vector = [0]*845
-							cell_basal_exp_list.append(ccle_exp_vector)
-
-
-
-
-
-
-
-
-
-
-
+# 978
+cell_basal_exp_list = []
+# give vector 
+for i in range(A_B_C_S_SET.shape[0]) :
+    if i%100 == 0 :
+        print(str(i)+'/'+str(A_B_C_S_SET.shape[0]) )
+        datetime.now()
+    ccle = A_B_C_S_SET.loc[i]['DrugCombCCLE']
+    if ccle in ccle_names : 
+        ccle_exp_df = ccle_exp3[ccle_exp3.DrugCombCCLE==ccle][BETA_ENTREZ_ORDER]
+        ccle_exp_vector = ccle_exp_df.values[0].tolist()
+        cell_basal_exp_list.append(ccle_exp_vector)
+    else : # 'TC32_BONE', 'DU145_PROSTATE' -> 0 으로 진행하게 됨. public expression 없음 참고해야함. 
+        ccle_exp_vector = [0]*978
+        cell_basal_exp_list.append(ccle_exp_vector)
 
 
 
@@ -1316,11 +1148,6 @@ no_p_e_list = ['X' if cell in no_public_exp else 'O' for cell in list(A_B_C_S_SE
 A_B_C_S_SET_ADD = copy.deepcopy(A_B_C_S_SET)
 A_B_C_S_SET_ADD = A_B_C_S_SET_ADD.reset_index(drop = True)
 A_B_C_S_SET_ADD['Basal_Exp'] = no_p_e_list
-
-
-
-
-
 
 
 
@@ -1365,7 +1192,6 @@ A_B_C_S_SET_ADD['SYN_OX'] = OX_list
 
 
 
-
 A_B_C_S_SET_CIDS = list(set(list(A_B_C_S_SET_ADD.drug_row_CID)+list(A_B_C_S_SET_ADD.drug_col_CID)))
 gene_ids = list(BETA_ORDER_DF.gene_id)
 
@@ -1381,30 +1207,11 @@ TARGET_DB_RE = TARGET_DB[TARGET_DB.CID_RE.isin(A_B_C_S_SET_CIDS)]
 TARGET_DB_RE = TARGET_DB_RE[TARGET_DB_RE.ENTREZ_RE.isin(gene_ids)]
 
 
-																								A_B_C_S_CIDS = list(set(list(abcs.drug_row_CID) + list(abcs.drug_col_CID)))
-																								TARGET_DB_RE = TARGET_DB[TARGET_DB.CID_RE.isin(A_B_C_S_CIDS)]
-																								TARGET_DB_RE = TARGET_DB_RE[TARGET_DB_RE.ENTREZ_RE.isin(gene_ids)]
-
-
-
-				# L_gene_symbol : 127501
-				# PPI_name : 126185
-				# 978
-				target_cids = list(set(TARGET_DB_RE.CID))
-				gene_ids = list(BETA_ORDER_DF.gene_id)
-				def get_targets(CID): # 이건 지금 필터링 한 경우임 #
-					if CID in target_cids:
-						tmp_df2 = TARGET_DB_RE[TARGET_DB_RE.CID == CID]
-						targets = list(set(tmp_df2.EntrezID))
-						vec = [1 if a in targets else 0 for a in gene_ids ]
-					else :
-						vec = [0] * 978
-					return vec
 
 
 # L_gene_symbol : 127501
 # PPI_name : 126185
-# 349
+# 978
 target_cids = list(set(TARGET_DB_RE.CID))
 gene_ids = list(BETA_ORDER_DF.gene_id)
 def get_targets(CID): # 이건 지금 필터링 한 경우임 #
@@ -1413,23 +1220,10 @@ def get_targets(CID): # 이건 지금 필터링 한 경우임 #
 		targets = list(set(tmp_df2.EntrezID))
 		vec = [1 if a in targets else 0 for a in gene_ids ]
 	else :
-		vec = [0] * 349
+		vec = [0] * 978
 	return vec
 
 
-				# L_gene_symbol : 127501
-				# PPI_name : 126185
-				# 845
-				target_cids = list(set(TARGET_DB_RE.CID))
-				gene_ids = list(BETA_ORDER_DF.gene_id)
-				def get_targets(CID): # 이건 지금 필터링 한 경우임 #
-					if CID in target_cids:
-						tmp_df2 = TARGET_DB_RE[TARGET_DB_RE.CID == CID]
-						targets = list(set(tmp_df2.EntrezID))
-						vec = [1 if a in targets else 0 for a in gene_ids ]
-					else :
-						vec = [0] * 845
-					return vec
 
 
 
@@ -1477,6 +1271,9 @@ A_B_C_S_SET_ADD['T1OX']=T1_OX_list
 
 
 
+
+
+
 # TARGET (2)
 # TARGET (2)
 # TARGET (2)
@@ -1506,52 +1303,21 @@ TARGET_DB_RE = TARGET_DB_RE[TARGET_DB_RE.EntrezID.isin(gene_ids)]
 
 
 
-			# L_gene_symbol : 127501
-			# PPI_name : 126185
-			# 978
-			target_cids = list(set(TARGET_DB_RE.CID))
-			gene_ids = list(BETA_ORDER_DF.gene_id)
-			def get_targets(CID): # 이건 지금 필터링 한 경우임 #
-				if CID in target_cids:
-					tmp_df2 = TARGET_DB_RE[TARGET_DB_RE.CID == CID]
-					targets = list(set(tmp_df2.EntrezID))
-					vec = [1 if a in targets else 0 for a in gene_ids ]
-				else :
-					vec = [0] * 978
-				return vec
+# L_gene_symbol : 127501
+# PPI_name : 126185
+# 978
+target_cids = list(set(TARGET_DB_RE.CID))
+gene_ids = list(BETA_ORDER_DF.gene_id)
+def get_targets(CID): # 이건 지금 필터링 한 경우임 #
+    if CID in target_cids:
+        tmp_df2 = TARGET_DB_RE[TARGET_DB_RE.CID == CID]
+        targets = list(set(tmp_df2.EntrezID))
+        vec = [1 if a in targets else 0 for a in gene_ids ]
+    else :
+        vec = [0] * 978
+    return vec
 
 
-
-
-
-					# L_gene_symbol : 127501
-					# PPI_name : 126185
-					# 349
-					target_cids = list(set(TARGET_DB_RE.CID))
-					gene_ids = list(BETA_ORDER_DF.gene_id)
-					def get_targets(CID): # 이건 지금 필터링 한 경우임 #
-						if CID in target_cids:
-							tmp_df2 = TARGET_DB_RE[TARGET_DB_RE.CID == CID]
-							targets = list(set(tmp_df2.EntrezID))
-							vec = [1 if a in targets else 0 for a in gene_ids ]
-						else :
-							vec = [0] * 349
-						return vec
-
-
-				# L_gene_symbol : 127501
-				# PPI_name : 126185
-				# 845
-				target_cids = list(set(TARGET_DB_RE.CID))
-				gene_ids = list(BETA_ORDER_DF.gene_id)
-				def get_targets(CID): # 이건 지금 필터링 한 경우임 #
-					if CID in target_cids:
-						tmp_df2 = TARGET_DB_RE[TARGET_DB_RE.CID == CID]
-						targets = list(set(tmp_df2.EntrezID))
-						vec = [1 if a in targets else 0 for a in gene_ids ]
-					else :
-						vec = [0] * 845
-					return vec
 
 
 
@@ -1595,12 +1361,6 @@ for IND in range(A_B_C_S_SET_ADD.shape[0]) :
     
 
 A_B_C_S_SET_ADD['T2OX']=T2_OX_list
-
-
-
-
-
-
 
 
 
@@ -1703,5 +1463,48 @@ A_B_C_S_SET_ADD['tani_02'] = tani_02_result
 A_B_C_S_SET_ADD['tani_Q'] = tani_Q_result
 
 
+
+
+
+# final check for oneil set 
+# final check for oneil set 
+# final check for oneil set 
+
+DC_oneil = pd.read_csv('/st06/jiyeonH/11.TOX/DR_SPRING/trials/DC_ONEIL_ALL.csv', sep= '\t')
+
+o_1 = [str(int(a)) for a in DC_oneil.drug_row_CID]
+o_2 = [str(int(a)) for a in DC_oneil.drug_col_CID]
+o_c = [a for a in DC_oneil.DrugCombCCLE]
+DC_oneil_set = [o_1[a]+'__'+o_2[a]+'__'+o_c[a] for a in range(DC_oneil.shape[0])] + [o_2[a]+'__'+o_1[a]+'__'+o_c[a] for a in range(DC_oneil.shape[0])]
+
+abcs_1 = [str(int(a)) for a in A_B_C_S_SET_ADD.drug_row_CID]
+abcs_2 =[str(int(a)) for a in A_B_C_S_SET_ADD.drug_col_CID]
+abcs_c = [a for a in A_B_C_S_SET_ADD.DrugCombCCLE]
+abcs_set = [abcs_1[a]+'__'+abcs_2[a]+'__'+abcs_c[a] for a in range(A_B_C_S_SET_ADD.shape[0])]
+
+# 생각보다 시간 걸림. row 많아서 
+oneil_check = []
+for a in range(A_B_C_S_SET_ADD.shape[0]) :
+    if a%1000 == 0 : 
+        print(a)
+    if abcs_set[a] in DC_oneil_set :
+        oneil_check.append('O')
+    else :
+        oneil_check.append('X')
+    
+
+
+A_B_C_S_SET_ADD['ONEIL'] = oneil_check
+
 A_B_C_S_SET_ADD.to_csv(SAVE_PATH+'{}.A_B_C_S_SET_ADD.csv'.format(PRJ_NAME))
+
+
+
+
+
+
+
+
+
+
 
