@@ -1,6 +1,8 @@
 # DRSPRING
 DRug Synergy PRediction by INtegrated GCN(DRSRPING) is separated into two modules. 
+
 The module_1, PDIGEC, predicts Drug Induced gene expression of each Drug-Cell line-Dose-Time profile. 
+
 The module_2, PDSS, predicts Drug synergy score(Loewe score) of each drug-drug-cell triads.
 
 
