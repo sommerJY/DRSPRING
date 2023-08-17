@@ -177,6 +177,9 @@ DS_labels_RE = pd.merge(DS_labels_RE, DeepS_match_df, on = 'drug_b_name', how = 
 DeepS_match_df.columns = ['DS','MM']
 # 46104
 
+DS_labels_RE.to_csv('/st06/jiyeonH/11.TOX/DR_SPRING/other_tools/01.DeepSynergy/RELABEL.csv', index= False)
+
+
 
 # cell check 
 DeepS_cellline = list(set(DS_labels_RE.cell_line)) # 39

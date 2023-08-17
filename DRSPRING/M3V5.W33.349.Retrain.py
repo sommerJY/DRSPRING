@@ -241,6 +241,7 @@ MY_syn = torch.load(SAVE_PATH+'{}.MY_syn2.pt'.format(file_name)) ###############
 # 605 version
 A_B_C_S_SET_ADD2 = copy.deepcopy(A_B_C_S_SET_ADD)
 A_B_C_S_SET_ADD2 = A_B_C_S_SET_ADD2.reset_index(drop = True)
+A_B_C_S_SET_ADD2['type'] = ['AXBO' if a=="AOBX" else a  for a in A_B_C_S_SET_ADD2.type ]
 
 
 A_B_C_S_SET_ADD2['ori_index'] = list(A_B_C_S_SET_ADD2.index)
@@ -1148,11 +1149,16 @@ os.makedirs( os.path.join(PRJ_PATH,'RETRAIN'), exist_ok = True)
 OLD_PATH = '/home01/k040a01/02.M3V5/M3V5_W322_349_MIS2'
 ANA_DF_CSV = pd.read_csv(os.path.join(OLD_PATH,'RAY_ANA_DF.{}.csv'.format('M3V5_W322_349_MIS2')))
 
-my_config = ANA_DF_CSV[ANA_DF_CSV.trial_id=='3fd8fd68'] # 349 
+my_config = ANA_DF_CSV[ANA_DF_CSV.trial_id=='4efc26cc'] # 349 
 
 
 # LEARN_MODEL (PRJ_PATH, my_config, model_path, model_name, model_num, n_epoch, use_cuda = True)
 LEARN_MODEL (PRJ_PATH, my_config, 1000 , use_cuda = True)
+
+
+
+
+
 
 
 고민 : 이걸 그냥 베스트 버전으로 돌려버릴까
@@ -1161,10 +1167,11 @@ LEARN_MODEL (PRJ_PATH, my_config, 1000 , use_cuda = True)
 
 
 sbatch gpu1.any M3V5_WORK33.322.349.retrain.py
+sbatch gpu1.any M3V5_WORK33.349.ret.py
 
 
-tail ~/logs/M3V5W33_GPU1_12669.log
-tail /home01/k040a01/02.M3V5/M3V5_W33_349_MIS2/RESULT.G1.RE2.txt
+tail ~/logs/M3V5W33_GPU1_12821.log
+tail /home01/k040a01/02.M3V5/M3V5_W33_349_MIS2/RESULT.G1.4efc26cc.txt
 tail ~/02.M3V5/M3V5_349_MIS2/RETRAIN.test_RESULT1.csv
 tail ~/02.M3V5/M3V5_349_MIS2/RETRAIN.tv_RESULT.csv
 tail ~/02.M3V5/M3V5_349_MIS2/RETRAIN.test_RESULT2.csv
@@ -1174,6 +1181,166 @@ tail ~/02.M3V5/M3V5_349_MIS2/RETRAIN.test_RESULT2.csv
 # 하지만 저번에 읽은 논문 haematopoietic 그거 결과 보려면 
 # 돌려봐야할듯..? 
 # 순서를 미루자 
+
+
+
+
+###############################3
+local 에 가져왔다. 
+
+PRJ_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V5_W33_349_MIS2/'
+checkpoint_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V5_W33_349_MIS2/RETRAIN'
+
+test_list = pd.read_csv(PRJ_PATH + 'RETRAIN.testlist.csv')
+test_list_RES1 = pd.read_csv(PRJ_PATH + 'RETRAIN.test_RESULT1.csv')
+test_list_RES2 = pd.read_csv(PRJ_PATH + 'RETRAIN.test_RESULT2.csv')
+tv_list = pd.read_csv(PRJ_PATH + 'RETRAIN.tvlist.csv')
+tv_list_RES = pd.read_csv(PRJ_PATH + 'RETRAIN.tv_RESULT.csv')
+
+
+
+
+T_retrain = DATASET_GCN_W_FT(
+		torch.Tensor(MY_chem_A_feat_RE2), torch.Tensor(MY_chem_B_feat_RE2), 
+		torch.Tensor(MY_chem_A_adj_RE2), torch.Tensor(MY_chem_B_adj_RE2),
+		torch.Tensor(MY_g_EXP_A_RE2), torch.Tensor(MY_g_EXP_B_RE2), 
+		torch.Tensor(MY_Target_A2), torch.Tensor(MY_Target_B2), torch.Tensor(MY_CellBase_RE2), 
+		JY_ADJ_IDX, JY_IDX_WEIGHT_T, 
+		cell_one_hot.float(),
+		torch.Tensor(MY_syn_RE2)
+		)
+
+train_loader = torch.utils.data.DataLoader(T_retrain, batch_size = 512, collate_fn = graph_collate_fn, shuffle = True, num_workers=8) # 
+
+checkpoint_name = 'checkpoint_996'
+
+
+G_chem_layer = my_config['config/G_chem_layer'].item()
+G_chem_hdim = my_config['config/G_chem_hdim'].item()
+G_exp_layer = my_config['config/G_exp_layer'].item()
+G_exp_hdim = my_config['config/G_exp_hdim'].item()
+dsn1_layers = [my_config['config/feat_size_0'].item(), my_config['config/feat_size_1'].item(), my_config['config/feat_size_2'].item()]
+dsn2_layers = [my_config['config/feat_size_0'].item(), my_config['config/feat_size_1'].item(), my_config['config/feat_size_2'].item()] 
+snp_layers = [my_config['config/feat_size_3'].item() , my_config['config/feat_size_4'].item()]
+inDrop = my_config['config/dropout_1'].item()
+Drop = my_config['config/dropout_2'].item()
+
+
+best_model = MY_expGCN_parallel_model(
+				G_chem_layer, T_test_0.gcn_drug1_F.shape[-1] , G_chem_hdim,
+				G_exp_layer, 3, G_exp_hdim,
+				dsn1_layers, dsn2_layers, snp_layers, 
+				len(set(A_B_C_S_SET_SM.DrugCombCCLE)), 1,
+				inDrop, Drop
+				)
+	#
+device = "cuda:0" if torch.cuda.is_available() else "cpu"
+#
+
+if torch.cuda.is_available():
+	state_dict = torch.load(os.path.join(checkpoint_PATH, checkpoint_name))
+else:
+	state_dict = torch.load(os.path.join(checkpoint_PATH, checkpoint_name), map_location=torch.device('cpu'))
+#
+
+
+
+print("state_dict_done", flush = True)
+if type(state_dict) == tuple:
+	best_model.load_state_dict(state_dict[0])
+else : 
+	best_model.load_state_dict(state_dict)	#
+
+
+
+best_model.eval()
+#
+use_cuda = False
+running_loss = 0
+last_loss = 0 
+#
+ans_list = []
+pred_list = []
+with torch.no_grad() :
+	for batch_idx_v, (drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, adj_w, cell, y) in enumerate(train_loader) :
+		if batch_idx_v%100 == 0 :
+			datetime.now()
+			print(str(batch_idx_v)+'/'+str(len(train_loader) ))
+		#
+		expA = expA.view(-1,3)#### 다른점 
+		expB = expB.view(-1,3)#### 다른점 
+		adj_w = adj_w.squeeze()
+		# move to GPU
+		if use_cuda:
+			drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, adj_w, y, cell = drug1_f.cuda(), drug2_f.cuda(), drug1_a.cuda(), drug2_a.cuda(), expA.cuda(), expB.cuda(), adj.cuda(), adj_w.cuda(), y.cuda(), cell.cuda()
+		## update the average validation loss
+		output = best_model(drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, adj_w, cell, y)
+		MSE = torch.nn.MSELoss()
+		loss = MSE(output, y) # train 이 아니라서 weight 안넣어줌. 그냥 nn.MSE 넣어주기 
+		# update average validation loss 
+		running_loss = running_loss + loss.item()
+		pred_list = pred_list + output.squeeze().tolist()
+		ans_list = ans_list + y.squeeze().tolist()
+	#
+last_loss = running_loss / (batch_idx_v+1)
+val_sc, _ = stats.spearmanr(pred_list, ans_list)
+val_pc, _ = stats.pearsonr(pred_list, ans_list)
+
+
+
+
+def TEST_CPU (PRJ_PATH, CV_num, my_config, model_path, model_name, model_num) :
+	use_cuda = False
+	#
+	CV_test_dict = { 
+		'CV_0': T_test_0, 'CV_1' : T_test_1, 'CV_2' : T_test_2,
+		'CV_3' : T_test_3, 'CV_4': T_test_4 }
+	#
+	T_test = CV_test_dict[CV_num]
+	test_loader = torch.utils.data.DataLoader(T_test, batch_size = my_config["config/batch_size"].item(), collate_fn = graph_collate_fn, shuffle =False, num_workers=16) # my_config['config/n_workers'].item()
+	#
+	G_chem_layer = my_config['config/G_chem_layer'].item()
+	G_chem_hdim = my_config['config/G_chem_hdim'].item()
+	G_exp_layer = my_config['config/G_exp_layer'].item()
+	G_exp_hdim = my_config['config/G_exp_hdim'].item()
+	dsn1_layers = [my_config['config/feat_size_0'].item(), my_config['config/feat_size_1'].item(), my_config['config/feat_size_2'].item()]
+	dsn2_layers = [my_config['config/feat_size_0'].item(), my_config['config/feat_size_1'].item(), my_config['config/feat_size_2'].item()] 
+	snp_layers = [my_config['config/feat_size_3'].item() , my_config['config/feat_size_4'].item()]
+	inDrop = my_config['config/dropout_1'].item()
+	Drop = my_config['config/dropout_2'].item()
+	#
+	best_model = MY_expGCN_parallel_model(
+				G_chem_layer, T_test.gcn_drug1_F.shape[-1] , G_chem_hdim,
+				G_exp_layer, 3, G_exp_hdim,
+				dsn1_layers, dsn2_layers, snp_layers, 
+				len(set(A_B_C_S_SET_SM.DrugCombCCLE)), 1,
+				inDrop, Drop
+				)
+	#
+	if torch.cuda.is_available():
+		best_model = best_model.cuda()
+		print('model to cuda', flush = True)
+		if torch.cuda.device_count() > 1 :
+			best_model = torch.nn.DataParallel(best_model)
+			print('model to multi cuda', flush = True)
+	device = "cuda:0" if torch.cuda.is_available() else "cpu"
+	#
+	if torch.cuda.is_available():
+		state_dict = torch.load(os.path.join(model_path, model_name))
+	else:
+		state_dict = torch.load(os.path.join(model_path, model_name), map_location=torch.device('cpu'))
+	#
+	print("state_dict_done", flush = True)
+	if type(state_dict) == tuple:
+		best_model.load_state_dict(state_dict[0])
+	else : 
+		best_model.load_state_dict(state_dict)	#
+	print("state_load_done", flush = True)
+	#
+	#
+	last_loss, val_pc, val_sc, pred_list, ans_list = inner_test(test_loader, best_model)
+	R__1 , R__2 = jy_corrplot(pred_list, ans_list, PRJ_PATH, 'P.{}.{}.{}.{}_model'.format(PRJ_NAME, MISS_NAME, CV_num, model_num) )
+	return  last_loss, R__1, R__2, pred_list, ans_list
 
 
 

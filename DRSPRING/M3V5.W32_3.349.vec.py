@@ -1,4 +1,12 @@
 
+# 다시 이번엔 
+cell line vector 확인해야함 
+근데 feature 진짜 돌아버리겠넴 
+범위를 바꿔서 넣어줘야하나? 
+왜냐면 너무 0~17 인거랑
+후 일단 넣어놓고 생각하자 
+
+
 import rdkit
 import os
 import os.path as osp
@@ -42,7 +50,6 @@ from rdkit import Chem
 from rdkit.Chem import AllChem
 from rdkit import DataStructs
 
-
 import networkx as nx
 import copy
 from scipy.sparse import coo_matrix
@@ -71,26 +78,10 @@ import os
 import pandas as pd
 
 
-#NETWORK_PATH = '/st06/jiyeonH/13.DD_SESS/HumanNetV3/'
-#LINCS_PATH = '/st06/jiyeonH/11.TOX/MY_TRIAL_5/' 
-#DATA_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V3_FULL/'
-#DC_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/'
-
-
-# 내가보기엔, 데이터 늘릴 필요가 없어졌으니가 그냥 말 그대로의 ablation study 만 하면 될듯
-# 그러면 그냥 원래 데이터에다가 lincs 없애서 돌리는거만 해보면 될듯 
-
-
-
-
-ray.init()
 
 NETWORK_PATH = '/home01/k040a01/01.Data/HumanNet/'
 LINCS_PATH = '/home01/k040a01/01.Data/LINCS/'
 DC_PATH = '/home01/k040a01/01.Data/DrugComb/'
-
-
-
 
 
 # HS Drug pathway DB 활용 -> 349
@@ -163,8 +154,6 @@ JY_ADJ_IDX = JY_ADJ_tmp.to_sparse().indices()
 JY_IDX_WEIGHT = MY_WEIGHT_SCORE
 
 
-
-
 # LINCS exp order 따지기 
 BETA_ORDER_pre = [list(LINCS_978.new_node).index(a) for a in JY_GRAPH_ORDER]
 BETA_ORDER_DF = LINCS_978.iloc[BETA_ORDER_pre] # 어차피 ref 다르고 같은 애들이라 괜춘 
@@ -176,7 +165,6 @@ BETA_NEWNOD_ORDER = list(BETA_ORDER_DF.new_node)
 SAVE_PATH = '/home01/k040a01/02.M3V5/M3V5_W32_349_DATA/'
 # SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V5_W32_349_FULL/'
 
-file_name = 'M3V5_349_MISS2_FULL'
 file_name = 'M3V5_349_MISS2_FULL_RE2' # 0608
 
 
@@ -193,53 +181,6 @@ MY_Target_1_B = torch.load(SAVE_PATH+'{}.MY_Target_1_B.pt'.format(file_name))
 #MY_Target_2_B = torch.load(SAVE_PATH+'{}.MY_Target_2_B.pt'.format(file_name))
 MY_CellBase = torch.load(SAVE_PATH+'{}.MY_CellBase.pt'.format(file_name))
 MY_syn = torch.load(SAVE_PATH+'{}.MY_syn2.pt'.format(file_name))
-
-
-
-																									SAVE_PATH_786O = '/home01/k040a01/02.M3V5/M3V5_W32_349_DATA/'
-																									# SAVE_PATH_786O = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V5_W32_349_FULL/'
-
-																									file_name_786O = 'M3V5_349_MISS2_FULL_786O'
-
-																									A_B_C_S_SET_ADD_786O = pd.read_csv(SAVE_PATH_786O+'{}.A_B_C_S_SET_ADD.csv'.format(file_name_786O), low_memory=False)
-																									MY_chem_A_feat_786O = torch.load(SAVE_PATH_786O+'{}.MY_chem_A_feat.pt'.format(file_name_786O))
-																									MY_chem_B_feat_786O = torch.load(SAVE_PATH_786O+'{}.MY_chem_B_feat.pt'.format(file_name_786O))
-																									MY_chem_A_adj_786O = torch.load(SAVE_PATH_786O+'{}.MY_chem_A_adj.pt'.format(file_name_786O))
-																									MY_chem_B_adj_786O = torch.load(SAVE_PATH_786O+'{}.MY_chem_B_adj.pt'.format(file_name_786O))
-																									MY_g_EXP_A_786O = torch.load(SAVE_PATH_786O+'{}.MY_g_EXP_A.pt'.format(file_name_786O))
-																									MY_g_EXP_B_786O = torch.load(SAVE_PATH_786O+'{}.MY_g_EXP_B.pt'.format(file_name_786O))
-																									MY_Target_1_A_786O = torch.load(SAVE_PATH_786O+'{}.MY_Target_1_A.pt'.format(file_name_786O))
-																									MY_Target_1_B_786O = torch.load(SAVE_PATH_786O+'{}.MY_Target_1_B.pt'.format(file_name_786O))
-																									#MY_Target_2_A = torch.load(SAVE_PATH_786O+'{}.MY_Target_2_A.pt'.format(file_name_786O))
-																									#MY_Target_2_B = torch.load(SAVE_PATH_786O+'{}.MY_Target_2_B.pt'.format(file_name_786O))
-																									MY_CellBase_786O = torch.load(SAVE_PATH_786O+'{}.MY_CellBase.pt'.format(file_name_786O))
-																									MY_syn_786O = torch.load(SAVE_PATH_786O+'{}.MY_syn.pt'.format(file_name_786O))
-
-
-
-																									# 315936
-																									A_B_C_S_SET_ADD = pd.concat(
-																										[A_B_C_S_SET_ADD[['drug_row_CID', 'drug_col_CID', 'DrugCombCCLE','ROWCHECK', 'COLCHECK', 'ROW_CAN_SMILES', 'COL_CAN_SMILES','ROW_pert_id', 'ROW_BETA_sig_id', 'COL_pert_id', 'COL_BETA_sig_id','type', 'ROW_len', 'COL_len', 'Basal_Exp', 'SYN_OX', 'T1OX','tani01', 'tani_02', 'tani_Q', 'ONEIL']],
-																										A_B_C_S_SET_ADD_786O[['drug_row_CID', 'drug_col_CID', 'DrugCombCCLE','ROWCHECK', 'COLCHECK', 'ROW_CAN_SMILES', 'COL_CAN_SMILES','ROW_pert_id', 'ROW_BETA_sig_id', 'COL_pert_id', 'COL_BETA_sig_id','type', 'ROW_len', 'COL_len', 'Basal_Exp', 'SYN_OX', 'T1OX','tani01', 'tani_02', 'tani_Q', 'ONEIL']]
-																										]
-																									)
-
-																									MY_chem_A_feat = torch.concat([MY_chem_A_feat,MY_chem_A_feat_786O])
-																									MY_chem_B_feat = torch.concat([MY_chem_B_feat,MY_chem_B_feat_786O])
-																									MY_chem_A_adj = torch.concat([MY_chem_A_adj,MY_chem_A_adj_786O])
-																									MY_chem_B_adj = torch.concat([MY_chem_B_adj,MY_chem_B_adj_786O])
-																									MY_g_EXP_A = torch.concat([MY_g_EXP_A,MY_g_EXP_A_786O])
-																									MY_g_EXP_B = torch.concat([MY_g_EXP_B,MY_g_EXP_B_786O])
-																									MY_Target_1_A = torch.concat([MY_Target_1_A,MY_Target_1_A_786O])
-																									MY_Target_1_B = torch.concat([MY_Target_1_B,MY_Target_1_B_786O])
-																									MY_CellBase = torch.concat([MY_CellBase,MY_CellBase_786O])
-																									MY_syn = torch.concat([MY_syn,MY_syn_786O])
-
-
-
-
-
-
 
 
 
@@ -280,45 +221,6 @@ A_B_C_S_SET_ADD4 = A_B_C_S_SET_ADD3[dup_index] # 309004 -> 308456
 
 
 
-
-
-																									# 우선 drugcomb 자체에서 CID 중복이 일어나는거 필터링을 제대로 못했음
-
-																									DC_dup_check = pd.read_csv(DC_PATH+'DC_duplicates.csv', sep ='\t')
-																									# DC_dup_check = pd.read_csv('/st06/jiyeonH/11.TOX/DR_SPRING/trials/DC_duplicates.csv', sep ='\t') 
-																									DC_dup_list = list(DC_dup_check['id_id_cell'])
-
-																									A_B_C_S_SET_ADD2_dup_check = A_B_C_S_SET_ADD2[A_B_C_S_SET_ADD2.CID_CID_CCLE.isin(DC_dup_list)]
-
-																									check_dc_info = list(A_B_C_S_SET_ADD2_dup_check.CID_CID_CCLE)
-
-																									# 내꺼에서는 딱히 dup 가 아닐수도 (이미 모종의 이유로 지워져서? ) if tmp.shape[0] != len(set(tmp.SIG_SIG)) :
-																									rm_index = []
-																									syn_prob = []
-																									for a in check_dc_info :
-																										tmp = A_B_C_S_SET_ADD2_dup_check[A_B_C_S_SET_ADD2_dup_check.CID_CID_CCLE == a]
-																										sig_set = list(set(tmp.SIG_SIG))
-																										#print(len(sig_set))
-																										for i in sig_set :
-																											tmp_index = list(tmp[tmp.SIG_SIG == i].index)
-																											if MY_syn[tmp_index[0]].item() * MY_syn[tmp_index[1]].item() <0 :
-																												syn_prob.append(a)
-																												rm_index = rm_index + tmp_index
-																										tmp2 = tmp[['CID_CID_CCLE','SIG_SIG']].drop_duplicates(keep='last')
-																										rm_index = rm_index + list(tmp2.index)
-
-
-																									A_B_C_S_SET_rmdup = A_B_C_S_SET_ADD2.drop(rm_index) # 302039
-
-																									A_B_C_S_SET_rmdup[['CID_CID_CCLE','SIG_SIG']].drop_duplicates() # 302039 # CID-SIG 중복인것만 남음
-																									A_B_C_S_SET_rmdup[['CID_CID_CCLE','SM_C_CHECK','SIG_SIG']].drop_duplicates() # 302039
-																									A_B_C_S_SET_rmdup[['drug_row_CID','drug_col_CID','DrugCombCCLE']].drop_duplicates() # 301232
-																									A_B_C_S_SET_rmdup[['ROW_CAN_SMILES','COL_CAN_SMILES','DrugCombCCLE']].drop_duplicates() # 300997
-																									len(set(A_B_C_S_SET_rmdup['CID_CID_CCLE'])) # 51212
-																									len(set(A_B_C_S_SET_rmdup['SM_C_CHECK'])) # 51160
-
-
-
 A_B_C_S_SET_rmdup = copy.deepcopy(A_B_C_S_SET_ADD4)
 
 A_B_C_S_SET_rmdup[['CID_CID_CCLE','SIG_SIG']].drop_duplicates() # 308456 # CID-SIG 중복인것만 남음
@@ -331,10 +233,6 @@ len(set(A_B_C_S_SET_rmdup['SM_C_CHECK'])) #
 
 
 
-
-
-
-
 MISS_filter = ['AOBO','AXBO','AOBX','AXBX']
 
 A_B_C_S_SET = A_B_C_S_SET_rmdup[A_B_C_S_SET_rmdup.Basal_Exp == 'O']
@@ -342,9 +240,10 @@ A_B_C_S_SET = A_B_C_S_SET_rmdup[A_B_C_S_SET_rmdup.Basal_Exp == 'O']
 A_B_C_S_SET = A_B_C_S_SET[A_B_C_S_SET.SYN_OX == 'O']
 
 ## A_B_C_S_SET = A_B_C_S_SET[A_B_C_S_SET.T2OX == 'O'] ###################### old targets 
-#A_B_C_S_SET = A_B_C_S_SET[A_B_C_S_SET.T1OX == 'O'] ####################### new targets 
+A_B_C_S_SET = A_B_C_S_SET[A_B_C_S_SET.T1OX == 'O'] ####################### new targets 
 
 A_B_C_S_SET = A_B_C_S_SET[A_B_C_S_SET.type.isin(MISS_filter)]
+
 
 
 
@@ -409,9 +308,6 @@ A_B_C_S_SET_COH = pd.merge(A_B_C_S_SET, DC_CELL_info_filt[['DrugCombCCLE','DC_ce
 
 
 
-
-
-
 # sample number filter 
 
 # 빈도 확인 
@@ -423,31 +319,6 @@ C_cclename = [list(A_B_C_S_SET_COH[A_B_C_S_SET_COH.DC_cellname==a]['DrugCombCCLE
 
 C_df = pd.DataFrame({'cell' : C_names, 'freq' : C_freq, 'ccle' : C_cclename})
 C_df = C_df.sort_values('freq')
-
-
-					fig, ax = plt.subplots(figsize=(30, 15))
-					## fig, ax = plt.subplots(figsize=(40, 15))
-
-					x_pos = [a*3 for a in range(C_df.shape[0])]
-					ax.bar(x_pos, list(C_df['freq']))
-
-					plt.xticks(x_pos, list(C_df['cell']), rotation=90, fontsize=18)
-
-					for i in range(C_df.shape[0]):
-						plt.annotate(str(int(list(C_df['freq'])[i])), xy=(x_pos[i], list(C_df['freq'])[i]), ha='center', va='bottom', fontsize=18)
-
-					ax.set_ylabel('cell nums')
-					ax.set_title('used cells')
-					plt.tight_layout()
-
-					plotname = 'total_cells'
-					path = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V5_W32_349_FULL/'
-					fig.savefig('{}/{}.png'.format(path, plotname), bbox_inches = 'tight')
-					plt.close()
-
-						# C_MJ = pd.merge(C_df, DC_CELL_info_filt[['DC_cellname','DrugCombCello','DrugCombCCLE']], left_on = 'cell', right_on = 'DC_cellname', how = 'left')
-						# C_MJ.to_csv('/st06/jiyeonH/13.DD_SESS/01.PRJ2/cell_cut_example.csv')
-
 
 
 
@@ -485,28 +356,6 @@ cell_one_hot = torch.nn.functional.one_hot(torch.Tensor(A_B_C_S_SET_COH2['cell_o
 
 
 
-print('CID_CID', flush = True)
-tmp = list(set(A_B_C_S_SET_COH2.CID_CID))
-tmp2 = sum([a.split('___') for a in tmp],[])
-
-len(set(tmp2))
-
-
-print('CID_CID', flush = True)
-len(set(A_B_C_S_SET_COH2.CID_CID))
-
-
-
-print('CID_CID_CCLE', flush = True)
-len(set(A_B_C_S_SET_COH2.CID_CID_CCLE))
-
-print('DrugCombCCLE', flush = True)
-len(set(A_B_C_S_SET_COH2.DrugCombCCLE))
-
-
-
-
-
 
 ###########################################################################################
 ###########################################################################################
@@ -517,6 +366,7 @@ len(set(A_B_C_S_SET_COH2.DrugCombCCLE))
 # 후.. 근데 이거 다들 leave drug-drug out 이네.. 
 # 돌려봐야 알것 같다.... 
 # check ing... 
+
 
 print("LEARNING")
 
@@ -533,12 +383,32 @@ data_nodup_df = pd.DataFrame({
 	 })
 
 
+# 10% test 
+TrainVal_list = []; Test_list =[]
+
+
+
 SM_SM_list = list(set(data_nodup_df.SM_SM))
+SM_SM_list.sort()
 sm_sm_list_1 = sklearn.utils.shuffle(SM_SM_list, random_state=42)
 
-bins = [a for a in range(0, len(sm_sm_list_1), round(len(sm_sm_list_1)*0.2) )]
+Test_smsm_list = sm_sm_list_1[0:round(len(SM_SM_list)*0.10)]
+TrainVal_smsm_list = sm_sm_list_1[round(len(SM_SM_list)*0.10):]
+Test_nodup_df= data_nodup_df[data_nodup_df.SM_SM.isin(Test_smsm_list)]
+TrainVal_nodup_df = data_nodup_df[data_nodup_df.SM_SM.isin(TrainVal_smsm_list)]
+Test_setset = list(Test_nodup_df['setset'])
+TrainVal_setset = list(TrainVal_nodup_df['setset'])
+
+
+
+
+sm_sm_list_2 = list(set(TrainVal_nodup_df.SM_SM))
+sm_sm_list_2.sort()
+sm_sm_list_3 = sklearn.utils.shuffle(sm_sm_list_2, random_state=42)
+
+bins = [a for a in range(0, len(sm_sm_list_3), round(len(sm_sm_list_3)*0.2) )]
 bins = bins[1:]
-res = np.split(sm_sm_list_1, bins)
+res = np.split(sm_sm_list_3, bins)
 
 CV_1_smsm = list(res[0])
 CV_2_smsm = list(res[1])
@@ -548,26 +418,25 @@ CV_5_smsm = list(res[4])
 
 len(CV_1_smsm) + len(CV_2_smsm) + len(CV_3_smsm) + len(CV_4_smsm) + len(CV_5_smsm)
 
-CV_1_setset = list(data_nodup_df[data_nodup_df.SM_SM.isin(CV_1_smsm)]['setset'])
-CV_2_setset = list(data_nodup_df[data_nodup_df.SM_SM.isin(CV_2_smsm)]['setset'])
-CV_3_setset = list(data_nodup_df[data_nodup_df.SM_SM.isin(CV_3_smsm)]['setset'])
-CV_4_setset = list(data_nodup_df[data_nodup_df.SM_SM.isin(CV_4_smsm)]['setset'])
-CV_5_setset = list(data_nodup_df[data_nodup_df.SM_SM.isin(CV_5_smsm)]['setset'])
-
+CV_1_setset = list(TrainVal_nodup_df[TrainVal_nodup_df.SM_SM.isin(CV_1_smsm)]['setset'])
+CV_2_setset = list(TrainVal_nodup_df[TrainVal_nodup_df.SM_SM.isin(CV_2_smsm)]['setset'])
+CV_3_setset = list(TrainVal_nodup_df[TrainVal_nodup_df.SM_SM.isin(CV_3_smsm)]['setset'])
+CV_4_setset = list(TrainVal_nodup_df[TrainVal_nodup_df.SM_SM.isin(CV_4_smsm)]['setset'])
+CV_5_setset = list(TrainVal_nodup_df[TrainVal_nodup_df.SM_SM.isin(CV_5_smsm)]['setset'])
 
 
 
 CV_ND_INDS = {
 	'CV0_train' : CV_1_setset + CV_2_setset + CV_3_setset + CV_4_setset, 
-	'CV0_test' : CV_5_setset,
+	'CV0_val' : CV_5_setset, 'CV0_test' : Test_setset,
 	'CV1_train' : CV_2_setset + CV_3_setset + CV_4_setset + CV_5_setset, 
-	'CV1_test' : CV_1_setset,
+	'CV1_val' : CV_1_setset, 'CV1_test' : Test_setset,
 	'CV2_train' : CV_3_setset + CV_4_setset + CV_5_setset + CV_1_setset,
-	'CV2_test' : CV_2_setset,
+	'CV2_val' : CV_2_setset, 'CV2_test' : Test_setset,
 	'CV3_train' : CV_4_setset + CV_5_setset + CV_1_setset + CV_2_setset,
-	'CV3_test' : CV_3_setset,
+	'CV3_val' : CV_3_setset, 'CV3_test' : Test_setset,
 	'CV4_train' : CV_5_setset + CV_1_setset + CV_2_setset + CV_3_setset,
-	'CV4_test' : CV_4_setset 
+	'CV4_val' : CV_4_setset, 'CV4_test' : Test_setset 
 }
 
 
@@ -576,84 +445,90 @@ len(set( CV_1_setset + CV_2_setset + CV_3_setset + CV_4_setset + CV_5_setset ))
 
 
 
-
-
-
-
-
-# 주어진 환경 맞춰서 5CV만 돌릴거라서 수정버전 
+# use just index 
+# normalizing 과정에 대한 고민 필요 ... GCN 이니까 상관 없지 않을까
 def prepare_data_GCN(CV_num, A_B_C_S_SET_SM, MY_chem_A_feat_RE2, MY_chem_B_feat_RE2, MY_chem_A_adj_RE2, MY_chem_B_adj_RE2, 
 MY_g_EXP_A_RE2, MY_g_EXP_B_RE2, MY_Target_A2, MY_Target_B2, MY_CellBase_RE2, 
 cell_one_hot, MY_syn_RE2, norm ) : 
-	# 
+	#
 	# CV_num = 0
 	train_key = 'CV{}_train'.format(CV_num)
+	val_key = 'CV{}_val'.format(CV_num)
 	test_key = 'CV{}_test'.format(CV_num)
-	# 
 	#
-	ABCS_tv = A_B_C_S_SET_SM[A_B_C_S_SET_SM.SM_C_CHECK.isin(CV_ND_INDS[train_key])]
+	ABCS_train = A_B_C_S_SET_SM[A_B_C_S_SET_SM.SM_C_CHECK.isin(CV_ND_INDS[train_key])]
+	ABCS_val = A_B_C_S_SET_SM[A_B_C_S_SET_SM.SM_C_CHECK.isin(CV_ND_INDS[val_key])]
 	ABCS_test = A_B_C_S_SET_SM[A_B_C_S_SET_SM.SM_C_CHECK.isin(CV_ND_INDS[test_key])]
 	#
-	#train_ind = list(ABCS_train.index)
-	#val_ind = list(ABCS_val.index)
-	tv_ind = list(ABCS_tv.index)
-	random.shuffle(tv_ind)
+	train_ind = list(ABCS_train.index)
+	random.shuffle(train_ind)
+	val_ind = list(ABCS_val.index)
 	test_ind = list(ABCS_test.index)
 	# 
-	chem_feat_A_tv = MY_chem_A_feat_RE2[tv_ind]; chem_feat_A_test = MY_chem_A_feat_RE2[test_ind]
-	chem_feat_B_tv = MY_chem_B_feat_RE2[tv_ind]; chem_feat_B_test = MY_chem_B_feat_RE2[test_ind]
-	chem_adj_A_tv = MY_chem_A_adj_RE2[tv_ind]; chem_adj_A_test = MY_chem_A_adj_RE2[test_ind]
-	chem_adj_B_tv = MY_chem_B_adj_RE2[tv_ind]; chem_adj_B_test = MY_chem_B_adj_RE2[test_ind]
-	gene_A_tv = MY_g_EXP_A_RE2[tv_ind];  gene_A_test = MY_g_EXP_A_RE2[test_ind]
-	gene_B_tv = MY_g_EXP_B_RE2[tv_ind];  gene_B_test = MY_g_EXP_B_RE2[test_ind]
-	target_A_tv = MY_Target_A2[tv_ind];  target_A_test = MY_Target_A2[test_ind]
-	target_B_tv = MY_Target_B2[tv_ind];  target_B_test = MY_Target_B2[test_ind]
-	cell_basal_tv = MY_CellBase_RE2[tv_ind];  cell_basal_test = MY_CellBase_RE2[test_ind]
-	cell_tv = cell_one_hot[tv_ind];  cell_test = cell_one_hot[test_ind]
-	syn_tv = MY_syn_RE2[tv_ind];  syn_test = MY_syn_RE2[test_ind]
+	chem_feat_A_train = MY_chem_A_feat_RE2[train_ind]; chem_feat_A_val = MY_chem_A_feat_RE2[val_ind]; chem_feat_A_test = MY_chem_A_feat_RE2[test_ind]
+	chem_feat_B_train = MY_chem_B_feat_RE2[train_ind]; chem_feat_B_val = MY_chem_B_feat_RE2[val_ind]; chem_feat_B_test = MY_chem_B_feat_RE2[test_ind]
+	chem_adj_A_train = MY_chem_A_adj_RE2[train_ind]; chem_adj_A_val = MY_chem_A_adj_RE2[val_ind]; chem_adj_A_test = MY_chem_A_adj_RE2[test_ind]
+	chem_adj_B_train = MY_chem_B_adj_RE2[train_ind]; chem_adj_B_val = MY_chem_B_adj_RE2[val_ind]; chem_adj_B_test = MY_chem_B_adj_RE2[test_ind]
+	gene_A_train = MY_g_EXP_A_RE2[train_ind]; gene_A_val = MY_g_EXP_A_RE2[val_ind]; gene_A_test = MY_g_EXP_A_RE2[test_ind]
+	gene_B_train = MY_g_EXP_B_RE2[train_ind]; gene_B_val = MY_g_EXP_B_RE2[val_ind]; gene_B_test = MY_g_EXP_B_RE2[test_ind]
+	target_A_train = MY_Target_A2[train_ind]; target_A_val = MY_Target_A2[val_ind]; target_A_test = MY_Target_A2[test_ind]
+	target_B_train = MY_Target_B2[train_ind]; target_B_val = MY_Target_B2[val_ind]; target_B_test = MY_Target_B2[test_ind]
+	cell_basal_train = MY_CellBase_RE2[train_ind]; cell_basal_val = MY_CellBase_RE2[val_ind]; cell_basal_test = MY_CellBase_RE2[test_ind]
+	cell_train = cell_one_hot[train_ind]; cell_val = cell_one_hot[val_ind]; cell_test = cell_one_hot[test_ind]
+	syn_train = MY_syn_RE2[train_ind]; syn_val = MY_syn_RE2[val_ind]; syn_test = MY_syn_RE2[test_ind]
 	#
-	tv_data = {}
+	train_data = {}
+	val_data = {}
 	test_data = {}
 	#
-	tv_data['drug1_feat'] = torch.concat([chem_feat_A_tv, chem_feat_B_tv], axis = 0)
+	train_data['drug1_feat'] = torch.concat([chem_feat_A_train, chem_feat_B_train], axis = 0)
+	val_data['drug1_feat'] = chem_feat_A_val
 	test_data['drug1_feat'] = chem_feat_A_test
 	#
-	tv_data['drug2_feat'] = torch.concat([chem_feat_B_tv, chem_feat_A_tv], axis = 0)
+	train_data['drug2_feat'] = torch.concat([chem_feat_B_train, chem_feat_A_train], axis = 0)
+	val_data['drug2_feat'] = chem_feat_B_val
 	test_data['drug2_feat'] = chem_feat_B_test
 	#
-	tv_data['drug1_adj'] = torch.concat([chem_adj_A_tv, chem_adj_B_tv], axis = 0)
+	train_data['drug1_adj'] = torch.concat([chem_adj_A_train, chem_adj_B_train], axis = 0)
+	val_data['drug1_adj'] = chem_adj_A_val
 	test_data['drug1_adj'] = chem_adj_A_test
 	#
-	tv_data['drug2_adj'] = torch.concat([chem_adj_B_tv, chem_adj_A_tv], axis = 0)
+	train_data['drug2_adj'] = torch.concat([chem_adj_B_train, chem_adj_A_train], axis = 0)
+	val_data['drug2_adj'] = chem_adj_B_val
 	test_data['drug2_adj'] = chem_adj_B_test
 	#
-	tv_data['GENE_A'] = torch.concat([gene_A_tv, gene_B_tv], axis = 0)
+	train_data['GENE_A'] = torch.concat([gene_A_train, gene_B_train], axis = 0)
+	val_data['GENE_A'] = gene_A_val
 	test_data['GENE_A'] = gene_A_test
 	#
-	tv_data['GENE_B'] = torch.concat([gene_B_tv, gene_A_tv], axis = 0)
+	train_data['GENE_B'] = torch.concat([gene_B_train, gene_A_train], axis = 0)
+	val_data['GENE_B'] = gene_B_val
 	test_data['GENE_B'] = gene_B_test
 	#
-	tv_data['TARGET_A'] = torch.concat([target_A_tv, target_B_tv], axis = 0)
+	train_data['TARGET_A'] = torch.concat([target_A_train, target_B_train], axis = 0)
+	val_data['TARGET_A'] = target_A_val
 	test_data['TARGET_A'] = target_A_test
 	#
-	tv_data['TARGET_B'] = torch.concat([target_B_tv, target_A_tv], axis = 0)
+	train_data['TARGET_B'] = torch.concat([target_B_train, target_A_train], axis = 0)
+	val_data['TARGET_B'] = target_B_val
 	test_data['TARGET_B'] = target_B_test
-	#
-	tv_data['cell_BASAL'] = torch.concat((cell_basal_tv, cell_basal_tv), axis=0)
+	#   #
+	train_data['cell_BASAL'] = torch.concat((cell_basal_train, cell_basal_train), axis=0)
+	val_data['cell_BASAL'] = cell_basal_val
 	test_data['cell_BASAL'] = cell_basal_test
 	##
-	tv_data['cell'] = torch.concat((cell_tv, cell_tv), axis=0)
+	train_data['cell'] = torch.concat((cell_train, cell_train), axis=0)
+	val_data['cell'] = cell_val
 	test_data['cell'] = cell_test
 	#            
-	tv_data['y'] = torch.concat((syn_tv, syn_tv), axis=0)
+	train_data['y'] = torch.concat((syn_train, syn_train), axis=0)
+	val_data['y'] = syn_val
 	test_data['y'] = syn_test
 	#
-	print(tv_data['drug1_feat'].shape, flush=True)
+	print(train_data['drug1_feat'].shape, flush=True)
+	print(val_data['drug1_feat'].shape, flush=True)
 	print(test_data['drug1_feat'].shape, flush=True)
-	return tv_data, test_data
-
-
-
+	return train_data, val_data, test_data
 
 
 class DATASET_GCN_W_FT(Dataset):
@@ -682,8 +557,8 @@ class DATASET_GCN_W_FT(Dataset):
 		adj_re_A = self.gcn_drug1_ADJ[index].long().to_sparse().indices()
 		adj_re_B = self.gcn_drug2_ADJ[index].long().to_sparse().indices()
 		#
-		FEAT_A = torch.Tensor(np.array([ self.gcn_gene_A[index].squeeze().tolist() , self.cell_basal[index].tolist()]).T)
-		FEAT_B = torch.Tensor(np.array([ self.gcn_gene_B[index].squeeze().tolist() , self.cell_basal[index].tolist()]).T)
+		FEAT_A = torch.Tensor(np.array([ self.gcn_gene_A[index].squeeze().tolist() , self.target_A[index].tolist(), self.cell_basal[index].tolist()]).T)
+		FEAT_B = torch.Tensor(np.array([ self.gcn_gene_B[index].squeeze().tolist() , self.target_B[index].tolist(), self.cell_basal[index].tolist()]).T)
 		#
 		return self.gcn_drug1_F[index], self.gcn_drug2_F[index],adj_re_A, adj_re_B, FEAT_A, FEAT_B, self.gcn_adj, self.gcn_adj_weight , self.cell_info[index], self.syn_ans[index]
 
@@ -765,6 +640,7 @@ def plot_loss(train_loss, valid_loss, path, plotname):
 
 
 
+
 seed = 42
 random.seed(seed)
 torch.manual_seed(seed)
@@ -776,27 +652,27 @@ np.random.seed(seed)
 norm = 'tanh_norm'
 
 # CV_0
-train_data_0, test_data_0 = prepare_data_GCN(0, A_B_C_S_SET_SM, MY_chem_A_feat_RE2, MY_chem_B_feat_RE2, MY_chem_A_adj_RE2, MY_chem_B_adj_RE2, 
+train_data_0, val_data_0, test_data_0 = prepare_data_GCN(0, A_B_C_S_SET_SM, MY_chem_A_feat_RE2, MY_chem_B_feat_RE2, MY_chem_A_adj_RE2, MY_chem_B_adj_RE2, 
 MY_g_EXP_A_RE2, MY_g_EXP_B_RE2, MY_Target_A2, MY_Target_B2, MY_CellBase_RE2, 
 cell_one_hot, MY_syn_RE2, norm)
 
 # CV_1
-train_data_1, test_data_1 = prepare_data_GCN(1, A_B_C_S_SET_SM, MY_chem_A_feat_RE2, MY_chem_B_feat_RE2, MY_chem_A_adj_RE2, MY_chem_B_adj_RE2, 
+train_data_1, val_data_1, test_data_1 = prepare_data_GCN(1, A_B_C_S_SET_SM, MY_chem_A_feat_RE2, MY_chem_B_feat_RE2, MY_chem_A_adj_RE2, MY_chem_B_adj_RE2, 
 MY_g_EXP_A_RE2, MY_g_EXP_B_RE2, MY_Target_A2, MY_Target_B2, MY_CellBase_RE2, 
 cell_one_hot, MY_syn_RE2, norm)
 
 # CV_2
-train_data_2, test_data_2 = prepare_data_GCN(2, A_B_C_S_SET_SM, MY_chem_A_feat_RE2, MY_chem_B_feat_RE2, MY_chem_A_adj_RE2, MY_chem_B_adj_RE2, 
+train_data_2, val_data_2, test_data_2 = prepare_data_GCN(2, A_B_C_S_SET_SM, MY_chem_A_feat_RE2, MY_chem_B_feat_RE2, MY_chem_A_adj_RE2, MY_chem_B_adj_RE2, 
 MY_g_EXP_A_RE2, MY_g_EXP_B_RE2, MY_Target_A2, MY_Target_B2, MY_CellBase_RE2, 
 cell_one_hot, MY_syn_RE2, norm)
 
 # CV_3
-train_data_3, test_data_3 = prepare_data_GCN(3, A_B_C_S_SET_SM, MY_chem_A_feat_RE2, MY_chem_B_feat_RE2, MY_chem_A_adj_RE2, MY_chem_B_adj_RE2, 
+train_data_3, val_data_3, test_data_3 = prepare_data_GCN(3, A_B_C_S_SET_SM, MY_chem_A_feat_RE2, MY_chem_B_feat_RE2, MY_chem_A_adj_RE2, MY_chem_B_adj_RE2, 
 MY_g_EXP_A_RE2, MY_g_EXP_B_RE2, MY_Target_A2, MY_Target_B2, MY_CellBase_RE2, 
 cell_one_hot, MY_syn_RE2, norm)
 
 # CV_4
-train_data_4, test_data_4 = prepare_data_GCN(4, A_B_C_S_SET_SM, MY_chem_A_feat_RE2, MY_chem_B_feat_RE2, MY_chem_A_adj_RE2, MY_chem_B_adj_RE2, 
+train_data_4, val_data_4, test_data_4 = prepare_data_GCN(4, A_B_C_S_SET_SM, MY_chem_A_feat_RE2, MY_chem_B_feat_RE2, MY_chem_A_adj_RE2, MY_chem_B_adj_RE2, 
 MY_g_EXP_A_RE2, MY_g_EXP_B_RE2, MY_Target_A2, MY_Target_B2, MY_CellBase_RE2, 
 cell_one_hot, MY_syn_RE2, norm)
 
@@ -816,12 +692,14 @@ LOSS_WEIGHT_2 = get_loss_weight(2)
 LOSS_WEIGHT_3 = get_loss_weight(3)
 LOSS_WEIGHT_4 = get_loss_weight(4)
 
+
 JY_IDX_WEIGHT_T = torch.Tensor(JY_IDX_WEIGHT).view(1,-1)
 
 
 # DATA check  
 def make_merged_data(CV) :
 	train_data = globals()['train_data_'+str(CV)]
+	val_data = globals()['val_data_'+str(CV)]
 	test_data = globals()['test_data_'+str(CV)]
 	#
 	T_train = DATASET_GCN_W_FT(
@@ -834,6 +712,15 @@ def make_merged_data(CV) :
 		torch.Tensor(train_data['y'])
 		)
 	#
+	T_val = DATASET_GCN_W_FT(
+		torch.Tensor(val_data['drug1_feat']), torch.Tensor(val_data['drug2_feat']), 
+		torch.Tensor(val_data['drug1_adj']), torch.Tensor(val_data['drug2_adj']),
+		torch.Tensor(val_data['GENE_A']), torch.Tensor(val_data['GENE_B']), 
+		torch.Tensor(val_data['TARGET_A']), torch.Tensor(val_data['TARGET_B']), torch.Tensor(val_data['cell_BASAL']), 
+		JY_ADJ_IDX, JY_IDX_WEIGHT_T, 
+		val_data['cell'].float(),
+		torch.Tensor(val_data['y'])
+		)
 	#	
 	T_test = DATASET_GCN_W_FT(
 		torch.Tensor(test_data['drug1_feat']), torch.Tensor(test_data['drug2_feat']), 
@@ -845,43 +732,48 @@ def make_merged_data(CV) :
 		torch.Tensor(test_data['y'])
 		)
 	#
-	return T_train, T_test
+	return T_train, T_val, T_test
 
 
 
 
 
 # CV 0 
-T_train_0, T_test_0 = make_merged_data(0)
+T_train_0, T_val_0, T_test_0 = make_merged_data(0)
 RAY_train_0 = ray.put(T_train_0)
+RAY_val_0 = ray.put(T_val_0)
 RAY_test_0 = ray.put(T_test_0)
 RAY_loss_weight_0 = ray.put(LOSS_WEIGHT_0)
 
 
 # CV 1
-T_train_1, T_test_1 = make_merged_data(1)
+T_train_1, T_val_1, T_test_1 = make_merged_data(1)
 RAY_train_1 = ray.put(T_train_1)
+RAY_val_1 = ray.put(T_val_1)
 RAY_test_1 = ray.put(T_test_1)
 RAY_loss_weight_1 = ray.put(LOSS_WEIGHT_1)
 
 
 # CV 2 
-T_train_2, T_test_2 = make_merged_data(2)
+T_train_2, T_val_2, T_test_2 = make_merged_data(2)
 RAY_train_2 = ray.put(T_train_2)
+RAY_val_2 = ray.put(T_val_2)
 RAY_test_2 = ray.put(T_test_2)
 RAY_loss_weight_2 = ray.put(LOSS_WEIGHT_2)
 
 
 # CV 3
-T_train_3, T_test_3 = make_merged_data(3)
+T_train_3, T_val_3, T_test_3 = make_merged_data(3)
 RAY_train_3 = ray.put(T_train_3)
+RAY_val_3 = ray.put(T_val_3)
 RAY_test_3 = ray.put(T_test_3)
 RAY_loss_weight_3 = ray.put(LOSS_WEIGHT_3)
 
 
 # CV 4
-T_train_4, T_test_4 = make_merged_data(4)
+T_train_4, T_val_4, T_test_4 = make_merged_data(4)
 RAY_train_4 = ray.put(T_train_4)
+RAY_val_4 = ray.put(T_val_4)
 RAY_test_4 = ray.put(T_test_4)
 RAY_loss_weight_4 = ray.put(LOSS_WEIGHT_4)
 
@@ -896,8 +788,8 @@ def inner_train( LOADER_DICT, THIS_MODEL, THIS_OPTIMIZER , use_cuda=False) :
 	pred_list = []
 	batch_cut_weight = LOADER_DICT['loss_weight']
 	for batch_idx_t, (drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, adj_w, cell, y) in enumerate(LOADER_DICT['train']) :
-		expA = expA.view(-1,2)#### 다른점 
-		expB = expB.view(-1,2)#### 다른점 
+		expA = expA.view(-1,3)#### 다른점 
+		expB = expB.view(-1,3)#### 다른점 
 		adj_w = adj_w.squeeze()
 		# move to GPU
 		if use_cuda:
@@ -932,9 +824,9 @@ def inner_val( LOADER_DICT, THIS_MODEL , use_cuda = False) :
 	ans_list = []
 	pred_list = []
 	with torch.no_grad() :
-		for batch_idx_v, (drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, adj_w, cell, y) in enumerate(LOADER_DICT['test']) :
-			expA = expA.view(-1,2)#### 다른점 
-			expB = expB.view(-1,2)#### 다른점 
+		for batch_idx_v, (drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, adj_w, cell, y) in enumerate(LOADER_DICT['eval']) :
+			expA = expA.view(-1,3)#### 다른점 
+			expB = expB.view(-1,3)#### 다른점 
 			adj_w = adj_w.squeeze()
 			# move to GPU
 			if use_cuda:
@@ -963,7 +855,8 @@ print('MAIN')
 class MY_expGCN_parallel_model(torch.nn.Module):
 	def __init__(self, G_layer_chem, G_indim_chem, G_hiddim_chem, 
 	G_layer_exp, G_indim_exp, G_hiddim_exp, 
-	layers_1, layers_2, layers_3, cell_dim ,
+	layers_1, layers_2, layers_3, 
+	cell_dim , cell_layer, cell_hid,
 	out_dim, inDrop, drop):
 		super(MY_expGCN_parallel_model, self).__init__()
 		self.G_layer_chem = G_layer_chem
@@ -977,6 +870,8 @@ class MY_expGCN_parallel_model(torch.nn.Module):
 		self.layers_2 = [int(a) for a in layers_2]
 		self.layers_3 = [int(a) for a in layers_3]
 		self.cell_dim = cell_dim
+		self.cell_layer = cell_layer
+		self.cell_hid = cell_hid
 		self.out_dim = out_dim
 		self.inDrop = inDrop
 		self.drop = drop
@@ -996,7 +891,11 @@ class MY_expGCN_parallel_model(torch.nn.Module):
 		self.Convs_1 = torch.nn.ModuleList([torch.nn.Linear(self.G_Common_dim+self.G_Common_dim, self.layers_1[0] )])
 		self.Convs_1.extend([torch.nn.Linear(self.layers_1[a], self.layers_1[a+1]) for a in range(len(self.layers_1)-1)])
 		##
-		self.SNPs = torch.nn.ModuleList([torch.nn.Linear(self.layers_1[-1]+self.layers_2[-1]+self.cell_dim , self.layers_3[0] )])
+		self.Cell_conv = torch.nn.ModuleList([torch.nn.Linear(self.cell_dim, self.cell_hid )])
+		self.Cell_conv.extend([torch.nn.Linear(self.cell_hid, self.cell_hid) for a in range(self.cell_layer-1)])
+		self.Cell_conv.extend([torch.nn.Linear(self.cell_hid, self.cell_hid)])
+		##
+		self.SNPs = torch.nn.ModuleList([torch.nn.Linear(self.layers_1[-1]+self.layers_2[-1]+self.cell_hid, self.layers_3[0] )])
 		self.SNPs.extend([torch.nn.Linear(self.layers_3[a], self.layers_3[a+1]) for a in range(len(self.layers_3)-1)])
 		self.SNPs.extend([torch.nn.Linear(self.layers_3[-1], self.out_dim)])
 		#
@@ -1012,6 +911,8 @@ class MY_expGCN_parallel_model(torch.nn.Module):
 		for bns in self.G_bns_1_exp :
 			bns.reset_parameters()
 		for conv in self.Convs_1 :
+			conv.reset_parameters()
+		for conv in self.Cell_conv:
 			conv.reset_parameters()
 		for conv in self.SNPs:
 			conv.reset_parameters()
@@ -1085,7 +986,7 @@ class MY_expGCN_parallel_model(torch.nn.Module):
 			if L1 != len(self.Convs_1)-1 :
 				input_drug1 = self.Convs_1[L1](input_drug1)
 				input_drug1 = F.dropout(input_drug1, p=self.inDrop, training = self.training)
-				input_drug1 = F.relu(input_drug1)
+				input_drug1 = F.elu(input_drug1)
 			else :
 				input_drug1 = self.Convs_1[L1](input_drug1)
 		#
@@ -1093,75 +994,190 @@ class MY_expGCN_parallel_model(torch.nn.Module):
 			if L2 != len(self.Convs_1)-1 :
 				input_drug2 = self.Convs_1[L2](input_drug2)
 				input_drug2 = F.dropout(input_drug2, p=self.inDrop, training = self.training)
-				input_drug2 = F.relu(input_drug2)
+				input_drug2 = F.elu(input_drug2)
 			else :
 				input_drug2 = self.Convs_1[L2](input_drug2)
+		#
+		for C in range(len(self.Cell_conv)):
+			if C != len(self.Cell_conv)-1 :
+				cell = self.Cell_conv[C](cell)
+				cell = F.dropout(cell, p=self.inDrop, training = self.training)
+				cell = F.elu(cell)
+			else :
+				cell = self.Cell_conv[C](cell)
 		#
 		X = torch.cat(( input_drug1, input_drug2, cell ), 1)
 		for L3 in range(len(self.SNPs)):
 			if L3 != len(self.SNPs)-1 :
 				X = self.SNPs[L3](X)
 				X = F.dropout(X, p=self.drop, training = self.training)
-				X = F.relu(X)
+				X = F.elu(X)
 			else :
 				X = self.SNPs[L3](X)
 		return X
 
 
 
-
 def RAY_MY_train(config, checkpoint_dir=None):
-	n_epochs = 1000
+	n_epochs = 500
 	criterion = weighted_mse_loss
 	use_cuda = True  #  #  #  #  #  #  # True
 	#
-	dsn1_layers = [config["feat_size_0"], config["feat_size_1"] , config["feat_size_2"] ]
-	dsn2_layers = [config["feat_size_0"], config["feat_size_1"] , config["feat_size_2"] ]
-	snp_layers = [config["feat_size_3"] ,config["feat_size_4"]]
+	dsn_layers = [int(a) for a in config["dsn_layer"].split('-') ]
+	snp_layers = [int(a) for a in config["snp_layer"].split('-') ]
 	inDrop = config["dropout_1"]
 	Drop = config["dropout_2"]
 	#
-	CV_NUM = config["CV"] 
-	RAY_train_list = [RAY_train_0 ,RAY_train_1 ,RAY_train_2 ,RAY_train_3 ,RAY_train_4 ]
-	RAY_test_list = [RAY_test_0 ,RAY_test_1 ,RAY_test_2 ,RAY_test_3 ,RAY_test_4 ]
-	RAY_loss_weight_list = [RAY_loss_weight_0 ,RAY_loss_weight_1 ,RAY_loss_weight_2 ,RAY_loss_weight_3 ,RAY_loss_weight_4]
-	#
-	# 
-	CV_0_train = ray.get(RAY_train_list[CV_NUM])
-	CV_0_test = ray.get(RAY_test_list[CV_NUM])
-	CV_0_loss_weight = ray.get(RAY_loss_weight_list[CV_NUM])
+	# CV 0 
+	CV_0_train = ray.get(RAY_train_0)
+	CV_0_val = ray.get(RAY_val_0)
+	CV_0_test = ray.get(RAY_test_0)
+	CV_0_loss_weight = ray.get(RAY_loss_weight_0)
 	CV_0_batch_cut_weight = [CV_0_loss_weight[i:i+config["batch_size"]] for i in range(0,len(CV_0_loss_weight), config["batch_size"])]
 	#
 	CV_0_loaders = {
 			'train' : torch.utils.data.DataLoader(CV_0_train, batch_size = config["batch_size"], collate_fn = graph_collate_fn, shuffle =False, num_workers=config['n_workers']),
+			'eval' : torch.utils.data.DataLoader(CV_0_val, batch_size = config["batch_size"], collate_fn = graph_collate_fn, shuffle =False, num_workers=config['n_workers']),
 			'test' : torch.utils.data.DataLoader(CV_0_test, batch_size = config["batch_size"], collate_fn = graph_collate_fn, shuffle =False, num_workers=config['n_workers']),
 			'loss_weight' : CV_0_batch_cut_weight
 	}
 	#
+	#
 	#  
 	CV_0_MODEL = MY_expGCN_parallel_model(
 			config["G_chem_layer"], CV_0_train.gcn_drug1_F.shape[-1] , config["G_chem_hdim"],      # G_layer_chem, G_indim_chem, G_hiddim_chem, 
-			config["G_exp_layer"], 2 , config["G_exp_hdim"],      # G_layer_exp, G_indim_exp, G_hiddim_exp, 
-			dsn1_layers, dsn2_layers, snp_layers,      # drug 1 layers, drug 2 layers, merged layer, 
-			len(set(A_B_C_S_SET_SM.DrugCombCCLE)), 1,      # cell_dim ,out_dim,
-			inDrop, Drop      # inDrop, drop
+			config["G_exp_layer"], 3 , config["G_exp_hdim"],      # G_layer_exp, G_indim_exp, G_hiddim_exp, 
+			dsn_layers, dsn_layers, snp_layers,      # drug 1 layers, drug 2 layers, merged layer, 
+			len(set(A_B_C_S_SET_SM.DrugCombCCLE)), config["cell_layer"], config["cell_hid"], # cell_dim 
+			1, inDrop, Drop      #  ,out_dim, inDrop, drop
 			)
+	# 
+	# CV 1 
+	CV_1_train = ray.get(RAY_train_1)
+	CV_1_val = ray.get(RAY_val_1)
+	CV_1_test = ray.get(RAY_test_1)
+	CV_1_loss_weight = ray.get(RAY_loss_weight_1)
+	CV_1_batch_cut_weight = [CV_1_loss_weight[i:i+config["batch_size"]] for i in range(0,len(CV_1_loss_weight), config["batch_size"])]
+	#
+	CV_1_loaders = {
+			'train' : torch.utils.data.DataLoader(CV_1_train, batch_size = config["batch_size"], collate_fn = graph_collate_fn, shuffle =False, num_workers=config['n_workers']),
+			'eval' : torch.utils.data.DataLoader(CV_1_val, batch_size = config["batch_size"], collate_fn = graph_collate_fn, shuffle =False, num_workers=config['n_workers']),
+			'test' : torch.utils.data.DataLoader(CV_1_test, batch_size = config["batch_size"], collate_fn = graph_collate_fn, shuffle =False, num_workers=config['n_workers']),
+			'loss_weight' : CV_1_batch_cut_weight
+	}
+	#
+	#  
+	CV_1_MODEL = MY_expGCN_parallel_model(
+			config["G_chem_layer"], CV_1_train.gcn_drug1_F.shape[-1] , config["G_chem_hdim"],      # G_layer_chem, G_indim_chem, G_hiddim_chem, 
+			config["G_exp_layer"], 3 , config["G_exp_hdim"],      # G_layer_exp, G_indim_exp, G_hiddim_exp, 
+			dsn_layers, dsn_layers, snp_layers,      # drug 1 layers, drug 2 layers, merged layer, 
+			len(set(A_B_C_S_SET_SM.DrugCombCCLE)), config["cell_layer"], config["cell_hid"], # cell_dim 
+			1, inDrop, Drop      #  ,out_dim, inDrop, drop
+			)
+	# # CV 2 
+	CV_2_train = ray.get(RAY_train_2)
+	CV_2_val = ray.get(RAY_val_2)
+	CV_2_test = ray.get(RAY_test_2)
+	CV_2_loss_weight = ray.get(RAY_loss_weight_2)
+	CV_2_batch_cut_weight = [CV_2_loss_weight[i:i+config["batch_size"]] for i in range(0,len(CV_2_loss_weight), config["batch_size"])]
+	#
+	CV_2_loaders = {
+		'train' : torch.utils.data.DataLoader(CV_2_train, batch_size = config["batch_size"], collate_fn = graph_collate_fn, shuffle =False, num_workers=config['n_workers']),
+		'eval' : torch.utils.data.DataLoader(CV_2_val, batch_size = config["batch_size"], collate_fn = graph_collate_fn, shuffle =False, num_workers=config['n_workers']),
+		'test' : torch.utils.data.DataLoader(CV_2_test, batch_size = config["batch_size"], collate_fn = graph_collate_fn, shuffle =False, num_workers=config['n_workers']),
+		'loss_weight' : CV_2_batch_cut_weight
+	}
+	#
+	#  
+	CV_2_MODEL = MY_expGCN_parallel_model(
+		config["G_chem_layer"], CV_2_train.gcn_drug1_F.shape[-1] , config["G_chem_hdim"],      # G_layer_chem, G_indim_chem, G_hiddim_chem, 
+		config["G_exp_layer"], 3 , config["G_exp_hdim"],      # G_layer_exp, G_indim_exp, G_hiddim_exp, 
+		dsn_layers, dsn_layers, snp_layers,      # drug 1 layers, drug 2 layers, merged layer, 
+			len(set(A_B_C_S_SET_SM.DrugCombCCLE)), config["cell_layer"], config["cell_hid"], # cell_dim 
+			1, inDrop, Drop      #  ,out_dim, inDrop, drop
+		)
+	# 
+	# CV 3
+	CV_3_train = ray.get(RAY_train_3)
+	CV_3_val = ray.get(RAY_val_3)
+	CV_3_test = ray.get(RAY_test_3)
+	CV_3_loss_weight = ray.get(RAY_loss_weight_3)
+	CV_3_batch_cut_weight = [CV_3_loss_weight[i:i+config["batch_size"]] for i in range(0,len(CV_3_loss_weight), config["batch_size"])]
+	#
+	CV_3_loaders = {
+		'train' : torch.utils.data.DataLoader(CV_3_train, batch_size = config["batch_size"], collate_fn = graph_collate_fn, shuffle =False, num_workers=config['n_workers']),
+		'eval' : torch.utils.data.DataLoader(CV_3_val, batch_size = config["batch_size"], collate_fn = graph_collate_fn, shuffle =False, num_workers=config['n_workers']),
+		'test' : torch.utils.data.DataLoader(CV_3_test, batch_size = config["batch_size"], collate_fn = graph_collate_fn, shuffle =False, num_workers=config['n_workers']),
+		'loss_weight' : CV_3_batch_cut_weight
+	}
+	#
+	#  
+	CV_3_MODEL = MY_expGCN_parallel_model(
+		config["G_chem_layer"], CV_3_train.gcn_drug1_F.shape[-1] , config["G_chem_hdim"],      # G_layer_chem, G_indim_chem, G_hiddim_chem, 
+		config["G_exp_layer"], 3 , config["G_exp_hdim"],      # G_layer_exp, G_indim_exp, G_hiddim_exp, 
+		dsn_layers, dsn_layers, snp_layers,      # drug 1 layers, drug 2 layers, merged layer, 
+		len(set(A_B_C_S_SET_SM.DrugCombCCLE)), config["cell_layer"], config["cell_hid"], # cell_dim 
+		1, inDrop, Drop      #  ,out_dim, inDrop, drop
+		)
+	# 
+	# CV 4
+	CV_4_train = ray.get(RAY_train_4)
+	CV_4_val = ray.get(RAY_val_4)
+	CV_4_test = ray.get(RAY_test_4)
+	CV_4_loss_weight = ray.get(RAY_loss_weight_4)
+	CV_4_batch_cut_weight = [CV_4_loss_weight[i:i+config["batch_size"]] for i in range(0,len(CV_4_loss_weight), config["batch_size"])]
+	#
+	CV_4_loaders = {
+		'train' : torch.utils.data.DataLoader(CV_4_train, batch_size = config["batch_size"], collate_fn = graph_collate_fn, shuffle =False, num_workers=config['n_workers']),
+		'eval' : torch.utils.data.DataLoader(CV_4_val, batch_size = config["batch_size"], collate_fn = graph_collate_fn, shuffle =False, num_workers=config['n_workers']),
+		'test' : torch.utils.data.DataLoader(CV_4_test, batch_size = config["batch_size"], collate_fn = graph_collate_fn, shuffle =False, num_workers=config['n_workers']),
+		'loss_weight' : CV_4_batch_cut_weight
+	}
+	#
+	#  
+	CV_4_MODEL = MY_expGCN_parallel_model(
+		config["G_chem_layer"], CV_4_train.gcn_drug1_F.shape[-1] , config["G_chem_hdim"],      # G_layer_chem, G_indim_chem, G_hiddim_chem, 
+		config["G_exp_layer"], 3 , config["G_exp_hdim"],      # G_layer_exp, G_indim_exp, G_hiddim_exp, 
+		dsn_layers, dsn_layers, snp_layers,      # drug 1 layers, drug 2 layers, merged layer, 
+		len(set(A_B_C_S_SET_SM.DrugCombCCLE)), config["cell_layer"], config["cell_hid"], # cell_dim 
+		1, inDrop, Drop      #  ,out_dim, inDrop, drop
+		)
 	# 
 	#
 	if torch.cuda.is_available():
 		CV_0_MODEL = CV_0_MODEL.cuda()
+		CV_1_MODEL = CV_1_MODEL.cuda()
+		CV_2_MODEL = CV_2_MODEL.cuda()
+		CV_3_MODEL = CV_3_MODEL.cuda()
+		CV_4_MODEL = CV_4_MODEL.cuda()
 		if torch.cuda.device_count() > 1 :
 			CV_0_MODEL = torch.nn.DataParallel(CV_0_MODEL)
+			CV_1_MODEL = torch.nn.DataParallel(CV_1_MODEL)
+			CV_2_MODEL = torch.nn.DataParallel(CV_2_MODEL)
+			CV_3_MODEL = torch.nn.DataParallel(CV_3_MODEL)
+			CV_4_MODEL = torch.nn.DataParallel(CV_4_MODEL)
 	#       
 	CV_0_optimizer = torch.optim.Adam(CV_0_MODEL.parameters(), lr = config["lr"] )
+	CV_1_optimizer = torch.optim.Adam(CV_1_MODEL.parameters(), lr = config["lr"] )
+	CV_2_optimizer = torch.optim.Adam(CV_2_MODEL.parameters(), lr = config["lr"] )
+	CV_3_optimizer = torch.optim.Adam(CV_3_MODEL.parameters(), lr = config["lr"] )
+	CV_4_optimizer = torch.optim.Adam(CV_4_MODEL.parameters(), lr = config["lr"] )
 	#
 	#
-	train_loss_all = []
-	valid_loss_all = []
-	train_pearson_corr_all=[]
-	train_spearman_corr_all=[]
-	val_pearson_corr_all = []
-	val_spearman_corr_all = []
+	key_list = ['CV_0','CV_1','CV_2','CV_3','CV_4']
+	train_loss_all = {}
+	valid_loss_all = {}
+	train_pearson_corr_all = {}
+	train_spearman_corr_all = {}
+	val_pearson_corr_all = {}
+	val_spearman_corr_all = {}
+	for key in key_list :
+		train_loss_all[key] = []
+		valid_loss_all[key] = []
+		train_pearson_corr_all[key]=[]
+		train_spearman_corr_all[key]=[]
+		val_pearson_corr_all[key] = []
+		val_spearman_corr_all[key] = []
 	#
 	for epoch in range(n_epochs):
 		now = datetime.now()
@@ -1172,18 +1188,64 @@ def RAY_MY_train(config, checkpoint_dir=None):
 		# train the model #
 		###################
 		cv_0_t_loss, cv_0_t_pc, cv_0_t_sc, CV_0_MODEL, CV_0_optimizer  = inner_train(CV_0_loaders, CV_0_MODEL, CV_0_optimizer, True)
-		train_loss_all.append(cv_0_t_loss)
-		train_pearson_corr_all.append(cv_0_t_pc)
-		train_spearman_corr_all.append(cv_0_t_sc)	
+		train_loss_all['CV_0'].append(cv_0_t_loss)
+		train_pearson_corr_all['CV_0'].append(cv_0_t_pc)
+		train_spearman_corr_all['CV_0'].append(cv_0_t_sc)	
 		#
-		#
+		cv_1_t_loss, cv_1_t_pc, cv_1_t_sc, CV_1_MODEL, CV_1_optimizer  = inner_train(CV_1_loaders, CV_1_MODEL, CV_1_optimizer, True)
+		train_loss_all['CV_1'].append(cv_1_t_loss)
+		train_pearson_corr_all['CV_1'].append(cv_1_t_pc)
+		train_spearman_corr_all['CV_1'].append(cv_1_t_sc)
+		# 
+		cv_2_t_loss, cv_2_t_pc, cv_2_t_sc, CV_2_MODEL, CV_2_optimizer  = inner_train(CV_2_loaders, CV_2_MODEL, CV_2_optimizer, True)
+		train_loss_all['CV_2'].append(cv_2_t_loss)
+		train_pearson_corr_all['CV_2'].append(cv_2_t_pc)
+		train_spearman_corr_all['CV_2'].append(cv_2_t_sc)
+		# 
+		cv_3_t_loss, cv_3_t_pc, cv_3_t_sc, CV_3_MODEL, CV_3_optimizer  = inner_train(CV_3_loaders, CV_3_MODEL, CV_3_optimizer, True)
+		train_loss_all['CV_3'].append(cv_3_t_loss)
+		train_pearson_corr_all['CV_3'].append(cv_3_t_pc)
+		train_spearman_corr_all['CV_3'].append(cv_3_t_sc)
+		# 
+		cv_4_t_loss, cv_4_t_pc, cv_4_t_sc, CV_4_MODEL, CV_4_optimizer  = inner_train(CV_4_loaders, CV_4_MODEL, CV_4_optimizer, True)
+		train_loss_all['CV_4'].append(cv_4_t_loss)
+		train_pearson_corr_all['CV_4'].append(cv_4_t_pc)
+		train_spearman_corr_all['CV_4'].append(cv_4_t_sc)
+		# 
 		######################    
 		# validate the model #
 		######################
 		cv_0_v_loss, cv_0_v_pc, cv_0_v_sc, CV_0_MODEL  = inner_val(CV_0_loaders, CV_0_MODEL, True)
-		valid_loss_all.append(cv_0_v_loss)
-		val_pearson_corr_all.append(cv_0_v_pc)
-		val_spearman_corr_all.append(cv_0_v_sc) 
+		valid_loss_all['CV_0'].append(cv_0_v_loss)
+		val_pearson_corr_all['CV_0'].append(cv_0_v_pc)
+		val_spearman_corr_all['CV_0'].append(cv_0_v_sc) 
+		#
+		cv_1_v_loss, cv_1_v_pc, cv_1_v_sc, CV_1_MODEL  = inner_val(CV_1_loaders, CV_1_MODEL, True)
+		valid_loss_all['CV_1'].append(cv_1_v_loss)
+		val_pearson_corr_all['CV_1'].append(cv_1_v_pc)
+		val_spearman_corr_all['CV_1'].append(cv_1_v_sc)
+		# 
+		cv_2_v_loss, cv_2_v_pc, cv_2_v_sc, CV_2_MODEL  = inner_val(CV_2_loaders, CV_2_MODEL, True)
+		valid_loss_all['CV_2'].append(cv_2_v_loss)
+		val_pearson_corr_all['CV_2'].append(cv_2_v_pc)
+		val_spearman_corr_all['CV_2'].append(cv_2_v_sc)
+		# 
+		cv_3_v_loss, cv_3_v_pc, cv_3_v_sc, CV_3_MODEL  = inner_val(CV_3_loaders, CV_3_MODEL, True)
+		valid_loss_all['CV_3'].append(cv_3_v_loss)
+		val_pearson_corr_all['CV_3'].append(cv_3_v_pc)
+		val_spearman_corr_all['CV_3'].append(cv_3_v_sc)
+		# 
+		cv_4_v_loss, cv_4_v_pc, cv_4_v_sc, CV_4_MODEL  = inner_val(CV_4_loaders, CV_4_MODEL, True)
+		valid_loss_all['CV_4'].append(cv_4_v_loss)
+		val_pearson_corr_all['CV_4'].append(cv_4_v_pc)
+		val_spearman_corr_all['CV_4'].append(cv_4_v_sc)
+		#
+		AVG_TRAIN_LOSS = np.mean([cv_0_t_loss, cv_1_t_loss, cv_2_t_loss, cv_3_t_loss, cv_4_t_loss])
+		AVG_T_PC = np.mean([cv_0_t_pc, cv_1_t_pc, cv_2_t_pc, cv_3_t_pc, cv_4_t_pc])
+		AVG_T_SC = np.mean([cv_0_t_sc, cv_1_t_sc, cv_2_t_sc, cv_3_t_sc, cv_4_t_sc])
+		AVG_VAL_LOSS = np.mean([cv_0_v_loss, cv_1_v_loss, cv_2_v_loss, cv_3_v_loss, cv_4_v_loss])
+		AVG_V_PC = np.mean([cv_0_v_pc, cv_1_v_pc, cv_2_v_pc, cv_3_v_pc, cv_4_v_pc])
+		AVG_V_SC = np.mean([cv_0_v_sc, cv_1_v_sc, cv_2_v_sc, cv_3_v_sc, cv_4_v_sc])
 		#
 		#
 		done = datetime.now()
@@ -1191,18 +1253,32 @@ def RAY_MY_train(config, checkpoint_dir=None):
 		#
 		with tune.checkpoint_dir(step = epoch) as checkpoint_dir:
 			trial_name = '_'.join(checkpoint_dir.split('/')[-2].split('_')[0:4])
-			cv_0_path = os.path.join(checkpoint_dir, "checkpoint")
+			print('trial : {}, epoch : {}, TrainLoss : {}, ValLoss : {}'.format(trial_name, epoch, AVG_TRAIN_LOSS, AVG_VAL_LOSS), flush=True)
+			cv_0_path = os.path.join(checkpoint_dir, "CV_0_checkpoint")
+			cv_1_path = os.path.join(checkpoint_dir, "CV_1_checkpoint")
+			cv_2_path = os.path.join(checkpoint_dir, "CV_2_checkpoint")
+			cv_3_path = os.path.join(checkpoint_dir, "CV_3_checkpoint")
+			cv_4_path = os.path.join(checkpoint_dir, "CV_4_checkpoint")
 			torch.save((CV_0_MODEL.state_dict(), CV_0_optimizer.state_dict()), cv_0_path)
+			torch.save((CV_1_MODEL.state_dict(), CV_1_optimizer.state_dict()), cv_1_path)
+			torch.save((CV_2_MODEL.state_dict(), CV_2_optimizer.state_dict()), cv_2_path)
+			torch.save((CV_3_MODEL.state_dict(), CV_3_optimizer.state_dict()), cv_3_path)
+			torch.save((CV_4_MODEL.state_dict(), CV_4_optimizer.state_dict()), cv_4_path)
+			torch.save(CV_0_MODEL.state_dict(), './CV_0_model.pth')
+			torch.save(CV_1_MODEL.state_dict(), './CV_1_model.pth')
+			torch.save(CV_2_MODEL.state_dict(), './CV_2_model.pth')
+			torch.save(CV_3_MODEL.state_dict(), './CV_3_model.pth')
+			torch.save(CV_4_MODEL.state_dict(), './CV_4_model.pth')
 		#
-		tune.report(T_LS= cv_0_t_loss,  T_PC = cv_0_t_pc, T_SC = cv_0_t_sc, 
-		V_LS=cv_0_v_loss, V_PC = cv_0_v_pc, V_SC = cv_0_v_sc )
+		tune.report(AV_T_LS= AVG_TRAIN_LOSS,  AV_T_PC = AVG_T_PC, AV_T_SC = AVG_T_SC, 
+		AV_V_LS=AVG_VAL_LOSS, AV_V_PC = AVG_V_PC, AV_V_SC = AVG_V_SC )
 	#
 	result_dict = {
 		'train_loss_all' : train_loss_all, 'valid_loss_all' : valid_loss_all, 
 		'train_pearson_corr_all' : train_pearson_corr_all, 'train_spearman_corr_all' : train_spearman_corr_all, 
 		'val_pearson_corr_all' : val_pearson_corr_all, 'val_spearman_corr_all' : val_spearman_corr_all, 
 	}
-	with open(file='RESULT_DICT.{}.pickle'.format(CV_NUM), mode='wb') as f:
+	with open(file='RESULT_DICT.pickle', mode='wb') as f:
 		pickle.dump(result_dict, f)
 	#
 	print("Finished Training")
@@ -1211,32 +1287,40 @@ def RAY_MY_train(config, checkpoint_dir=None):
 
 
 
+
+
+	
+
 # 이건 테스트 버전임. 생각하고 해 
 
-def MAIN(ANAL_name, my_config, num_samples= 10, max_num_epochs=1000, cpus_per_trial = 16, gpus_per_trial = 1):
+def MAIN(ANAL_name, WORK_PATH, PRJ_PATH, PRJ_NAME, MISS_NAME, num_samples= 10, max_num_epochs=500, grace_period = 150, cpus_per_trial = 16, gpus_per_trial = 1):
 	# OPTUNA CONFIGURE 
 	CONFIG={
-		'n_workers' : tune.grid_search([cpus_per_trial]),
-		"epoch" : tune.grid_search([max_num_epochs]),
-		"CV" : tune.grid_search([0,1,2,3,4]),
-		"G_chem_layer" : tune.grid_search([my_config['config/G_chem_layer'].item()]), # 
-		"G_exp_layer" : tune.grid_search([my_config['config/G_exp_layer'].item()]), # 
-		"G_chem_hdim" : tune.grid_search([my_config['config/G_chem_hdim'].item()]), # 
-		"G_exp_hdim" : tune.grid_search([my_config['config/G_exp_hdim'].item()]), # 
-		"batch_size" : tune.grid_search([my_config['config/batch_size'].item() ]), # 
-		"feat_size_0" : tune.grid_search([ my_config['config/feat_size_0'].item() ]),
-		"feat_size_1" : tune.grid_search([ my_config['config/feat_size_1'].item() ]),
-		"feat_size_2" : tune.grid_search([ my_config['config/feat_size_2'].item() ]),
-		"feat_size_3" : tune.grid_search([ my_config['config/feat_size_3'].item() ]),
-		"feat_size_4" : tune.grid_search([ my_config['config/feat_size_4'].item() ]),
-		"dropout_1" : tune.grid_search([ my_config['config/dropout_1'].item() ]),
-		"dropout_2" : tune.grid_search([ my_config['config/dropout_2'].item() ]),
-		"lr" : tune.grid_search([ my_config['config/lr'].item() ]), 
+		'n_workers' : tune.choice([cpus_per_trial]),
+		"epoch" : tune.choice([max_num_epochs]),
+		"G_chem_layer" : tune.choice([2, 3, 4 ]), # 
+		"G_exp_layer" : tune.choice([2, 3, 4]), # 
+		"cell_layer" : tune.choice([2, 3, 4]), # 
+		"G_chem_hdim" : tune.choice([32, 16, 8]), # 
+		"G_exp_hdim" : tune.choice([32, 16, 8]), # 
+		"cell_hid" : tune.choice([32, 16, 8]), # 
+		"batch_size" : tune.choice([ 512 ]), # CPU 니까 # 32, 64, # 데이터 양이늘어서.. 
+		"dsn_layer" : tune.choice(['256-128-64','128-64-32','64-32-16']),
+		"snp_layer" : tune.choice(['64-32-16','32-16-8','16-8-4']),
+		"dropout_1" : tune.choice([0.1, 0.2 ]), # 0.01, 0.2, 0.5, 0.8
+		"dropout_2" : tune.choice([0.1, 0.2]), # 0.01, 0.2, 0.5, 0.8
+		"lr" : tune.choice([ 0.0001, 0.001]),# 0.00001, 0.0001, 0.001
 	}
 	#
 	#pickle.dumps(trainable)
 	reporter = CLIReporter(
-		metric_columns=["T_LS",'T_PC','T_SC',"V_LS",'V_PC','V_SC', "training_iteration"])#
+		metric_columns=["AV_T_LS", "AV_V_LS", 'AV_V_PC','AV_V_SC', "training_iteration"])
+	#
+	optuna_search = OptunaSearch(metric="AV_V_LS", mode="min")
+	#
+	ASHA_scheduler = tune.schedulers.ASHAScheduler(
+		time_attr='training_iteration', metric="AV_V_SC", mode="max", max_t= max_num_epochs, grace_period = grace_period )
+	#
 	#
 	ANALYSIS = tune.run( # 끝내지 않음 
 		tune.with_parameters(RAY_MY_train),
@@ -1244,55 +1328,57 @@ def MAIN(ANAL_name, my_config, num_samples= 10, max_num_epochs=1000, cpus_per_tr
 		num_samples=num_samples,
 		config=CONFIG,
 		resources_per_trial={'cpu': cpus_per_trial,'gpu' : gpus_per_trial }, # , 
-		progress_reporter = reporter
+		progress_reporter = reporter,
+		search_alg = optuna_search,
+		scheduler = ASHA_scheduler,
+		#resume = True
 	)
+	best_trial = ANALYSIS.get_best_trial("AV_V_LS", "min", "last")
+	print("Best trial config: {}".format(best_trial.config), flush=True)
+	print("Best trial final validation loss: {}".format(
+	best_trial.last_result["AV_V_LS"]), flush=True)
 	#
 	return ANALYSIS
 
 
 
-W_NAME = 'W44' # 고른 내용으로 5CV 다시 
+
+
+W_NAME = 'W323'
 MJ_NAME = 'M3V5'
-WORK_DATE = '23.06.12' # 349
+WORK_DATE = '23.06.13' # 349
 MISS_NAME = 'MIS2'
 PPI_NAME = '349'
-WORK_NAME = 'WORK_44' # 349###################################################################################################
+WORK_NAME = 'WORK_323' # 349###################################################################################################
 
-WORK_PATH = '/home01/k040a01/02.M3V5/M3V5_W44_349_MIS2/'
+WORK_PATH = '/home01/k040a01/02.M3V5/M3V5_W323_349_MIS2/'
 
+#8gpu
+MAIN('PRJ02.{}.{}.{}.{}.{}'.format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME), WORK_PATH, WORK_PATH, WORK_NAME, MISS_NAME, 50, 500, 150, 8, 0.5)
 
-OLD_PATH = '/home01/k040a01/02.M3V5/M3V5_W322_349_MIS2'
-ANA_DF_CSV = pd.read_csv(os.path.join(OLD_PATH,'RAY_ANA_DF.{}.csv'.format('M3V5_W322_349_MIS2')))
 
-my_config = ANA_DF_CSV[ANA_DF_CSV.trial_id=='4efc26cc'] # 349 
-# 그 전까지 쓰던거 : 3fd8fd68
-# 6월 9일부터 쓰는거 : '094ca18a' # 8/ 4/ 32/ 3/ 0.1, 0.2/ 256-128-32-64-128 / 0.001
-# 6월 11일부터 쓰는거 : '4efc26cc' # 32/ 4/ 32/ 3
 
 
-#4gpu
-MAIN('PRJ02.{}.{}.{}.{}.{}'.format(WORK_DATE, MJ_NAME, WORK_NAME, PPI_NAME, MISS_NAME), my_config, 1, 1000, 32, 1)
 
+sbatch gpu8.any M3V5_WORK32_3.349.py
 
-#1gpu
-MAIN('PRJ02.{}.{}.{}.{}.{}'.format(WORK_DATE, MJ_NAME, WORK_NAME, PPI_NAME, MISS_NAME), my_config, 1, 1000, 128, 1)
 
+tail ~/logs/M3V5W323_GPU8_12875.log
 
 
+tail /home01/k040a01/02.M3V5/M3V5_W323_349_MIS2/RESULT.G8.txt -n 100 
 
-sbatch gpu1.W44.CV4.any M3V5_WORK44.349.CV4.py
-sbatch gpu4.W44.CV03.any M3V5_WORK44.349.CV03.py
 
 
+고민이다 진짜..
+집 가면 일단 근데 그건 matchmaker 이름 바꾼건 좀 확정하자 
+그리고 이번에 한거 다시 좀 정리를 하고 해보자 
 
+thinking... should check the 
 
 
-tail ~/logs/M3V5W44_GPU4_12727.log
-tail ~/logs/M3V5W44_GPU1_12816.log
 
 
-tail /home01/k040a01/02.M3V5/M3V5_W44_349_MIS2/RESULT.G4.CV03.txt -n 100 # 0.352, 0.336, 0.318, 0.318 
-tail /home01/k040a01/02.M3V5/M3V5_W44_349_MIS2/RESULT.G1.CV4.txt -n 100 # 0.311506
 
 
 
@@ -1302,220 +1388,34 @@ tail /home01/k040a01/02.M3V5/M3V5_W44_349_MIS2/RESULT.G1.CV4.txt -n 100 # 0.3115
 
 
 
-# local 에 가져와서 가장 마음에 드는 epoch 으로
-# 각 CV 에 해당하는 모델로 TEST CV 만들어낸거 그냥 
-# pred 한거 저장해서 쓰면 됨....... 
-# 근데 이렇게 되면 nested CV 라고 얘기하기가 힘들긴 하겠네 
-# 왜냐면 지금 CV 를 test 10 을 떼고 그 안에서 5CV 돌린거로 parameter setting 한건 맞는데, 
-# 그렇게 되면 또 바깥 test 를 여러개 돌려야하는거 아니냐! 하게 되니까 
-# 아 근데 꼭 돌려봐야하나 미치겠네 
-# 그렇게 되면 원래 돌아가던거에다가 더 돌아가야하는거임.
-# 아물론 구할수는 있는데 
-# 돌겠다 
-# 지금 돌아가는것도 이렇게 오래걸리는데 
-# 근데 다른 논문들을 봐도,모든 팀들이 nested 를 쓰는건 아님. 
-# 어쨌든 최종 내용은 5CV 로 해서 새로운 pred 값을 얻는거니까 그렇게 생각하자. 
-# 쓸때는 test 하나를 뽑아서 그 안에서 5CV 에 대한 cross val 을 했다고 하면 되지..! 
-# 
 
-0.48941
-0.520938
-0.501694
-0.414247
 
-dkkaskdfjalskdjfklsdjlksdj
 
 
-0.708114
-0.711567
-0.704354
-0.704683
-0.705393
 
-np.mean([0.707416, 0.70621, 0.70739, 0.713955, 0.706206]) # 0.7082354
-np.std([0.707416, 0.70621, 0.70739, 0.713955, 0.706206]) # 0.002909317830695025
 
 
 
-np.mean([0.705415, 0.712359, 0.687922, 0.70234, 0.71795]) # 0.7051972
-np.std([0.705415, 0.712359, 0.687922, 0.70234, 0.71795]) # 0.010203615543521796
 
 
+T_test = T_test_0
+test_loader = torch.utils.data.DataLoader(T_test, batch_size = my_config["config/batch_size"].item(), collate_fn = graph_collate_fn, shuffle =False, num_workers=16) # my_config['config/n_workers'].item()
 
 
-have to draw the loss plot 
 
+best_model = MY_expGCN_parallel_model(
+				G_chem_layer, T_test.gcn_drug1_F.shape[-1] , G_chem_hdim,
+				G_exp_layer, 3, G_exp_hdim,
+				dsn1_layers, dsn2_layers, snp_layers, 
+				len(set(A_B_C_S_SET_SM.DrugCombCCLE)), 3, 16,
+				1, inDrop, Drop
+				)
 
+for batch_idx_v, (drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, adj_w, cell, y) in enumerate(test_loader) :
+	expA = expA.view(-1,3)#### 다른점 
+	expB = expB.view(-1,3)#### 다른점 
+	adj_w = adj_w.squeeze()
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import pandas as pd 
-import matplotlib.pyplot as plt
-from ray.tune import ExperimentAnalysis
-from ray.tune import Analysis
-import pickle
-import math
-import torch
-import os 
-import copy
-
-
-
-
-WORK_NAME = 'WORK_44' # 349
-W_NAME = 'W44'
-MJ_NAME = 'M3V5'
-MISS_NAME = 'MIS2'
-PPI_NAME = '349'
-
-WORK_PATH = '/home01/k040a01/02.M3V5/M3V5_W44_349_MIS2/'
-
-WORK_DATE = '23.06.12' # 349
-anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
-
-list_dir = os.listdir(anal_dir)
-exp_json = [a for a in list_dir if 'experiment_state' in a]
-exp_json
-anal_df = ExperimentAnalysis(os.path.join(anal_dir, exp_json[1]))
-
-ANA_DF_1 = anal_df.dataframe()
-ANA_ALL_DF_1 = anal_df.trial_dataframes
-
-
-
-ANA_DF = ANA_DF_1
-ANA_ALL_DF= ANA_ALL_DF_1
-
-
-
-cv0_key = ANA_DF['logdir'][0] ;	cv1_key = ANA_DF['logdir'][1]; 	cv2_key = ANA_DF['logdir'][2] ;	cv3_key = ANA_DF['logdir'][3]; #cv4_key = ANA_DF['logdir'][4];
-
-epc_T_LS_mean = np.mean([
-	ANA_ALL_DF[cv0_key]['T_LS'][0:450], ANA_ALL_DF[cv1_key]['T_LS'][0:450],ANA_ALL_DF[cv2_key]['T_LS'][0:450], ANA_ALL_DF[cv3_key]['T_LS'][0:450]], axis = 0) # , ANA_ALL_DF[cv4_key]['T_LS']
-epc_T_LS_std = np.std([
-	ANA_ALL_DF[cv0_key]['T_LS'][0:450], ANA_ALL_DF[cv1_key]['T_LS'][0:450],ANA_ALL_DF[cv2_key]['T_LS'][0:450], ANA_ALL_DF[cv3_key]['T_LS'][0:450]], axis = 0) # , ANA_ALL_DF[cv4_key]['T_LS']
-
-epc_T_PC_mean = np.mean([
-	ANA_ALL_DF[cv0_key]['T_PC'][0:450], ANA_ALL_DF[cv1_key]['T_PC'][0:450],ANA_ALL_DF[cv2_key]['T_PC'][0:450], ANA_ALL_DF[cv3_key]['T_PC'][0:450]], axis = 0) # , ANA_ALL_DF[cv4_key]['T_PC']
-epc_T_PC_std = np.std([
-	ANA_ALL_DF[cv0_key]['T_PC'][0:450], ANA_ALL_DF[cv1_key]['T_PC'][0:450],ANA_ALL_DF[cv2_key]['T_PC'][0:450], ANA_ALL_DF[cv3_key]['T_PC'][0:450]], axis = 0) # , ANA_ALL_DF[cv4_key]['T_PC']
-
-epc_T_SC_mean = np.mean([
-	ANA_ALL_DF[cv0_key]['T_SC'][0:450], ANA_ALL_DF[cv1_key]['T_SC'][0:450],ANA_ALL_DF[cv2_key]['T_SC'][0:450], ANA_ALL_DF[cv3_key]['T_SC'][0:450]], axis = 0) # , ANA_ALL_DF[cv4_key]['T_SC']
-epc_T_SC_std = np.std([
-	ANA_ALL_DF[cv0_key]['T_SC'][0:450], ANA_ALL_DF[cv1_key]['T_SC'][0:450],ANA_ALL_DF[cv2_key]['T_SC'][0:450], ANA_ALL_DF[cv3_key]['T_SC'][0:450]], axis = 0) # , ANA_ALL_DF[cv4_key]['T_SC']
-
-epc_V_LS_mean = np.mean([
-	ANA_ALL_DF[cv0_key]['V_LS'][0:450], ANA_ALL_DF[cv1_key]['V_LS'][0:450],ANA_ALL_DF[cv2_key]['V_LS'][0:450], ANA_ALL_DF[cv3_key]['V_LS'][0:450]], axis = 0) # , ANA_ALL_DF[cv4_key]['V_LS']
-epc_V_LS_std = np.std([
-	ANA_ALL_DF[cv0_key]['V_LS'][0:450], ANA_ALL_DF[cv1_key]['V_LS'][0:450],ANA_ALL_DF[cv2_key]['V_LS'][0:450], ANA_ALL_DF[cv3_key]['V_LS'][0:450]], axis = 0) # , ANA_ALL_DF[cv4_key]['V_LS']
-
-epc_V_PC_mean = np.mean([
-	ANA_ALL_DF[cv0_key]['V_PC'][0:450], ANA_ALL_DF[cv1_key]['V_PC'][0:450],ANA_ALL_DF[cv2_key]['V_PC'][0:450], ANA_ALL_DF[cv3_key]['V_PC'][0:450]], axis = 0) # , ANA_ALL_DF[cv4_key]['V_PC']
-epc_V_PC_std = np.std([
-	ANA_ALL_DF[cv0_key]['V_PC'][0:450], ANA_ALL_DF[cv1_key]['V_PC'][0:450],ANA_ALL_DF[cv2_key]['V_PC'][0:450], ANA_ALL_DF[cv3_key]['V_PC'][0:450]], axis = 0) # , ANA_ALL_DF[cv4_key]['V_PC']
-
-epc_V_SC_mean = np.mean([
-	ANA_ALL_DF[cv0_key]['V_SC'][0:450], ANA_ALL_DF[cv1_key]['V_SC'][0:450],ANA_ALL_DF[cv2_key]['V_SC'][0:450], ANA_ALL_DF[cv3_key]['V_SC'][0:450]], axis = 0) # , ANA_ALL_DF[cv4_key]['V_SC']
-epc_V_SC_std = np.std([
-	ANA_ALL_DF[cv0_key]['V_SC'][0:450], ANA_ALL_DF[cv1_key]['V_SC'][0:450],ANA_ALL_DF[cv2_key]['V_SC'][0:450], ANA_ALL_DF[cv3_key]['V_SC'][0:450]], axis = 0) # , ANA_ALL_DF[cv4_key]['V_SC']
-
-
-epc_result = pd.DataFrame({
-	'T_LS_mean' : epc_T_LS_mean, 'T_PC_mean' : epc_T_PC_mean, 'T_SC_mean' : epc_T_SC_mean, 
-	'T_LS_std' : epc_T_LS_std, 'T_PC_std' : epc_T_PC_std, 'T_SC_std' : epc_T_SC_std, 
-	'V_LS_mean' : epc_V_LS_mean, 'V_PC_mean' : epc_V_PC_mean, 'V_SC_mean' : epc_V_SC_mean, 
-	'V_LS_std' : epc_V_LS_std, 'V_PC_std' : epc_V_PC_std, 'V_SC_std' : epc_V_SC_std,
-})
-
-epc_result[['T_LS_mean', 'T_LS_std', 'T_PC_mean', 'T_PC_std','T_SC_mean','T_SC_std', 'V_LS_mean', 'V_LS_std', 'V_PC_mean', 'V_PC_std','V_SC_mean','V_SC_std']].to_csv("/home01/k040a01/02.M3V5/{}_{}_{}_{}/RAY_ANA_DF.{}_{}_{}_{}.resDF".format(MJ_NAME, W_NAME, PPI_NAME, MISS_NAME, MJ_NAME, W_NAME, PPI_NAME, MISS_NAME))
-
-"/home01/k040a01/02.M3V5/{}_{}_{}_{}/RAY_ANA_DF.{}_{}_{}_{}.resDF".format(MJ_NAME, W_NAME, PPI_NAME, MISS_NAME, MJ_NAME, W_NAME, PPI_NAME, MISS_NAME)
-      
-
-
-1) min loss # 401
-
-min(epc_result.sort_values('V_LS_mean')['V_LS_mean']) ; min_VLS = min(epc_result.sort_values('V_LS_mean')['V_LS_mean'])
-KEY_EPC = epc_result[epc_result.V_LS_mean == min_VLS].index.item()
-checkpoint = "/checkpoint_"+str(KEY_EPC).zfill(6)
-VLS_cv0_PATH = cv0_key + checkpoint
-VLS_cv0_PATH
-VLS_cv1_PATH = cv1_key + checkpoint
-VLS_cv1_PATH
-VLS_cv2_PATH = cv2_key + checkpoint
-VLS_cv2_PATH
-VLS_cv3_PATH = cv3_key + checkpoint
-VLS_cv3_PATH
-VLS_cv4_PATH = cv4_key + checkpoint
-VLS_cv4_PATH
-
-KEY_EPC
-round(epc_result.loc[KEY_EPC]['V_LS_mean'],3)
-round(epc_result.loc[KEY_EPC]['V_LS_std'],3)
-
-
-
-2) PC best  # 734
-
-epc_result.sort_values('V_PC_mean', ascending = False) 
-max(epc_result['V_PC_mean']); max_VPC = max(epc_result['V_PC_mean'])
-KEY_EPC = epc_result[epc_result.V_PC_mean == max_VPC].index.item()
-checkpoint = "/checkpoint_"+str(KEY_EPC).zfill(6)
-VPC_cv0_PATH = cv0_key + checkpoint
-VPC_cv0_PATH
-VPC_cv1_PATH = cv1_key + checkpoint
-VPC_cv1_PATH
-VPC_cv2_PATH = cv2_key + checkpoint
-VPC_cv2_PATH
-VPC_cv3_PATH = cv3_key + checkpoint
-VPC_cv3_PATH
-VPC_cv4_PATH = cv4_key + checkpoint
-VPC_cv4_PATH
-
-KEY_EPC
-round(epc_result.loc[KEY_EPC]['V_PC_mean'],3)
-round(epc_result.loc[KEY_EPC]['V_PC_std'],3)
-
-
-
-3) SC best # 790
-
-epc_result.sort_values('V_SC_mean', ascending = False) 
-max(epc_result['V_SC_mean']); max_VSC = max(epc_result['V_SC_mean'])
-KEY_EPC = epc_result[epc_result.V_SC_mean == max_VSC].index.item()
-checkpoint = "/checkpoint_"+str(KEY_EPC).zfill(6)
-VSC_cv0_PATH = cv0_key + checkpoint
-VSC_cv0_PATH
-VSC_cv1_PATH = cv1_key + checkpoint
-VSC_cv1_PATH
-VSC_cv2_PATH = cv2_key + checkpoint
-VSC_cv2_PATH
-VSC_cv3_PATH = cv3_key + checkpoint
-VSC_cv3_PATH
-VSC_cv4_PATH = cv4_key + checkpoint
-VSC_cv4_PATH
-
-
-KEY_EPC
-round(epc_result.loc[KEY_EPC]['V_SC_mean'],3)
-round(epc_result.loc[KEY_EPC]['V_SC_std'],3)
-
-
-
-
-
+best_model(drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, adj_w, cell, y)

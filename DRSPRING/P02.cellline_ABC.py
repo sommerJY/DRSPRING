@@ -289,3 +289,38 @@ old_ver_check_cell_list = set(old_ver_check_cell_list)
 
 
 
+
+
+
+
+
+# 2023. 07. 05
+# 786O 이 없다! 
+
+# open as json # 0
+with open('/st06/jiyeonH/13.DD_SESS/01.PRJ2/'+'MJ_REQUEST_VER2.CCLE2.json', 'r') as f:
+    old_ver_check3 = json.load(f)
+
+
+len(old_ver_check3) # 1549640
+
+cids_old = set([a for a,b  in old_ver_check3])
+cells_old = set([b for a,b  in old_ver_check3])
+
+
+DC_DRUG_DF_FULL = pd.read_csv('/st06/jiyeonH/11.TOX/MY_TRIAL_6/DC_DRUG_DF_PC.csv', sep ='\t')
+
+DC_FULL_CID = [a for a in DC_DRUG_DF_FULL.CID if a > 0 ]
+
+avail_cell_list = ['786O_KIDNEY']
+aa = product(DC_FULL_CID, avail_cell_list)
+aaa = list(product(DC_FULL_CID, avail_cell_list))
+
+
+CELVAL_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/FINAL_VALIDATION/CELLS_VAL/'
+
+with open(CELVAL_PATH+'MJ_REQUEST_VER3.786O.json', 'w') as f:
+    json.dump(aaa,f)
+
+
+

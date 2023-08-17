@@ -1,3 +1,4 @@
+# only basal 
 
 import rdkit
 import os
@@ -176,8 +177,7 @@ BETA_NEWNOD_ORDER = list(BETA_ORDER_DF.new_node)
 SAVE_PATH = '/home01/k040a01/02.M3V5/M3V5_W32_349_DATA/'
 # SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V5_W32_349_FULL/'
 
-file_name = 'M3V5_349_MISS2_FULL'
-file_name = 'M3V5_349_MISS2_FULL_RE2' # 0608
+file_name = 'M3V5_349_MISS2_ONEIL'
 
 
 A_B_C_S_SET_ADD = pd.read_csv(SAVE_PATH+'{}.A_B_C_S_SET_ADD.csv'.format(file_name), low_memory=False)
@@ -192,7 +192,7 @@ MY_Target_1_B = torch.load(SAVE_PATH+'{}.MY_Target_1_B.pt'.format(file_name))
 #MY_Target_2_A = torch.load(SAVE_PATH+'{}.MY_Target_2_A.pt'.format(file_name))
 #MY_Target_2_B = torch.load(SAVE_PATH+'{}.MY_Target_2_B.pt'.format(file_name))
 MY_CellBase = torch.load(SAVE_PATH+'{}.MY_CellBase.pt'.format(file_name))
-MY_syn = torch.load(SAVE_PATH+'{}.MY_syn2.pt'.format(file_name))
+MY_syn = torch.load(SAVE_PATH+'{}.MY_syn.pt'.format(file_name))
 
 
 
@@ -272,8 +272,8 @@ len(set(A_B_C_S_SET_ADD2['CID_CID_CCLE'])) # 307644
 len(set(A_B_C_S_SET_ADD2['SM_C_CHECK'])) # 307315
 len(set(A_B_C_S_SET_ADD2['SIG_SIG_CCLE'])) # 8756
 
-A_B_C_S_SET_ADD3 = A_B_C_S_SET_ADD2[['ori_index','CID_CID','CID_CID_CCLE','SM_C_CHECK','SIG_SIG','SIG_SIG_CCLE', 'DrugCombCCLE','Basal_Exp', 'SYN_OX', 'T1OX', 'ONEIL','type']]
-dup_index = A_B_C_S_SET_ADD2[['CID_CID','CID_CID_CCLE','SM_C_CHECK','SIG_SIG','SIG_SIG_CCLE','Basal_Exp', 'SYN_OX', 'T1OX', 'ONEIL','type']].duplicated()== False
+A_B_C_S_SET_ADD3 = A_B_C_S_SET_ADD2[['ori_index','CID_CID','CID_CID_CCLE','SM_C_CHECK','SIG_SIG','SIG_SIG_CCLE', 'DrugCombCCLE','Basal_Exp', 'SYN_OX', 'T1OX','type']]
+dup_index = A_B_C_S_SET_ADD2[['CID_CID','CID_CID_CCLE','SM_C_CHECK','Basal_Exp', 'SYN_OX', 'T1OX','type']].duplicated()== False
 A_B_C_S_SET_ADD4 = A_B_C_S_SET_ADD3[dup_index] # 309004 -> 308456
 
 
@@ -345,6 +345,7 @@ A_B_C_S_SET = A_B_C_S_SET[A_B_C_S_SET.SYN_OX == 'O']
 #A_B_C_S_SET = A_B_C_S_SET[A_B_C_S_SET.T1OX == 'O'] ####################### new targets 
 
 A_B_C_S_SET = A_B_C_S_SET[A_B_C_S_SET.type.isin(MISS_filter)]
+
 
 
 
@@ -485,27 +486,6 @@ cell_one_hot = torch.nn.functional.one_hot(torch.Tensor(A_B_C_S_SET_COH2['cell_o
 
 
 
-print('CID_CID', flush = True)
-tmp = list(set(A_B_C_S_SET_COH2.CID_CID))
-tmp2 = sum([a.split('___') for a in tmp],[])
-
-len(set(tmp2))
-
-
-print('CID_CID', flush = True)
-len(set(A_B_C_S_SET_COH2.CID_CID))
-
-
-
-print('CID_CID_CCLE', flush = True)
-len(set(A_B_C_S_SET_COH2.CID_CID_CCLE))
-
-print('DrugCombCCLE', flush = True)
-len(set(A_B_C_S_SET_COH2.DrugCombCCLE))
-
-
-
-
 
 
 ###########################################################################################
@@ -534,6 +514,7 @@ data_nodup_df = pd.DataFrame({
 
 
 SM_SM_list = list(set(data_nodup_df.SM_SM))
+SM_SM_list.sort()
 sm_sm_list_1 = sklearn.utils.shuffle(SM_SM_list, random_state=42)
 
 bins = [a for a in range(0, len(sm_sm_list_1), round(len(sm_sm_list_1)*0.2) )]
@@ -682,8 +663,8 @@ class DATASET_GCN_W_FT(Dataset):
 		adj_re_A = self.gcn_drug1_ADJ[index].long().to_sparse().indices()
 		adj_re_B = self.gcn_drug2_ADJ[index].long().to_sparse().indices()
 		#
-		FEAT_A = torch.Tensor(np.array([ self.gcn_gene_A[index].squeeze().tolist() , self.cell_basal[index].tolist()]).T)
-		FEAT_B = torch.Tensor(np.array([ self.gcn_gene_B[index].squeeze().tolist() , self.cell_basal[index].tolist()]).T)
+		FEAT_A = torch.Tensor(np.array([self.cell_basal[index].tolist()]).T)
+		FEAT_B = torch.Tensor(np.array([self.cell_basal[index].tolist()]).T)
 		#
 		return self.gcn_drug1_F[index], self.gcn_drug2_F[index],adj_re_A, adj_re_B, FEAT_A, FEAT_B, self.gcn_adj, self.gcn_adj_weight , self.cell_info[index], self.syn_ans[index]
 
@@ -896,8 +877,8 @@ def inner_train( LOADER_DICT, THIS_MODEL, THIS_OPTIMIZER , use_cuda=False) :
 	pred_list = []
 	batch_cut_weight = LOADER_DICT['loss_weight']
 	for batch_idx_t, (drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, adj_w, cell, y) in enumerate(LOADER_DICT['train']) :
-		expA = expA.view(-1,2)#### 다른점 
-		expB = expB.view(-1,2)#### 다른점 
+		expA = expA.view(-1,1)#### 다른점 
+		expB = expB.view(-1,1)#### 다른점 
 		adj_w = adj_w.squeeze()
 		# move to GPU
 		if use_cuda:
@@ -933,8 +914,8 @@ def inner_val( LOADER_DICT, THIS_MODEL , use_cuda = False) :
 	pred_list = []
 	with torch.no_grad() :
 		for batch_idx_v, (drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, adj_w, cell, y) in enumerate(LOADER_DICT['test']) :
-			expA = expA.view(-1,2)#### 다른점 
-			expB = expB.view(-1,2)#### 다른점 
+			expA = expA.view(-1,1)#### 다른점 
+			expB = expB.view(-1,1)#### 다른점 
 			adj_w = adj_w.squeeze()
 			# move to GPU
 			if use_cuda:
@@ -1141,7 +1122,7 @@ def RAY_MY_train(config, checkpoint_dir=None):
 	#  
 	CV_0_MODEL = MY_expGCN_parallel_model(
 			config["G_chem_layer"], CV_0_train.gcn_drug1_F.shape[-1] , config["G_chem_hdim"],      # G_layer_chem, G_indim_chem, G_hiddim_chem, 
-			config["G_exp_layer"], 2 , config["G_exp_hdim"],      # G_layer_exp, G_indim_exp, G_hiddim_exp, 
+			config["G_exp_layer"], 1 , config["G_exp_hdim"],      # G_layer_exp, G_indim_exp, G_hiddim_exp, 
 			dsn1_layers, dsn2_layers, snp_layers,      # drug 1 layers, drug 2 layers, merged layer, 
 			len(set(A_B_C_S_SET_SM.DrugCombCCLE)), 1,      # cell_dim ,out_dim,
 			inDrop, Drop      # inDrop, drop
@@ -1251,49 +1232,35 @@ def MAIN(ANAL_name, my_config, num_samples= 10, max_num_epochs=1000, cpus_per_tr
 
 
 
-W_NAME = 'W44' # 고른 내용으로 5CV 다시 
+W_NAME = 'W47' # 고른 내용으로 5CV 다시 
 MJ_NAME = 'M3V5'
-WORK_DATE = '23.06.12' # 349
+WORK_DATE = '23.06.13' # 349
 MISS_NAME = 'MIS2'
 PPI_NAME = '349'
-WORK_NAME = 'WORK_44' # 349###################################################################################################
+WORK_NAME = 'WORK_47' # 349###################################################################################################
 
-WORK_PATH = '/home01/k040a01/02.M3V5/M3V5_W44_349_MIS2/'
+WORK_PATH = '/home01/k040a01/02.M3V5/M3V5_W47_349_MIS2/'
 
 
 OLD_PATH = '/home01/k040a01/02.M3V5/M3V5_W322_349_MIS2'
 ANA_DF_CSV = pd.read_csv(os.path.join(OLD_PATH,'RAY_ANA_DF.{}.csv'.format('M3V5_W322_349_MIS2')))
 
 my_config = ANA_DF_CSV[ANA_DF_CSV.trial_id=='4efc26cc'] # 349 
-# 그 전까지 쓰던거 : 3fd8fd68
-# 6월 9일부터 쓰는거 : '094ca18a' # 8/ 4/ 32/ 3/ 0.1, 0.2/ 256-128-32-64-128 / 0.001
-# 6월 11일부터 쓰는거 : '4efc26cc' # 32/ 4/ 32/ 3
 
 
-#4gpu
-MAIN('PRJ02.{}.{}.{}.{}.{}'.format(WORK_DATE, MJ_NAME, WORK_NAME, PPI_NAME, MISS_NAME), my_config, 1, 1000, 32, 1)
 
-
-#1gpu
-MAIN('PRJ02.{}.{}.{}.{}.{}'.format(WORK_DATE, MJ_NAME, WORK_NAME, PPI_NAME, MISS_NAME), my_config, 1, 1000, 128, 1)
+# 1gpu
+MAIN('PRJ02.{}.{}.{}.{}.{}'.format(WORK_DATE, MJ_NAME, WORK_NAME, PPI_NAME, MISS_NAME), my_config, 1, 1000, 24, 0.2)
 
 
 
 
-sbatch gpu1.W44.CV4.any M3V5_WORK44.349.CV4.py
-sbatch gpu4.W44.CV03.any M3V5_WORK44.349.CV03.py
+sbatch gpu1.W47.CV5.any M3V5_WORK47.349.CV5.py
+
+tail ~/logs/M3V5W34_GPU4_12869.log
 
 
-
-
-
-tail ~/logs/M3V5W44_GPU4_12727.log
-tail ~/logs/M3V5W44_GPU1_12816.log
-
-
-tail /home01/k040a01/02.M3V5/M3V5_W44_349_MIS2/RESULT.G4.CV03.txt -n 100 # 0.352, 0.336, 0.318, 0.318 
-tail /home01/k040a01/02.M3V5/M3V5_W44_349_MIS2/RESULT.G1.CV4.txt -n 100 # 0.311506
-
+tail /home01/k040a01/02.M3V5/M3V5_W47_349_MIS2/RESULT.G1.CV5.txt -n 100
 
 
 
@@ -1351,18 +1318,6 @@ have to draw the loss plot
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 import pandas as pd 
 import matplotlib.pyplot as plt
 from ray.tune import ExperimentAnalysis
@@ -1376,21 +1331,21 @@ import copy
 
 
 
-WORK_NAME = 'WORK_44' # 349
-W_NAME = 'W44'
+WORK_NAME = 'WORK_47' # 349
+W_NAME = 'W47'
 MJ_NAME = 'M3V5'
 MISS_NAME = 'MIS2'
 PPI_NAME = '349'
 
-WORK_PATH = '/home01/k040a01/02.M3V5/M3V5_W44_349_MIS2/'
+WORK_PATH = '/home01/k040a01/02.M3V5/M3V5_W47_349_MIS2/'
 
-WORK_DATE = '23.06.12' # 349
+WORK_DATE = '23.06.13' # 349
 anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
 
 list_dir = os.listdir(anal_dir)
 exp_json = [a for a in list_dir if 'experiment_state' in a]
 exp_json
-anal_df = ExperimentAnalysis(os.path.join(anal_dir, exp_json[1]))
+anal_df = ExperimentAnalysis(os.path.join(anal_dir, exp_json[0]))
 
 ANA_DF_1 = anal_df.dataframe()
 ANA_ALL_DF_1 = anal_df.trial_dataframes
@@ -1402,37 +1357,26 @@ ANA_ALL_DF= ANA_ALL_DF_1
 
 
 
-cv0_key = ANA_DF['logdir'][0] ;	cv1_key = ANA_DF['logdir'][1]; 	cv2_key = ANA_DF['logdir'][2] ;	cv3_key = ANA_DF['logdir'][3]; #cv4_key = ANA_DF['logdir'][4];
 
-epc_T_LS_mean = np.mean([
-	ANA_ALL_DF[cv0_key]['T_LS'][0:450], ANA_ALL_DF[cv1_key]['T_LS'][0:450],ANA_ALL_DF[cv2_key]['T_LS'][0:450], ANA_ALL_DF[cv3_key]['T_LS'][0:450]], axis = 0) # , ANA_ALL_DF[cv4_key]['T_LS']
-epc_T_LS_std = np.std([
-	ANA_ALL_DF[cv0_key]['T_LS'][0:450], ANA_ALL_DF[cv1_key]['T_LS'][0:450],ANA_ALL_DF[cv2_key]['T_LS'][0:450], ANA_ALL_DF[cv3_key]['T_LS'][0:450]], axis = 0) # , ANA_ALL_DF[cv4_key]['T_LS']
+cv0_key = ANA_DF['logdir'][0] ;	cv1_key = ANA_DF['logdir'][1]; 	cv2_key = ANA_DF['logdir'][2] ;	cv3_key = ANA_DF['logdir'][3];	cv4_key = ANA_DF['logdir'][4]
 
-epc_T_PC_mean = np.mean([
-	ANA_ALL_DF[cv0_key]['T_PC'][0:450], ANA_ALL_DF[cv1_key]['T_PC'][0:450],ANA_ALL_DF[cv2_key]['T_PC'][0:450], ANA_ALL_DF[cv3_key]['T_PC'][0:450]], axis = 0) # , ANA_ALL_DF[cv4_key]['T_PC']
-epc_T_PC_std = np.std([
-	ANA_ALL_DF[cv0_key]['T_PC'][0:450], ANA_ALL_DF[cv1_key]['T_PC'][0:450],ANA_ALL_DF[cv2_key]['T_PC'][0:450], ANA_ALL_DF[cv3_key]['T_PC'][0:450]], axis = 0) # , ANA_ALL_DF[cv4_key]['T_PC']
+epc_T_LS_mean = np.mean([ANA_ALL_DF[cv0_key]['T_LS'], ANA_ALL_DF[cv1_key]['T_LS'],ANA_ALL_DF[cv2_key]['T_LS'], ANA_ALL_DF[cv3_key]['T_LS'], ANA_ALL_DF[cv4_key]['T_LS']], axis = 0)
+epc_T_LS_std = np.std([ANA_ALL_DF[cv0_key]['T_LS'], ANA_ALL_DF[cv1_key]['T_LS'],ANA_ALL_DF[cv2_key]['T_LS'], ANA_ALL_DF[cv3_key]['T_LS'], ANA_ALL_DF[cv4_key]['T_LS']], axis = 0)
 
-epc_T_SC_mean = np.mean([
-	ANA_ALL_DF[cv0_key]['T_SC'][0:450], ANA_ALL_DF[cv1_key]['T_SC'][0:450],ANA_ALL_DF[cv2_key]['T_SC'][0:450], ANA_ALL_DF[cv3_key]['T_SC'][0:450]], axis = 0) # , ANA_ALL_DF[cv4_key]['T_SC']
-epc_T_SC_std = np.std([
-	ANA_ALL_DF[cv0_key]['T_SC'][0:450], ANA_ALL_DF[cv1_key]['T_SC'][0:450],ANA_ALL_DF[cv2_key]['T_SC'][0:450], ANA_ALL_DF[cv3_key]['T_SC'][0:450]], axis = 0) # , ANA_ALL_DF[cv4_key]['T_SC']
+epc_T_PC_mean = np.mean([ANA_ALL_DF[cv0_key]['T_PC'], ANA_ALL_DF[cv1_key]['T_PC'],ANA_ALL_DF[cv2_key]['T_PC'], ANA_ALL_DF[cv3_key]['T_PC'], ANA_ALL_DF[cv4_key]['T_PC']], axis = 0)
+epc_T_PC_std = np.std([ANA_ALL_DF[cv0_key]['T_PC'], ANA_ALL_DF[cv1_key]['T_PC'],ANA_ALL_DF[cv2_key]['T_PC'], ANA_ALL_DF[cv3_key]['T_PC'], ANA_ALL_DF[cv4_key]['T_PC']], axis = 0)
 
-epc_V_LS_mean = np.mean([
-	ANA_ALL_DF[cv0_key]['V_LS'][0:450], ANA_ALL_DF[cv1_key]['V_LS'][0:450],ANA_ALL_DF[cv2_key]['V_LS'][0:450], ANA_ALL_DF[cv3_key]['V_LS'][0:450]], axis = 0) # , ANA_ALL_DF[cv4_key]['V_LS']
-epc_V_LS_std = np.std([
-	ANA_ALL_DF[cv0_key]['V_LS'][0:450], ANA_ALL_DF[cv1_key]['V_LS'][0:450],ANA_ALL_DF[cv2_key]['V_LS'][0:450], ANA_ALL_DF[cv3_key]['V_LS'][0:450]], axis = 0) # , ANA_ALL_DF[cv4_key]['V_LS']
+epc_T_SC_mean = np.mean([ANA_ALL_DF[cv0_key]['T_SC'], ANA_ALL_DF[cv1_key]['T_SC'],ANA_ALL_DF[cv2_key]['T_SC'], ANA_ALL_DF[cv3_key]['T_SC'], ANA_ALL_DF[cv4_key]['T_SC']], axis = 0)
+epc_T_SC_std = np.std([ANA_ALL_DF[cv0_key]['T_SC'], ANA_ALL_DF[cv1_key]['T_SC'],ANA_ALL_DF[cv2_key]['T_SC'], ANA_ALL_DF[cv3_key]['T_SC'], ANA_ALL_DF[cv4_key]['T_SC']], axis = 0)
 
-epc_V_PC_mean = np.mean([
-	ANA_ALL_DF[cv0_key]['V_PC'][0:450], ANA_ALL_DF[cv1_key]['V_PC'][0:450],ANA_ALL_DF[cv2_key]['V_PC'][0:450], ANA_ALL_DF[cv3_key]['V_PC'][0:450]], axis = 0) # , ANA_ALL_DF[cv4_key]['V_PC']
-epc_V_PC_std = np.std([
-	ANA_ALL_DF[cv0_key]['V_PC'][0:450], ANA_ALL_DF[cv1_key]['V_PC'][0:450],ANA_ALL_DF[cv2_key]['V_PC'][0:450], ANA_ALL_DF[cv3_key]['V_PC'][0:450]], axis = 0) # , ANA_ALL_DF[cv4_key]['V_PC']
+epc_V_LS_mean = np.mean([ANA_ALL_DF[cv0_key]['V_LS'], ANA_ALL_DF[cv1_key]['V_LS'],ANA_ALL_DF[cv2_key]['V_LS'], ANA_ALL_DF[cv3_key]['V_LS'], ANA_ALL_DF[cv4_key]['V_LS']], axis = 0)
+epc_V_LS_std = np.std([ANA_ALL_DF[cv0_key]['V_LS'], ANA_ALL_DF[cv1_key]['V_LS'],ANA_ALL_DF[cv2_key]['V_LS'], ANA_ALL_DF[cv3_key]['V_LS'], ANA_ALL_DF[cv4_key]['V_LS']], axis = 0)
 
-epc_V_SC_mean = np.mean([
-	ANA_ALL_DF[cv0_key]['V_SC'][0:450], ANA_ALL_DF[cv1_key]['V_SC'][0:450],ANA_ALL_DF[cv2_key]['V_SC'][0:450], ANA_ALL_DF[cv3_key]['V_SC'][0:450]], axis = 0) # , ANA_ALL_DF[cv4_key]['V_SC']
-epc_V_SC_std = np.std([
-	ANA_ALL_DF[cv0_key]['V_SC'][0:450], ANA_ALL_DF[cv1_key]['V_SC'][0:450],ANA_ALL_DF[cv2_key]['V_SC'][0:450], ANA_ALL_DF[cv3_key]['V_SC'][0:450]], axis = 0) # , ANA_ALL_DF[cv4_key]['V_SC']
+epc_V_PC_mean = np.mean([ANA_ALL_DF[cv0_key]['V_PC'], ANA_ALL_DF[cv1_key]['V_PC'],ANA_ALL_DF[cv2_key]['V_PC'], ANA_ALL_DF[cv3_key]['V_PC'], ANA_ALL_DF[cv4_key]['V_PC']], axis = 0)
+epc_V_PC_std = np.std([ANA_ALL_DF[cv0_key]['V_PC'], ANA_ALL_DF[cv1_key]['V_PC'],ANA_ALL_DF[cv2_key]['V_PC'], ANA_ALL_DF[cv3_key]['V_PC'], ANA_ALL_DF[cv4_key]['V_PC']], axis = 0)
+
+epc_V_SC_mean = np.mean([ANA_ALL_DF[cv0_key]['V_SC'], ANA_ALL_DF[cv1_key]['V_SC'],ANA_ALL_DF[cv2_key]['V_SC'], ANA_ALL_DF[cv3_key]['V_SC'], ANA_ALL_DF[cv4_key]['V_SC']], axis = 0)
+epc_V_SC_std = np.std([ANA_ALL_DF[cv0_key]['V_SC'], ANA_ALL_DF[cv1_key]['V_SC'],ANA_ALL_DF[cv2_key]['V_SC'], ANA_ALL_DF[cv3_key]['V_SC'], ANA_ALL_DF[cv4_key]['V_SC']], axis = 0)
 
 
 epc_result = pd.DataFrame({
@@ -1445,7 +1389,7 @@ epc_result = pd.DataFrame({
 epc_result[['T_LS_mean', 'T_LS_std', 'T_PC_mean', 'T_PC_std','T_SC_mean','T_SC_std', 'V_LS_mean', 'V_LS_std', 'V_PC_mean', 'V_PC_std','V_SC_mean','V_SC_std']].to_csv("/home01/k040a01/02.M3V5/{}_{}_{}_{}/RAY_ANA_DF.{}_{}_{}_{}.resDF".format(MJ_NAME, W_NAME, PPI_NAME, MISS_NAME, MJ_NAME, W_NAME, PPI_NAME, MISS_NAME))
 
 "/home01/k040a01/02.M3V5/{}_{}_{}_{}/RAY_ANA_DF.{}_{}_{}_{}.resDF".format(MJ_NAME, W_NAME, PPI_NAME, MISS_NAME, MJ_NAME, W_NAME, PPI_NAME, MISS_NAME)
-      
+	  
 
 
 1) min loss # 401
@@ -1465,8 +1409,8 @@ VLS_cv4_PATH = cv4_key + checkpoint
 VLS_cv4_PATH
 
 KEY_EPC
-round(epc_result.loc[KEY_EPC]['V_LS_mean'],3)
-round(epc_result.loc[KEY_EPC]['V_LS_std'],3)
+round(epc_result.loc[KEY_EPC].V_LS_mean,3)
+round(epc_result.loc[KEY_EPC].V_LS_std,3)
 
 
 
@@ -1488,8 +1432,8 @@ VPC_cv4_PATH = cv4_key + checkpoint
 VPC_cv4_PATH
 
 KEY_EPC
-round(epc_result.loc[KEY_EPC]['V_PC_mean'],3)
-round(epc_result.loc[KEY_EPC]['V_PC_std'],3)
+round(epc_result.loc[KEY_EPC].V_PC_mean,3)
+round(epc_result.loc[KEY_EPC].V_PC_std,3)
 
 
 
@@ -1511,9 +1455,13 @@ VSC_cv4_PATH = cv4_key + checkpoint
 VSC_cv4_PATH
 
 
+
 KEY_EPC
-round(epc_result.loc[KEY_EPC]['V_SC_mean'],3)
-round(epc_result.loc[KEY_EPC]['V_SC_std'],3)
+round(epc_result.loc[KEY_EPC].V_SC_mean,3)
+round(epc_result.loc[KEY_EPC].V_SC_std,3)
+
+
+
 
 
 

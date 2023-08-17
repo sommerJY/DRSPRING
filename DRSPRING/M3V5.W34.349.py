@@ -373,6 +373,8 @@ ccle_names = [a for a in ccle_exp3.DrugCombCCLE if type(a) == str]
 A_B_C_S_SET = A_B_C_S_SET[A_B_C_S_SET.DrugCombCCLE.isin(ccle_names)]
 
 
+
+
 data_ind = list(A_B_C_S_SET.index)
 
 MY_chem_A_feat_RE = MY_chem_A_feat[data_ind]
@@ -404,6 +406,7 @@ DC_CELL_DF2 = pd.concat([
 	DC_CELL_DF2, 
 	pd.DataFrame({'cell_line_id' : [1],'DC_cellname' : ['786O'],'DrugCombCello' : ['CVCL_1051'],'DrugCombCCLE':['786O_KIDNEY']})])
 
+
 DC_CELL_info_filt = DC_CELL_DF2[DC_CELL_DF2.DrugCombCCLE.isin(A_B_C_S_SET.DrugCombCCLE)] # 38
 
 A_B_C_S_SET_COH = pd.merge(A_B_C_S_SET, DC_CELL_info_filt[['DrugCombCCLE','DC_cellname']], on = 'DrugCombCCLE', how = 'left'  )
@@ -418,6 +421,7 @@ A_B_C_S_SET_COH = pd.merge(A_B_C_S_SET, DC_CELL_info_filt[['DrugCombCCLE','DC_ce
 # 빈도 확인 
 
 C_names = list(set(A_B_C_S_SET_COH.DC_cellname))
+C_names.sort()
 
 C_freq = [list(A_B_C_S_SET_COH.DC_cellname).count(a) for a in C_names]
 C_cclename = [list(A_B_C_S_SET_COH[A_B_C_S_SET_COH.DC_cellname==a]['DrugCombCCLE'])[0] for a in C_names]
@@ -514,6 +518,7 @@ data_nodup_df = pd.DataFrame({
 
 
 SM_SM_list = list(set(data_nodup_df.SM_SM))
+SM_SM_list.sort()
 sm_sm_list_1 = sklearn.utils.shuffle(SM_SM_list, random_state=42)
 
 bins = [a for a in range(0, len(sm_sm_list_1), round(len(sm_sm_list_1)*0.2) )]
@@ -558,6 +563,13 @@ len(set( CV_1_setset + CV_2_setset + CV_3_setset + CV_4_setset + CV_5_setset ))
 
 
 
+
+CV_num = 0
+train_key = 'CV{}_train'.format(CV_num)
+test_key = 'CV{}_test'.format(CV_num)
+ABCS_tv = A_B_C_S_SET_SM[A_B_C_S_SET_SM.SM_C_CHECK.isin(CV_ND_INDS[train_key])]
+ABCS_test = A_B_C_S_SET_SM[A_B_C_S_SET_SM.SM_C_CHECK.isin(CV_ND_INDS[test_key])]
+	
 
 
 
@@ -1278,10 +1290,10 @@ tail /home01/k040a01/02.M3V5/M3V5_W34_349_MIS2/RESULT.G1.CV4.RE22.txt -n 100 # 0
 
 
 
+tail /home01/k040a01/02.M3V5/M3V5_W34_349_MIS2/RESULT.G1..txt -n 100 # 0.348782
 
 
-
-
+np.mean([0.712347,0.697677,0.715104,0.711263,0.693214])
 
 # local 에 가져와서 가장 마음에 드는 epoch 으로
 # 각 CV 에 해당하는 모델로 TEST CV 만들어낸거 그냥 
@@ -1325,3 +1337,489 @@ np.std([0.705415, 0.712359, 0.687922, 0.70234, 0.71795]) # 0.010203615543521796
 
 
 have to draw the loss plot 
+
+
+###########################################
+################ GPU ####################
+###########################################
+
+
+import pandas as pd 
+import matplotlib.pyplot as plt
+from ray.tune import ExperimentAnalysis
+from ray.tune import Analysis
+import pickle
+import math
+import torch
+import os 
+import copy
+
+
+
+WORK_NAME = 'WORK_34' # 349
+W_NAME = 'W34'
+MJ_NAME = 'M3V5'
+MISS_NAME = 'MIS2'
+PPI_NAME = '349'
+
+WORK_PATH = '/home01/k020a01/02.M3V5/M3V5_W34_349_MIS2/'
+
+WORK_DATE = '23.06.12' # 349
+anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
+
+list_dir = os.listdir(anal_dir)
+exp_json = [a for a in list_dir if 'experiment_state' in a]
+exp_json
+anal_df = ExperimentAnalysis(os.path.join(anal_dir, exp_json[2]))
+
+ANA_DF_1 = anal_df.dataframe()
+ANA_ALL_DF_1 = anal_df.trial_dataframes
+
+ANA_DF = ANA_DF_1
+
+ANA_DF = ANA_DF.sort_values('config/CV')
+ANA_DF.index = [0,1,2,3,4]
+ANA_ALL_DF = ANA_ALL_DF_1
+
+
+ANA_DF.to_csv('/home01/k040a01/02.M3V5/{}_{}_{}_{}/RAY_ANA_DF.{}_{}_{}_{}.csv'.format(MJ_NAME, W_NAME, PPI_NAME, MISS_NAME,  MJ_NAME, W_NAME, PPI_NAME, MISS_NAME))
+import pickle
+with open("/home01/k040a01/02.M3V5/{}_{}_{}_{}/RAY_ANA_DF.{}_{}_{}_{}.pickle".format(MJ_NAME, W_NAME, PPI_NAME, MISS_NAME, MJ_NAME, W_NAME, PPI_NAME, MISS_NAME), "wb") as fp:
+	pickle.dump(ANA_ALL_DF,fp) 
+
+'/home01/k040a01/02.M3V5/{}_{}_{}_{}/RAY_ANA_DF.{}_{}_{}_{}.csv'.format(MJ_NAME, W_NAME, PPI_NAME, MISS_NAME,  MJ_NAME, W_NAME, PPI_NAME, MISS_NAME)
+"/home01/k040a01/02.M3V5/{}_{}_{}_{}/RAY_ANA_DF.{}_{}_{}_{}.pickle".format(MJ_NAME, W_NAME, PPI_NAME, MISS_NAME, MJ_NAME, W_NAME, PPI_NAME, MISS_NAME)
+
+
+
+
+cv0_key = ANA_DF['logdir'][0] ;	cv1_key = ANA_DF['logdir'][1]; 	cv2_key = ANA_DF['logdir'][2] ;	cv3_key = ANA_DF['logdir'][3];	cv4_key = ANA_DF['logdir'][4]
+
+epc_T_LS_mean = np.mean([ANA_ALL_DF[cv0_key]['T_LS'], ANA_ALL_DF[cv1_key]['T_LS'],ANA_ALL_DF[cv2_key]['T_LS'], ANA_ALL_DF[cv3_key]['T_LS'], ANA_ALL_DF[cv4_key]['T_LS']], axis = 0)
+epc_T_LS_std = np.std([ANA_ALL_DF[cv0_key]['T_LS'], ANA_ALL_DF[cv1_key]['T_LS'],ANA_ALL_DF[cv2_key]['T_LS'], ANA_ALL_DF[cv3_key]['T_LS'], ANA_ALL_DF[cv4_key]['T_LS']], axis = 0)
+
+epc_T_PC_mean = np.mean([ANA_ALL_DF[cv0_key]['T_PC'], ANA_ALL_DF[cv1_key]['T_PC'],ANA_ALL_DF[cv2_key]['T_PC'], ANA_ALL_DF[cv3_key]['T_PC'], ANA_ALL_DF[cv4_key]['T_PC']], axis = 0)
+epc_T_PC_std = np.std([ANA_ALL_DF[cv0_key]['T_PC'], ANA_ALL_DF[cv1_key]['T_PC'],ANA_ALL_DF[cv2_key]['T_PC'], ANA_ALL_DF[cv3_key]['T_PC'], ANA_ALL_DF[cv4_key]['T_PC']], axis = 0)
+
+epc_T_SC_mean = np.mean([ANA_ALL_DF[cv0_key]['T_SC'], ANA_ALL_DF[cv1_key]['T_SC'],ANA_ALL_DF[cv2_key]['T_SC'], ANA_ALL_DF[cv3_key]['T_SC'], ANA_ALL_DF[cv4_key]['T_SC']], axis = 0)
+epc_T_SC_std = np.std([ANA_ALL_DF[cv0_key]['T_SC'], ANA_ALL_DF[cv1_key]['T_SC'],ANA_ALL_DF[cv2_key]['T_SC'], ANA_ALL_DF[cv3_key]['T_SC'], ANA_ALL_DF[cv4_key]['T_SC']], axis = 0)
+
+epc_V_LS_mean = np.mean([ANA_ALL_DF[cv0_key]['V_LS'], ANA_ALL_DF[cv1_key]['V_LS'],ANA_ALL_DF[cv2_key]['V_LS'], ANA_ALL_DF[cv3_key]['V_LS'], ANA_ALL_DF[cv4_key]['V_LS']], axis = 0)
+epc_V_LS_std = np.std([ANA_ALL_DF[cv0_key]['V_LS'], ANA_ALL_DF[cv1_key]['V_LS'],ANA_ALL_DF[cv2_key]['V_LS'], ANA_ALL_DF[cv3_key]['V_LS'], ANA_ALL_DF[cv4_key]['V_LS']], axis = 0)
+
+epc_V_PC_mean = np.mean([ANA_ALL_DF[cv0_key]['V_PC'], ANA_ALL_DF[cv1_key]['V_PC'],ANA_ALL_DF[cv2_key]['V_PC'], ANA_ALL_DF[cv3_key]['V_PC'], ANA_ALL_DF[cv4_key]['V_PC']], axis = 0)
+epc_V_PC_std = np.std([ANA_ALL_DF[cv0_key]['V_PC'], ANA_ALL_DF[cv1_key]['V_PC'],ANA_ALL_DF[cv2_key]['V_PC'], ANA_ALL_DF[cv3_key]['V_PC'], ANA_ALL_DF[cv4_key]['V_PC']], axis = 0)
+
+epc_V_SC_mean = np.mean([ANA_ALL_DF[cv0_key]['V_SC'], ANA_ALL_DF[cv1_key]['V_SC'],ANA_ALL_DF[cv2_key]['V_SC'], ANA_ALL_DF[cv3_key]['V_SC'], ANA_ALL_DF[cv4_key]['V_SC']], axis = 0)
+epc_V_SC_std = np.std([ANA_ALL_DF[cv0_key]['V_SC'], ANA_ALL_DF[cv1_key]['V_SC'],ANA_ALL_DF[cv2_key]['V_SC'], ANA_ALL_DF[cv3_key]['V_SC'], ANA_ALL_DF[cv4_key]['V_SC']], axis = 0)
+
+
+epc_result = pd.DataFrame({
+	'T_LS_mean' : epc_T_LS_mean, 'T_PC_mean' : epc_T_PC_mean, 'T_SC_mean' : epc_T_SC_mean, 
+	'T_LS_std' : epc_T_LS_std, 'T_PC_std' : epc_T_PC_std, 'T_SC_std' : epc_T_SC_std, 
+	'V_LS_mean' : epc_V_LS_mean, 'V_PC_mean' : epc_V_PC_mean, 'V_SC_mean' : epc_V_SC_mean, 
+	'V_LS_std' : epc_V_LS_std, 'V_PC_std' : epc_V_PC_std, 'V_SC_std' : epc_V_SC_std,
+})
+
+epc_result[['T_LS_mean', 'T_LS_std', 'T_PC_mean', 'T_PC_std','T_SC_mean','T_SC_std', 'V_LS_mean', 'V_LS_std', 'V_PC_mean', 'V_PC_std','V_SC_mean','V_SC_std']].to_csv("/home01/k040a01/02.M3V5/{}_{}_{}_{}/RAY_ANA_DF.{}_{}_{}_{}.resDF".format(MJ_NAME, W_NAME, PPI_NAME, MISS_NAME, MJ_NAME, W_NAME, PPI_NAME, MISS_NAME))
+
+"/home01/k040a01/02.M3V5/{}_{}_{}_{}/RAY_ANA_DF.{}_{}_{}_{}.resDF".format(MJ_NAME, W_NAME, PPI_NAME, MISS_NAME, MJ_NAME, W_NAME, PPI_NAME, MISS_NAME)
+        
+
+
+1) min loss
+
+min(epc_result.sort_values('V_LS_mean')['V_LS_mean']) ; min_VLS = min(epc_result.sort_values('V_LS_mean')['V_LS_mean'])
+KEY_EPC = epc_result[epc_result.V_LS_mean == min_VLS].index.item()
+checkpoint = "/checkpoint_"+str(KEY_EPC).zfill(6)
+VLS_cv0_PATH = cv0_key + checkpoint
+VLS_cv0_PATH
+VLS_cv1_PATH = cv1_key + checkpoint
+VLS_cv1_PATH
+VLS_cv2_PATH = cv2_key + checkpoint
+VLS_cv2_PATH
+VLS_cv3_PATH = cv3_key + checkpoint
+VLS_cv3_PATH
+VLS_cv4_PATH = cv4_key + checkpoint
+VLS_cv4_PATH
+
+
+KEY_EPC
+round(epc_result.loc[KEY_EPC].V_LS_mean,3)
+round(epc_result.loc[KEY_EPC].V_LS_std,3)
+
+
+
+
+
+2) PC best 
+
+epc_result.sort_values('V_PC_mean', ascending = False) 
+max(epc_result['V_PC_mean']); max_VPC = max(epc_result['V_PC_mean'])
+KEY_EPC = epc_result[epc_result.V_PC_mean == max_VPC].index.item()
+checkpoint = "/checkpoint_"+str(KEY_EPC).zfill(6)
+VPC_cv0_PATH = cv0_key + checkpoint
+VPC_cv0_PATH
+VPC_cv1_PATH = cv1_key + checkpoint
+VPC_cv1_PATH
+VPC_cv2_PATH = cv2_key + checkpoint
+VPC_cv2_PATH
+VPC_cv3_PATH = cv3_key + checkpoint
+VPC_cv3_PATH
+VPC_cv4_PATH = cv4_key + checkpoint
+VPC_cv4_PATH
+
+
+KEY_EPC
+round(epc_result.loc[KEY_EPC].V_PC_mean,3)
+round(epc_result.loc[KEY_EPC].V_PC_std,3)
+
+
+3) SC best 
+
+epc_result.sort_values('V_SC_mean', ascending = False) 
+max(epc_result['V_SC_mean']); max_VSC = max(epc_result['V_SC_mean'])
+KEY_EPC = epc_result[epc_result.V_SC_mean == max_VSC].index.item()
+checkpoint = "/checkpoint_"+str(KEY_EPC).zfill(6)
+VSC_cv0_PATH = cv0_key + checkpoint
+VSC_cv0_PATH
+VSC_cv1_PATH = cv1_key + checkpoint
+VSC_cv1_PATH
+VSC_cv2_PATH = cv2_key + checkpoint
+VSC_cv2_PATH
+VSC_cv3_PATH = cv3_key + checkpoint
+VSC_cv3_PATH
+VSC_cv4_PATH = cv4_key + checkpoint
+VSC_cv4_PATH
+
+
+
+
+KEY_EPC
+round(epc_result.loc[KEY_EPC].V_SC_mean,3)
+round(epc_result.loc[KEY_EPC].V_SC_std,3)
+
+
+
+
+
+
+
+###########################################
+########### LOCAL ##################
+###########################################
+
+
+from ray.tune import ExperimentAnalysis
+
+
+
+
+def plot_three(big_title, train_loss, valid_loss, train_Pcorr, valid_Pcorr, train_Scorr, valid_Scorr, path, plotname, epoch = 0 ):
+	fig, (ax1, ax2, ax3) = plt.subplots(1,3, figsize=(30, 8))
+	#
+	# loss plot 
+	ax1.plot(range(1,len(train_loss)+1),train_loss, label='Training Loss', color = 'Blue', linewidth=4 )
+	ax1.plot(range(1,len(valid_loss)+1),valid_loss,label='Validation Loss', color = 'Red', linewidth=4)
+	ax1.set_xlabel('epochs', fontsize=20)
+	ax1.set_ylabel('loss', fontsize=20)
+	ax1.tick_params(axis='both', which='major', labelsize=20 )
+	ax1.set_ylim(0, math.ceil(max(train_loss+valid_loss))) # 일정한 scale
+	ax1.set_xlim(0, len(train_loss)+1) # 일정한 scale
+	ax1.grid(True)
+	if epoch > 0 : 
+		ax1.axvline(x = epoch, color = 'green', linestyle = '--', linewidth = 3)
+	ax1.set_title('5CV Average Loss', fontsize=20)
+	#
+	# Pearson Corr 
+	ax2.plot(range(1,len(train_Pcorr)+1), train_Pcorr, label='Training PCorr', color = 'Blue', linewidth=4 )
+	ax2.plot(range(1,len(valid_Pcorr)+1),valid_Pcorr,label='Validation PCorr', color = 'Red', linewidth=4)
+	ax2.set_xlabel('epochs', fontsize=20)
+	ax2.set_ylabel('PCor', fontsize=20)
+	ax2.tick_params(axis='both', which='major', labelsize=20 )
+	ax2.set_ylim(0, math.ceil(max(train_Pcorr+valid_Pcorr))) # 일정한 scale
+	ax2.set_xlim(0, len(train_Pcorr)+1) # 일정한 scale
+	ax2.grid(True)
+	if epoch > 0 : 
+		ax2.axvline(x = epoch, color = 'green', linestyle = '--', linewidth = 3)
+	#
+	ax2.set_title('5CV Average Pearson', fontsize=20)
+	#
+	# Spearman Corr 
+	ax3.plot(range(1,len(train_Scorr)+1), train_Scorr, label='Training SCorr', color = 'Blue', linewidth=4 )
+	ax3.plot(range(1,len(valid_Scorr)+1),valid_Scorr,label='Validation SCorr', color = 'Red', linewidth=4)
+	ax3.set_xlabel('epochs', fontsize=20)
+	ax3.set_ylabel('SCor', fontsize=20)
+	ax3.tick_params(axis='both', which='major', labelsize=20 )
+	ax3.set_ylim(0, math.ceil(max(train_Scorr+valid_Scorr))) # 일정한 scale
+	ax3.set_xlim(0, len(train_Scorr)+1) # 일정한 scale
+	ax3.grid(True)
+	if epoch > 0 : 
+		ax3.axvline(x = epoch, color = 'green', linestyle = '--', linewidth = 3)
+	#
+	ax3.set_title('5CV Average Spearman', fontsize=20)
+	#
+	fig.suptitle(big_title, fontsize=18)
+	plt.tight_layout()
+	fig.savefig('{}/{}.three_plot.png'.format(path, plotname), bbox_inches = 'tight')
+
+
+
+def plot_Pcorr(train_corr, valid_corr, path, plotname):
+	fig = plt.figure(figsize=(10,8))
+	plt.plot(range(1,len(train_corr)+1),train_corr, label='Training Corr')
+	plt.plot(range(1,len(valid_corr)+1),valid_corr,label='Validation Corr')
+	plt.xlabel('epochs')
+	plt.ylabel('corr')
+	plt.ylim(0, math.ceil(max(train_corr+valid_corr))) # 일정한 scale
+	plt.xlim(0, len(train_corr)+1) # 일정한 scale
+	plt.grid(True)
+	plt.legend()
+	plt.tight_layout()
+	fig.savefig('{}/{}.Pcorr_plot.png'.format(path, plotname), bbox_inches = 'tight')
+	plt.close()
+
+def plot_Scorr(train_corr, valid_corr, path, plotname):
+	fig = plt.figure(figsize=(10,8))
+	plt.plot(range(1,len(train_corr)+1),train_corr, label='Training Corr')
+	plt.plot(range(1,len(valid_corr)+1),valid_corr,label='Validation Corr')
+	plt.xlabel('epochs')
+	plt.ylabel('corr')
+	plt.ylim(0, math.ceil(max(train_corr+valid_corr))) # 일정한 scale
+	plt.xlim(0, len(train_corr)+1) # 일정한 scale
+	plt.grid(True)
+	plt.legend()
+	plt.tight_layout()
+	fig.savefig('{}/{}.Scorr_plot.png'.format(path, plotname), bbox_inches = 'tight')
+	plt.close()
+
+
+
+
+
+def jy_corrplot(PRED_list, Y_list, path, plotname ):
+	jplot = sns.jointplot(x=PRED_list, y=Y_list, ci=68, kind='reg')
+	pr,pp = stats.pearsonr(PRED_list, Y_list)
+	print("Pearson correlation is {} and related p_value is {}".format(pr, pp), flush=True)
+	sr,sp = stats.spearmanr(PRED_list, Y_list)
+	print("Spearman correlation is {} and related p_value is {}".format(sr, sp), flush=True)
+	jplot.ax_joint.annotate(f'$pearson = {pr:.3f}, spearman = {sr:.3f}$',xy=(min(PRED_list)+ 0.01, max(Y_list)- 0.01 ), ha='left', va='center',)
+	jplot.ax_joint.scatter(PRED_list, Y_list)
+	jplot.set_axis_labels(xlabel='Predicted', ylabel='Answer', size=15)
+	jplot.figure.savefig('{}/{}.corrplot.png'.format(path, plotname), bbox_inches = 'tight')
+	return pr, sr
+
+
+
+
+def inner_test( TEST_DATA, THIS_MODEL , use_cuda = False) :
+	THIS_MODEL.eval()
+	#
+	running_loss = 0
+	last_loss = 0 
+	#
+	ans_list = []
+	pred_list = []
+	with torch.no_grad() :
+		for batch_idx_v, (drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, adj_w, cell, y) in enumerate(TEST_DATA) :
+			expA = expA.view(-1,3)#### 다른점 
+			expB = expB.view(-1,3)#### 다른점 
+			adj_w = adj_w.squeeze()
+			# move to GPU
+			if use_cuda:
+				drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, adj_w, y, cell = drug1_f.cuda(), drug2_f.cuda(), drug1_a.cuda(), drug2_a.cuda(), expA.cuda(), expB.cuda(), adj.cuda(), adj_w.cuda(), y.cuda(), cell.cuda()
+			## update the average validation loss
+			output = THIS_MODEL(drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, adj_w, cell, y)
+			MSE = torch.nn.MSELoss()
+			loss = MSE(output, y) # train 이 아니라서 weight 안넣어줌. 그냥 nn.MSE 넣어주기 
+			# update average validation loss 
+			running_loss = running_loss + loss.item()
+			pred_list = pred_list + output.squeeze().tolist()
+			ans_list = ans_list + y.squeeze().tolist()
+		#
+	last_loss = running_loss / (batch_idx_v+1)
+	val_sc, _ = stats.spearmanr(pred_list, ans_list)
+	val_pc, _ = stats.pearsonr(pred_list, ans_list)
+	return last_loss, val_pc, val_sc, pred_list, ans_list    
+
+
+
+
+def TEST_CPU (PRJ_PATH, CV_num, my_config, model_path, model_name, model_num) :
+	use_cuda = False
+	#
+	CV_test_dict = { 
+		'CV_0': T_test_0, 'CV_1' : T_test_1, 'CV_2' : T_test_2,
+		'CV_3' : T_test_3, 'CV_4': T_test_4 }
+	#
+	T_test = CV_test_dict[CV_num]
+	test_loader = torch.utils.data.DataLoader(T_test, batch_size = my_config["config/batch_size"].item(), collate_fn = graph_collate_fn, shuffle =False, num_workers=16) # my_config['config/n_workers'].item()
+	#
+	G_chem_layer = my_config['config/G_chem_layer'].item()
+	G_chem_hdim = my_config['config/G_chem_hdim'].item()
+	G_exp_layer = my_config['config/G_exp_layer'].item()
+	G_exp_hdim = my_config['config/G_exp_hdim'].item()
+	dsn1_layers = [my_config['config/feat_size_0'].item(), my_config['config/feat_size_1'].item(), my_config['config/feat_size_2'].item()]
+	dsn2_layers = [my_config['config/feat_size_0'].item(), my_config['config/feat_size_1'].item(), my_config['config/feat_size_2'].item()] 
+	snp_layers = [my_config['config/feat_size_3'].item() , my_config['config/feat_size_4'].item()]
+	inDrop = my_config['config/dropout_1'].item()
+	Drop = my_config['config/dropout_2'].item()
+	#
+	best_model = MY_expGCN_parallel_model(
+				G_chem_layer, T_test.gcn_drug1_F.shape[-1] , G_chem_hdim,
+				G_exp_layer, 3, G_exp_hdim,
+				dsn1_layers, dsn2_layers, snp_layers, 
+				len(set(A_B_C_S_SET_SM.DrugCombCCLE)), 1,
+				inDrop, Drop
+				)
+	#
+	if torch.cuda.is_available():
+		best_model = best_model.cuda()
+		print('model to cuda', flush = True)
+		if torch.cuda.device_count() > 1 :
+			best_model = torch.nn.DataParallel(best_model)
+			print('model to multi cuda', flush = True)
+	device = "cuda:0" if torch.cuda.is_available() else "cpu"
+	#
+	if torch.cuda.is_available():
+		state_dict = torch.load(os.path.join(model_path, model_name))
+	else:
+		state_dict = torch.load(os.path.join(model_path, model_name), map_location=torch.device('cpu'))
+	#
+	print("state_dict_done", flush = True)
+	if type(state_dict) == tuple:
+		best_model.load_state_dict(state_dict[0])
+	else : 
+		best_model.load_state_dict(state_dict)	#
+	print("state_load_done", flush = True)
+	#
+	#
+	last_loss, val_pc, val_sc, pred_list, ans_list = inner_test(test_loader, best_model)
+	R__1 , R__2 = jy_corrplot(pred_list, ans_list, PRJ_PATH, 'P.{}.{}.{}.{}_model'.format(PRJ_NAME, MISS_NAME, CV_num, model_num) )
+	return  last_loss, R__1, R__2, pred_list, ans_list
+
+
+
+
+
+
+WORK_NAME = 'WORK_34' # 349
+W_NAME = 'W34'
+PRJ_NAME = 'M3V5'
+MJ_NAME = 'M3V5'
+MISS_NAME = 'MIS2'
+PPI_NAME = '349'
+
+WORK_PATH = '/home01/k040a01/02.M3V5/M3V5_W34_349_MIS2/'
+
+
+PRJ_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/{}_{}_{}_{}/'.format(PRJ_NAME, W_NAME, PPI_NAME, MISS_NAME)
+ANA_DF = pd.read_csv(PRJ_PATH+'RAY_ANA_DF.{}_{}_{}_{}.csv'.format(PRJ_NAME, W_NAME, PPI_NAME, MISS_NAME))
+with open(PRJ_PATH+'RAY_ANA_DF.{}_{}_{}_{}.pickle'.format(PRJ_NAME, W_NAME, PPI_NAME, MISS_NAME), 'rb') as f:
+	ANA_ALL_DF = pickle.load(f)
+
+
+epc_result = pd.read_csv(PRJ_PATH+"RAY_ANA_DF.{}_{}_{}_{}.resDF".format(MJ_NAME, W_NAME, PPI_NAME, MISS_NAME, MJ_NAME, W_NAME, PPI_NAME, MISS_NAME))
+
+
+my_config = ANA_DF.loc[0]
+
+
+plot_three(
+	"5CV",
+	list(epc_result.T_LS_mean), list(epc_result.V_LS_mean), 
+	list(epc_result.V_PC_mean), list(epc_result.V_PC_mean), 
+	list(epc_result.V_SC_mean), list(epc_result.V_SC_mean), 
+	PRJ_PATH, '{}_{}_{}'.format(MJ_NAME, MISS_NAME, WORK_NAME) )
+
+
+
+0) Full 
+
+R_0_T_CV0, R_0_1_CV0, R_0_2_CV0, pred_0_CV0, ans_0_CV0 = TEST_CPU(PRJ_PATH, 'CV_0', my_config, PRJ_PATH, 'full_CV_0_model.pth', 'full')
+R_0_T_CV1, R_0_1_CV1, R_0_2_CV1, pred_0_CV1, ans_0_CV1 = TEST_CPU(PRJ_PATH, 'CV_1', my_config, PRJ_PATH, 'full_CV_1_model.pth', 'full')
+R_0_T_CV2, R_0_1_CV2, R_0_2_CV2, pred_0_CV2, ans_0_CV2 = TEST_CPU(PRJ_PATH, 'CV_2', my_config, PRJ_PATH, 'full_CV_2_model.pth', 'full')
+R_0_T_CV3, R_0_1_CV3, R_0_2_CV3, pred_0_CV3, ans_0_CV3 = TEST_CPU(PRJ_PATH, 'CV_3', my_config, PRJ_PATH, 'full_CV_3_model.pth', 'full')
+R_0_T_CV4, R_0_1_CV4, R_0_2_CV4, pred_0_CV4, ans_0_CV4 = TEST_CPU(PRJ_PATH, 'CV_4', my_config, PRJ_PATH, 'full_CV_4_model.pth', 'full')
+
+
+
+
+1) min loss
+
+min(epc_result.sort_values('V_LS_mean')['V_LS_mean']) ; min_VLS = min(epc_result.sort_values('V_LS_mean')['V_LS_mean'])
+KEY_EPC = epc_result[epc_result.V_LS_mean == min_VLS].index.item()
+checkpoint = "/checkpoint_"+str(KEY_EPC).zfill(6)
+
+R_1_T_CV0, R_1_1_CV0, R_1_2_CV0, pred_1_CV0, ans_1_CV0 = TEST_CPU(PRJ_PATH, 'CV_0', my_config, PRJ_PATH, 'VLS_CV_0_model.pth', 'VLS')
+R_1_T_CV1, R_1_1_CV1, R_1_2_CV1, pred_1_CV1, ans_1_CV1 = TEST_CPU(PRJ_PATH, 'CV_1', my_config, PRJ_PATH, 'VLS_CV_1_model.pth', 'VLS')
+R_1_T_CV2, R_1_1_CV2, R_1_2_CV2, pred_1_CV2, ans_1_CV2 = TEST_CPU(PRJ_PATH, 'CV_2', my_config, PRJ_PATH, 'VLS_CV_2_model.pth', 'VLS')
+R_1_T_CV3, R_1_1_CV3, R_1_2_CV3, pred_1_CV3, ans_1_CV3 = TEST_CPU(PRJ_PATH, 'CV_3', my_config, PRJ_PATH, 'VLS_CV_3_model.pth', 'VLS')
+R_1_T_CV4, R_1_1_CV4, R_1_2_CV4, pred_1_CV4, ans_1_CV4 = TEST_CPU(PRJ_PATH, 'CV_4', my_config, PRJ_PATH, 'VLS_CV_4_model.pth', 'VLS')
+
+
+
+2) PC best 
+
+epc_result.sort_values('V_PC_mean', ascending = False) 
+max(epc_result['V_PC_mean']); max_VPC = max(epc_result['V_PC_mean'])
+KEY_EPC = epc_result[epc_result.V_PC_mean == max_VPC].index.item()
+checkpoint = "/checkpoint_"+str(KEY_EPC).zfill(6)
+
+R_2_T_CV0, R_2_1_CV0, R_2_2_CV0, pred_2_CV0, ans_2_CV0 = TEST_CPU(PRJ_PATH, 'CV_0', my_config, PRJ_PATH, 'VPC_CV_0_model.pth', 'VPC')
+R_2_T_CV1, R_2_1_CV1, R_2_2_CV1, pred_2_CV1, ans_2_CV1 = TEST_CPU(PRJ_PATH, 'CV_1', my_config, PRJ_PATH, 'VPC_CV_1_model.pth', 'VPC')
+R_2_T_CV2, R_2_1_CV2, R_2_2_CV2, pred_2_CV2, ans_2_CV2 = TEST_CPU(PRJ_PATH, 'CV_2', my_config, PRJ_PATH, 'VPC_CV_2_model.pth', 'VPC')
+R_2_T_CV3, R_2_1_CV3, R_2_2_CV3, pred_2_CV3, ans_2_CV3 = TEST_CPU(PRJ_PATH, 'CV_3', my_config, PRJ_PATH, 'VPC_CV_3_model.pth', 'VPC')
+R_2_T_CV4, R_2_1_CV4, R_2_2_CV4, pred_2_CV4, ans_2_CV4 = TEST_CPU(PRJ_PATH, 'CV_4', my_config, PRJ_PATH, 'VPC_CV_4_model.pth', 'VPC')
+
+
+3) SC best 
+
+epc_result.sort_values('V_SC_mean', ascending = False) 
+max(epc_result['V_SC_mean']); max_VSC = max(epc_result['V_SC_mean'])
+KEY_EPC = epc_result[epc_result.V_SC_mean == max_VSC].index.item()
+checkpoint = "/checkpoint_"+str(KEY_EPC).zfill(6)
+
+R_3_T_CV0, R_3_1_CV0, R_3_2_CV0, pred_3_CV0, ans_3_CV0 = TEST_CPU(PRJ_PATH, 'CV_0', my_config, PRJ_PATH, 'VSC_CV_0_model.pth', 'VSC')
+R_3_T_CV1, R_3_1_CV1, R_3_2_CV1, pred_3_CV1, ans_3_CV1 = TEST_CPU(PRJ_PATH, 'CV_1', my_config, PRJ_PATH, 'VSC_CV_1_model.pth', 'VSC')
+R_3_T_CV2, R_3_1_CV2, R_3_2_CV2, pred_3_CV2, ans_3_CV2 = TEST_CPU(PRJ_PATH, 'CV_2', my_config, PRJ_PATH, 'VSC_CV_2_model.pth', 'VSC')
+R_3_T_CV3, R_3_1_CV3, R_3_2_CV3, pred_3_CV3, ans_3_CV3 = TEST_CPU(PRJ_PATH, 'CV_3', my_config, PRJ_PATH, 'VSC_CV_3_model.pth', 'VSC')
+R_3_T_CV4, R_3_1_CV4, R_3_2_CV4, pred_3_CV4, ans_3_CV4 = TEST_CPU(PRJ_PATH, 'CV_4', my_config, PRJ_PATH, 'VSC_CV_4_model.pth', 'VSC')
+
+
+# 원래거 찾아가기 
+
+ABCS_test_0 = A_B_C_S_SET_SM[A_B_C_S_SET_SM.SM_C_CHECK.isin(CV_ND_INDS['CV0_test'])]
+ABCS_test_1 = A_B_C_S_SET_SM[A_B_C_S_SET_SM.SM_C_CHECK.isin(CV_ND_INDS['CV1_test'])]
+ABCS_test_2 = A_B_C_S_SET_SM[A_B_C_S_SET_SM.SM_C_CHECK.isin(CV_ND_INDS['CV2_test'])]
+ABCS_test_3 = A_B_C_S_SET_SM[A_B_C_S_SET_SM.SM_C_CHECK.isin(CV_ND_INDS['CV3_test'])]
+ABCS_test_4 = A_B_C_S_SET_SM[A_B_C_S_SET_SM.SM_C_CHECK.isin(CV_ND_INDS['CV4_test'])]
+
+이 순서랑 맞는지 다시 한번만 확인해보기 synergy 값(진짜 index, answer 값)
+못찾는다는 사실을 알아버리고 절망 대잔치다 진짜 ㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋ
+후하 ㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋ
+아맞다 이래서 그림 예시 못그렸지 참 
+시발 
+ㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋㅋ
+밤에 그려볼 수 있으려나
+밤새야하나 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

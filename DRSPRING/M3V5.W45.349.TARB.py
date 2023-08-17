@@ -1,3 +1,4 @@
+# only basal 
 
 import rdkit
 import os
@@ -273,7 +274,7 @@ len(set(A_B_C_S_SET_ADD2['SM_C_CHECK'])) # 307315
 len(set(A_B_C_S_SET_ADD2['SIG_SIG_CCLE'])) # 8756
 
 A_B_C_S_SET_ADD3 = A_B_C_S_SET_ADD2[['ori_index','CID_CID','CID_CID_CCLE','SM_C_CHECK','SIG_SIG','SIG_SIG_CCLE', 'DrugCombCCLE','Basal_Exp', 'SYN_OX', 'T1OX', 'ONEIL','type']]
-dup_index = A_B_C_S_SET_ADD2[['CID_CID','CID_CID_CCLE','SM_C_CHECK','SIG_SIG','SIG_SIG_CCLE','Basal_Exp', 'SYN_OX', 'T1OX', 'ONEIL','type']].duplicated()== False
+dup_index = A_B_C_S_SET_ADD2[['CID_CID','CID_CID_CCLE','SM_C_CHECK','Basal_Exp', 'SYN_OX', 'T1OX', 'ONEIL','type']].duplicated()== False
 A_B_C_S_SET_ADD4 = A_B_C_S_SET_ADD3[dup_index] # 309004 -> 308456
 
 
@@ -1268,12 +1269,8 @@ tail ~/logs/M3V5W34_GPU4_12727.log
 tail ~/logs/M3V5W34_GPU1_12728.log
 
 
-tail /home01/k040a01/02.M3V5/M3V5_W34_349_MIS2/RESULT.G4.CV03.txt -n 100 # 0.352, 0.336, 0.318, 0.318 
-tail /home01/k040a01/02.M3V5/M3V5_W34_349_MIS2/RESULT.G4.CV03.RE2.txt -n 100 # 0.306, 0.306, 0.348, 0.371
-
-tail /home01/k040a01/02.M3V5/M3V5_W34_349_MIS2/RESULT.G1.CV4.RE.txt -n 100 # 0.311506
-tail /home01/k040a01/02.M3V5/M3V5_W34_349_MIS2/RESULT.G1.CV4.RE2.txt -n 100 # 0.348782
-tail /home01/k040a01/02.M3V5/M3V5_W34_349_MIS2/RESULT.G1.CV4.RE22.txt -n 100 # 0.348782
+tail /home01/k040a01/02.M3V5/M3V5_W45_349_MIS2/RESULT.G4.CV03.txt -n 100 # 0.352, 0.336, 0.318, 0.318 
+tail /home01/k040a01/02.M3V5/M3V5_W45_349_MIS2/RESULT.G1.CV4.txt -n 100 # 0.311506
 
 
 
@@ -1324,3 +1321,170 @@ np.std([0.705415, 0.712359, 0.687922, 0.70234, 0.71795]) # 0.010203615543521796
 
 
 have to draw the loss plot 
+
+
+
+
+
+
+
+import pandas as pd 
+import matplotlib.pyplot as plt
+from ray.tune import ExperimentAnalysis
+from ray.tune import Analysis
+import pickle
+import math
+import torch
+import os 
+import copy
+
+
+
+
+WORK_NAME = 'WORK_45' # 349
+W_NAME = 'W45'
+MJ_NAME = 'M3V5'
+MISS_NAME = 'MIS2'
+PPI_NAME = '349'
+
+WORK_PATH = '/home01/k040a01/02.M3V5/M3V5_W45_349_MIS2/'
+
+WORK_DATE = '23.06.12' # 349
+anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
+
+list_dir = os.listdir(anal_dir)
+exp_json = [a for a in list_dir if 'experiment_state' in a]
+exp_json
+anal_df = ExperimentAnalysis(os.path.join(anal_dir, exp_json[1]))
+
+ANA_DF_1 = anal_df.dataframe()
+ANA_ALL_DF_1 = anal_df.trial_dataframes
+
+
+
+ANA_DF = ANA_DF_1
+ANA_ALL_DF= ANA_ALL_DF_1
+
+
+
+cv0_key = ANA_DF['logdir'][0] ;	cv1_key = ANA_DF['logdir'][1]; 	cv2_key = ANA_DF['logdir'][2] ;	cv3_key = ANA_DF['logdir'][3]; #cv4_key = ANA_DF['logdir'][4];
+
+epc_T_LS_mean = np.mean([
+	ANA_ALL_DF[cv0_key]['T_LS'][0:450], ANA_ALL_DF[cv1_key]['T_LS'][0:450],ANA_ALL_DF[cv2_key]['T_LS'][0:450], ANA_ALL_DF[cv3_key]['T_LS'][0:450]], axis = 0) # , ANA_ALL_DF[cv4_key]['T_LS']
+epc_T_LS_std = np.std([
+	ANA_ALL_DF[cv0_key]['T_LS'][0:450], ANA_ALL_DF[cv1_key]['T_LS'][0:450],ANA_ALL_DF[cv2_key]['T_LS'][0:450], ANA_ALL_DF[cv3_key]['T_LS'][0:450]], axis = 0) # , ANA_ALL_DF[cv4_key]['T_LS']
+
+epc_T_PC_mean = np.mean([
+	ANA_ALL_DF[cv0_key]['T_PC'][0:450], ANA_ALL_DF[cv1_key]['T_PC'][0:450],ANA_ALL_DF[cv2_key]['T_PC'][0:450], ANA_ALL_DF[cv3_key]['T_PC'][0:450]], axis = 0) # , ANA_ALL_DF[cv4_key]['T_PC']
+epc_T_PC_std = np.std([
+	ANA_ALL_DF[cv0_key]['T_PC'][0:450], ANA_ALL_DF[cv1_key]['T_PC'][0:450],ANA_ALL_DF[cv2_key]['T_PC'][0:450], ANA_ALL_DF[cv3_key]['T_PC'][0:450]], axis = 0) # , ANA_ALL_DF[cv4_key]['T_PC']
+
+epc_T_SC_mean = np.mean([
+	ANA_ALL_DF[cv0_key]['T_SC'][0:450], ANA_ALL_DF[cv1_key]['T_SC'][0:450],ANA_ALL_DF[cv2_key]['T_SC'][0:450], ANA_ALL_DF[cv3_key]['T_SC'][0:450]], axis = 0) # , ANA_ALL_DF[cv4_key]['T_SC']
+epc_T_SC_std = np.std([
+	ANA_ALL_DF[cv0_key]['T_SC'][0:450], ANA_ALL_DF[cv1_key]['T_SC'][0:450],ANA_ALL_DF[cv2_key]['T_SC'][0:450], ANA_ALL_DF[cv3_key]['T_SC'][0:450]], axis = 0) # , ANA_ALL_DF[cv4_key]['T_SC']
+
+epc_V_LS_mean = np.mean([
+	ANA_ALL_DF[cv0_key]['V_LS'][0:450], ANA_ALL_DF[cv1_key]['V_LS'][0:450],ANA_ALL_DF[cv2_key]['V_LS'][0:450], ANA_ALL_DF[cv3_key]['V_LS'][0:450]], axis = 0) # , ANA_ALL_DF[cv4_key]['V_LS']
+epc_V_LS_std = np.std([
+	ANA_ALL_DF[cv0_key]['V_LS'][0:450], ANA_ALL_DF[cv1_key]['V_LS'][0:450],ANA_ALL_DF[cv2_key]['V_LS'][0:450], ANA_ALL_DF[cv3_key]['V_LS'][0:450]], axis = 0) # , ANA_ALL_DF[cv4_key]['V_LS']
+
+epc_V_PC_mean = np.mean([
+	ANA_ALL_DF[cv0_key]['V_PC'][0:450], ANA_ALL_DF[cv1_key]['V_PC'][0:450],ANA_ALL_DF[cv2_key]['V_PC'][0:450], ANA_ALL_DF[cv3_key]['V_PC'][0:450]], axis = 0) # , ANA_ALL_DF[cv4_key]['V_PC']
+epc_V_PC_std = np.std([
+	ANA_ALL_DF[cv0_key]['V_PC'][0:450], ANA_ALL_DF[cv1_key]['V_PC'][0:450],ANA_ALL_DF[cv2_key]['V_PC'][0:450], ANA_ALL_DF[cv3_key]['V_PC'][0:450]], axis = 0) # , ANA_ALL_DF[cv4_key]['V_PC']
+
+epc_V_SC_mean = np.mean([
+	ANA_ALL_DF[cv0_key]['V_SC'][0:450], ANA_ALL_DF[cv1_key]['V_SC'][0:450],ANA_ALL_DF[cv2_key]['V_SC'][0:450], ANA_ALL_DF[cv3_key]['V_SC'][0:450]], axis = 0) # , ANA_ALL_DF[cv4_key]['V_SC']
+epc_V_SC_std = np.std([
+	ANA_ALL_DF[cv0_key]['V_SC'][0:450], ANA_ALL_DF[cv1_key]['V_SC'][0:450],ANA_ALL_DF[cv2_key]['V_SC'][0:450], ANA_ALL_DF[cv3_key]['V_SC'][0:450]], axis = 0) # , ANA_ALL_DF[cv4_key]['V_SC']
+
+
+epc_result = pd.DataFrame({
+	'T_LS_mean' : epc_T_LS_mean, 'T_PC_mean' : epc_T_PC_mean, 'T_SC_mean' : epc_T_SC_mean, 
+	'T_LS_std' : epc_T_LS_std, 'T_PC_std' : epc_T_PC_std, 'T_SC_std' : epc_T_SC_std, 
+	'V_LS_mean' : epc_V_LS_mean, 'V_PC_mean' : epc_V_PC_mean, 'V_SC_mean' : epc_V_SC_mean, 
+	'V_LS_std' : epc_V_LS_std, 'V_PC_std' : epc_V_PC_std, 'V_SC_std' : epc_V_SC_std,
+})
+
+epc_result[['T_LS_mean', 'T_LS_std', 'T_PC_mean', 'T_PC_std','T_SC_mean','T_SC_std', 'V_LS_mean', 'V_LS_std', 'V_PC_mean', 'V_PC_std','V_SC_mean','V_SC_std']].to_csv("/home01/k040a01/02.M3V5/{}_{}_{}_{}/RAY_ANA_DF.{}_{}_{}_{}.resDF".format(MJ_NAME, W_NAME, PPI_NAME, MISS_NAME, MJ_NAME, W_NAME, PPI_NAME, MISS_NAME))
+
+"/home01/k040a01/02.M3V5/{}_{}_{}_{}/RAY_ANA_DF.{}_{}_{}_{}.resDF".format(MJ_NAME, W_NAME, PPI_NAME, MISS_NAME, MJ_NAME, W_NAME, PPI_NAME, MISS_NAME)
+      
+
+
+1) min loss # 401
+
+min(epc_result.sort_values('V_LS_mean')['V_LS_mean']) ; min_VLS = min(epc_result.sort_values('V_LS_mean')['V_LS_mean'])
+KEY_EPC = epc_result[epc_result.V_LS_mean == min_VLS].index.item()
+checkpoint = "/checkpoint_"+str(KEY_EPC).zfill(6)
+VLS_cv0_PATH = cv0_key + checkpoint
+VLS_cv0_PATH
+VLS_cv1_PATH = cv1_key + checkpoint
+VLS_cv1_PATH
+VLS_cv2_PATH = cv2_key + checkpoint
+VLS_cv2_PATH
+VLS_cv3_PATH = cv3_key + checkpoint
+VLS_cv3_PATH
+VLS_cv4_PATH = cv4_key + checkpoint
+VLS_cv4_PATH
+
+KEY_EPC
+round(epc_result.loc[KEY_EPC].V_LS_mean,3)
+round(epc_result.loc[KEY_EPC].V_LS_std,3)
+
+
+
+2) PC best  # 734
+
+epc_result.sort_values('V_PC_mean', ascending = False) 
+max(epc_result['V_PC_mean']); max_VPC = max(epc_result['V_PC_mean'])
+KEY_EPC = epc_result[epc_result.V_PC_mean == max_VPC].index.item()
+checkpoint = "/checkpoint_"+str(KEY_EPC).zfill(6)
+VPC_cv0_PATH = cv0_key + checkpoint
+VPC_cv0_PATH
+VPC_cv1_PATH = cv1_key + checkpoint
+VPC_cv1_PATH
+VPC_cv2_PATH = cv2_key + checkpoint
+VPC_cv2_PATH
+VPC_cv3_PATH = cv3_key + checkpoint
+VPC_cv3_PATH
+VPC_cv4_PATH = cv4_key + checkpoint
+VPC_cv4_PATH
+
+KEY_EPC
+round(epc_result.loc[KEY_EPC].V_PC_mean,3)
+round(epc_result.loc[KEY_EPC].V_PC_std,3)
+
+
+
+3) SC best # 790
+
+epc_result.sort_values('V_SC_mean', ascending = False) 
+max(epc_result['V_SC_mean']); max_VSC = max(epc_result['V_SC_mean'])
+KEY_EPC = epc_result[epc_result.V_SC_mean == max_VSC].index.item()
+checkpoint = "/checkpoint_"+str(KEY_EPC).zfill(6)
+VSC_cv0_PATH = cv0_key + checkpoint
+VSC_cv0_PATH
+VSC_cv1_PATH = cv1_key + checkpoint
+VSC_cv1_PATH
+VSC_cv2_PATH = cv2_key + checkpoint
+VSC_cv2_PATH
+VSC_cv3_PATH = cv3_key + checkpoint
+VSC_cv3_PATH
+VSC_cv4_PATH = cv4_key + checkpoint
+VSC_cv4_PATH
+
+
+
+KEY_EPC
+round(epc_result.loc[KEY_EPC].V_SC_mean,3)
+round(epc_result.loc[KEY_EPC].V_SC_std,3)
+
+
+
+
+
+
+
+
