@@ -428,8 +428,8 @@ def make_input_data (SM_A, SM_B, CELL):
     drug2_f, drug2_a = make_rdkit_var(SM_B)
     #
     CID_A = check_CID(SM_A)
-    # CID_B = check_CID(SM_B)
-    CID_B = 9887053
+    CID_B = check_CID(SM_B)
+    #CID_B = 9887053
     #
     print('Drug A EXP')
     expA = get_EXP_DATA(CID_A, CELL)
@@ -540,11 +540,29 @@ for CELL in avail_cell_list:
     SM_B = 'C1CCC(C(C1)[NH-])[NH-].C(=O)(C(=O)O)O.[Pt+2]' # 9887053
     pred_synergy_single(my_config, SM_A, SM_B, CELL)
 
+for CELL in avail_cell_list:
+    print(CELL)
+    SM_A = 'C1C(N(C2=C(N1)N=C(NC2=O)N)C=O)CNC3=CC=C(C=C3)C(=O)NC(CCC(=O)O)C(=O)O' # 135402009 & 135403648
+    SM_B = 'C1CCC(C(C1)[NH-])[NH-].C(=O)(C(=O)O)O.[Pt+2]' # 9887053
+    pred_synergy_single(my_config, SM_A, SM_B, CELL)
 
-SM_A = 'CCCCCOC(=O)NC1=NC(=O)N(C=C1F)[C@H]2[C@@H]([C@@H]([C@H](O2)C)O)O'
 
-400633
+for CELL in avail_cell_list:
+    print(CELL)
+    SM_A = 'C1C(N(C2=C(N1)N=C(NC2=O)N)C=O)CNC3=CC=C(C=C3)C(=O)NC(CCC(=O)O)C(=O)O' # 135402009 & 135403648
+    SM_B = 'CCC1=C2CN3C(=CC4=C(C3=O)COC(=O)[C@@]4(CC)O)C2=NC5=C1C=C(C=C5)OC(=O)N6CCC(CC6)N7CCCCC7' # 60838
+    pred_synergy_single(my_config, SM_A, SM_B, CELL)
 
+
+
+
+
+
+SM_A = 'CCC1=C2CN3C(=CC4=C(C3=O)COC(=O)C4(CC)O)C2=NC5=C1C=C(C=C5)OC(=O)N6CCC(CC6)N7CCCCC7'
+CID_A = check_CID(SM_A)
+
+SM_A = 'CCC1=C2CN3C(=CC4=C(C3=O)COC(=O)[C@@]4(CC)O)C2=NC5=C1C=C(C=C5)OC(=O)N6CCC(CC6)N7CCCCC7'
+CID_A = check_CID(SM_A)
 
 
 

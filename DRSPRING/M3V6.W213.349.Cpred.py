@@ -2115,6 +2115,10 @@ pred_df[(pred_df.ROW_CID==60749 ) & (pred_df.COL_CID==24964624   )]
 pred_df[(pred_df.ROW_CID==24964624   ) & (pred_df.COL_CID==60749 )]
 
 
+pred_df[(pred_df.ROW_CID==41867 ) & (pred_df.COL_CID==5702198   )]
+pred_df[(pred_df.ROW_CID==5702198   ) & (pred_df.COL_CID==41867 )]
+
+
 
 
 
