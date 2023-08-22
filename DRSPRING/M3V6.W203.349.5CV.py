@@ -317,6 +317,7 @@ MY_syn_RE2 = MY_syn_RE[data_ind]
 A_B_C_S_SET_COH2 = pd.merge(A_B_C_S_SET_COH, DC_CELL_info_filt_re[['DC_cellname','cell_onehot']], on = 'DC_cellname', how='left')
 cell_one_hot = torch.nn.functional.one_hot(torch.Tensor(A_B_C_S_SET_COH2['cell_onehot']).long())
 
+print(A_B_C_S_SET_COH2.shape)
 
 
 print('CIDs', flush = True)
@@ -324,10 +325,8 @@ tmp = list(set(A_B_C_S_SET_COH2.CID_CID))
 tmp2 = sum([a.split('___') for a in tmp],[])
 print(len(set(tmp2)) , flush = True)
 
-
 print('CID_CID', flush = True)
 print(len(set(A_B_C_S_SET_COH2.CID_CID)), flush = True)
-
 
 
 print('CID_CID_CCLE', flush = True)

@@ -338,8 +338,8 @@ filter1 = BETA_SIG_info[BETA_SIG_info.pert_type.isin([ 'trt_cp' ])] # 'ctl_vehic
 
 dose = filter1['pert_idose']
 dose = [a if type(a) == str else 'NA' for a in dose]
-dose_set = list(set(dose))
-dose_set.sort()
+#dose_set = list(set(dose))
+#dose_set.sort()
 
 time = filter1['pert_itime']
 time = [a if type(a) == str else 'NA' for a in time]
