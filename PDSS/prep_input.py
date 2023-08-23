@@ -7,6 +7,10 @@ import torch_geometric.nn as pyg_nn
 from torch.utils.data import Dataset
 import networkx as nx
 
+
+
+
+
 #  0 ) graph generation 
 
 
@@ -107,10 +111,11 @@ def make_rdkit_var(SMILES) :
 
 # 2) get exp data 
 
-def get_EXP_DATA(CID, CELL) :
-	LINCS_DATA = pd.read_csv()
+def get_EXP_DATA(CID, CELL, M1_file) :
+	LINCS_DATA = pd.read_csv('./Data')
+	LINCS_EXP = torch.load()
 	try : 
-		M1_DATA = pd.read_csv()
+		M1_DATA = pd.read_csv(M1_file)
 		lincs_tmp = LINCS_DATA[(LINCS_DATA.CID == CID) & (LINCS_DATA.CCLE_Name == CELL)]
 		long_id = str(CID) + '__' + str(CELL)
 		#
@@ -133,7 +138,6 @@ def get_EXP_DATA(CID, CELL) :
 #####################################################
 
 
-
 # 3) TARGET data
 
 def get_targets(CID): # 
@@ -151,8 +155,11 @@ def get_targets(CID): #
 	return torch.Tensor(vec)
 
 
+#####################################################
+
+
 # 4) 이미 있는 CCLE 사용 원할 시 
-def get_CCLE(CELL) : # 근데 어차피 새 CCLE 값 받는걸로 고쳐야함 
+def get_CCLE(CELL) : 
 	BETA_ENTREZ_ORDER_str = [str(a) for a in BETA_ENTREZ_ORDER]
 	if CELL in list(BASAL_DATA.DrugCombCCLE) : 
 		ccle_exp_df = BASAL_DATA[BASAL_DATA.DrugCombCCLE==CELL][BETA_ENTREZ_ORDER_str]
@@ -160,6 +167,20 @@ def get_CCLE(CELL) : # 근데 어차피 새 CCLE 값 받는걸로 고쳐야함
 	else : 
 		print("no data in our ccle")
 		ccle_result = [0]*349
+	#
+	return ccle_result
+
+
+
+
+
+# 5) 새 CCLE 값 받는걸로 진행하는 경우
+def get_New_CCLE(new_ccle_path) : 
+	BETA_ENTREZ_ORDER_str = [str(a) for a in BETA_ENTREZ_ORDER]
+	new_ccle = pd.read_csv(new_ccle_path)
+	new_ccle.columns = [str(int(a)) for a in new_ccle.columns]
+	new_ccle = new_ccle[BETA_ENTREZ_ORDER_str]
+	ccle_result = torch.Tensor(list(new_ccle.T.iloc[:,0])).view(349,1)
 	#
 	return ccle_result
 
@@ -200,18 +221,35 @@ def make_simple_input_data (SM_A, SM_B, CELL):
 	expA = get_EXP_DATA(CID_A, CELL)
 	print('Drug B EXP')
 	expB = get_EXP_DATA(CID_B, CELL)
+	#
 	targetA = get_targets(CID_A)
 	targetB = get_targets(CID_B)
+	#
 	basal = get_CCLE(CELL)
 	FEAT_A = torch.Tensor(np.array([ expA.squeeze().tolist() , targetA.squeeze().tolist(), basal.squeeze().tolist()]).T)
-	FEAT_A = FEAT_A.view(-1,3)#### 다른점 
+	FEAT_A = FEAT_A.view(-1,3)
 	FEAT_B = torch.Tensor(np.array([ expB.squeeze().tolist() , targetB.squeeze().tolist(), basal.squeeze().tolist()]).T)
-	FEAT_B = FEAT_B.view(-1,3)#### 다른점 
+	FEAT_B = FEAT_B.view(-1,3)
 	#
 	adj = copy.deepcopy(G_ADJ_IDX).long()
 	adj_w = torch.Tensor(G_IDX_WEIGHT).squeeze()
 	#
 	return drug1_f, drug2_f, drug1_a, drug2_a, FEAT_A, FEAT_B, adj, adj_w
+
+
+
+
+def make_input_by_cell (SM_A, SM_B):
+	pre_cells = ['HCC1500_BREAST', 'G361_SKIN', 'UACC62_SKIN', 'SKOV3_OVARY', 'T47D_BREAST', 'SKMEL30_SKIN', 'RPMI8226_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE', 'KPL1_BREAST', 'MDAMB468_BREAST', 'A498_KIDNEY', 'EKVX_LUNG', 'RPMI7951_SKIN', 'MDAMB175VII_BREAST', 'UO31_KIDNEY', 'MDAMB436_BREAST', 'NCIH522_LUNG', 'OV90_OVARY', 'SKMEL2_SKIN', 'LOXIMVI_SKIN', 'WM115_SKIN', 'NCIH460_LUNG', '786O_KIDNEY', 'NCIH1650_LUNG', 'NIHOVCAR3_OVARY', 'A2780_OVARY', 'UWB1289_OVARY', 'A673_BONE', 'NCIH226_LUNG', 'COLO829_SKIN', 'HCT15_LARGE_INTESTINE', 'BT474_BREAST', 'PA1_OVARY', 'SF268_CENTRAL_NERVOUS_SYSTEM', 'OVCAR5_OVARY', 'SKMES1_LUNG', 'CAOV3_OVARY', 'SW620_LARGE_INTESTINE', 'KM12_LARGE_INTESTINE', 'COLO800_SKIN', 'U251MG_CENTRAL_NERVOUS_SYSTEM', 'HCC1419_BREAST', 'HOP92_LUNG', 'A101D_SKIN', 'HS578T_BREAST', 'CAMA1_BREAST', 'UACC257_SKIN', 'LOVO_LARGE_INTESTINE', 'A549_LUNG', 'SNB75_CENTRAL_NERVOUS_SYSTEM', 'SW837_LARGE_INTESTINE', 'MCF7_BREAST', 'A427_LUNG', 'IGROV1_OVARY', 'NCIH520_LUNG', 'IPC298_SKIN', 'MEWO_SKIN', 'RKO_LARGE_INTESTINE', 'OVCAR4_OVARY', 'ZR751_BREAST', 'OVCAR8_OVARY', 'HCT116_LARGE_INTESTINE', 'COLO792_SKIN', 'MSTO211H_PLEURA', 'CAKI1_KIDNEY', 'SR786_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE', 'K562_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE', 'VCAP_PROSTATE', 'HT144_SKIN', 'MDAMB231_BREAST', 'T98G_CENTRAL_NERVOUS_SYSTEM', 'ES2_OVARY', 'SF539_CENTRAL_NERVOUS_SYSTEM', 'RVH421_SKIN', 'UACC812_BREAST', 'HT29_LARGE_INTESTINE', 'UHO1_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE', 'BT549_BREAST', 'L1236_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE', 'NCIH2122_LUNG', 'A375_SKIN', 'SKMEL28_SKIN', 'MALME3M_SKIN', 'NCIH23_LUNG', 'SF295_CENTRAL_NERVOUS_SYSTEM', 'PC3_PROSTATE', 'SKMEL5_SKIN', 'MDAMB361_BREAST', 'ACHN_KIDNEY', 'MELHO_SKIN', 'DLD1_LARGE_INTESTINE', 'A2058_SKIN', 'HOP62_LUNG']
+	pre_c_dict = {}
+for precell in pre_cells :
+	pre_c_dict[precell] = make_simple_input_data(SM_A, SM_B, precell)
+	
+
+SM_A = 'C1C(N(C2=C(N1)N=C(NC2=O)N)C=O)CNC3=CC=C(C=C3)C(=O)NC(CCC(=O)O)C(=O)O'
+SM_B = 'C1=C(C(=O)NC(=O)N1)F'
+		
+
 
 
 
@@ -300,8 +338,7 @@ MY_g_EXP_A_RE2, MY_g_EXP_B_RE2, MY_Target_A2, MY_Target_B2, MY_CellBase_RE2, MY_
 
 class DATASET_GCN_W_FT(Dataset):
 	def __init__(self, gcn_drug1_F, gcn_drug2_F, gcn_drug1_ADJ, gcn_drug2_ADJ, 
-	gcn_gene_A, gcn_gene_B, target_A, target_B, cell_basal, gcn_adj, gcn_adj_weight, 
-	syn_ans ):
+	gcn_gene_A, gcn_gene_B, target_A, target_B, cell_basal, gcn_adj, gcn_adj_weight, syn_ans ):
 		self.gcn_drug1_F = gcn_drug1_F
 		self.gcn_drug2_F = gcn_drug2_F
 		self.gcn_drug1_ADJ = gcn_drug1_ADJ
@@ -368,18 +405,12 @@ def graph_collate_fn(batch):
 	return drug1_f_new, drug2_f_new, drug1_adj_new, drug2_adj_new, expA_new, expB_new, exp_adj_new, exp_adj_w_new, y_new
 
 
-train_data, val_data, test_data = prepare_data_GCN(
-	A_B_C_S_SET_SM, MY_chem_A_feat_RE2, MY_chem_B_feat_RE2, MY_chem_A_adj_RE2, MY_chem_B_adj_RE2, 
-	MY_g_EXP_A_RE2, MY_g_EXP_B_RE2, MY_Target_A2, MY_Target_B2, MY_CellBase_RE2, MY_syn_RE2)
 
 
-
-
-def get_loss_weight() :
-	train_data = globals()['train_data']
-	ys = train_data['y'].squeeze().tolist()
+def get_loss_weight(T_train) :
+	ys = T_train.syn_ans.squeeze().tolist()
 	min_s = np.amin(ys)
-	loss_weight = np.log(train_data['y'] - min_s + np.e)
+	loss_weight = np.log(ys - min_s + np.e)
 	return loss_weight
 
 
@@ -387,6 +418,10 @@ def get_loss_weight() :
 # DATA check  
 def make_merged_data() :
 	MY_G, G_ADJ_IDX, G_IDX_WEIGHT, _ = define_graph()
+	train_data, val_data, test_data = prepare_data_GCN(
+		A_B_C_S_SET_SM, MY_chem_A_feat_RE2, MY_chem_B_feat_RE2, MY_chem_A_adj_RE2, MY_chem_B_adj_RE2, 
+		MY_g_EXP_A_RE2, MY_g_EXP_B_RE2, MY_Target_A2, MY_Target_B2, MY_CellBase_RE2, MY_syn_RE2
+	)
 	#
 	T_train = DATASET_GCN_W_FT(
 		torch.Tensor(train_data['drug1_feat']), torch.Tensor(train_data['drug2_feat']), 
@@ -420,6 +455,5 @@ def make_merged_data() :
 
 
 
-T_train, T_val, T_test = make_merged_data()
 
 

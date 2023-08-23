@@ -1318,35 +1318,32 @@ import copy
 import numpy as np
 
 
-MJ_NAME = 'M3V7'
+MJ_NAME = 'M3V8'
 PPI_NAME = '349'
 MISS_NAME = 'MIS2'
 
-W_NAME = 'W302'
-WORK_NAME = 'WORK_302' # 349
+W_NAME = 'W402'
+WORK_NAME = 'WORK_402' # 349
 WORK_DATE = '23.08.19' # 349
 
 anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
 list_dir = os.listdir(anal_dir)
 exp_json = [a for a in list_dir if 'experiment_state' in a]
 exp_json
-anal_df = ExperimentAnalysis(os.path.join(anal_dir, exp_json[0]))
-# 301 : 1  / 302 : 0  /
+anal_df = ExperimentAnalysis(os.path.join(anal_dir, exp_json[1]))
+# 301 : 1  / 302 : 0  / 402 : 1 
 
 
 ANA_DF_1 = anal_df.dataframe()
 ANA_ALL_DF_1 = anal_df.trial_dataframes
 
-
-
-
+np.max(ANA_ALL_DF_1[ANA_DF_1.at[8,'logdir']]['AV_V_PC'])
 
 
 # 203 config 
 
 OLD_PATH = '/home01/k040a01/02.M3V6/M3V6_W202_349_MIS2'
 ANA_DF_CSV = pd.read_csv(os.path.join(OLD_PATH,'RAY_ANA_DF.{}.csv'.format('M3V6_W202_349_MIS2')))
-ANA_all = RAY_ANA_DF.M3V6_W202_349_MIS2.pickle
 
 with open(file='{}/RAY_ANA_DF.M3V6_W202_349_MIS2.pickle'.format(OLD_PATH), mode='rb') as f:
 	ANA_all = pickle.load(f)
@@ -1362,14 +1359,27 @@ for key in ANA_all.keys():
 		TOT_key = key
 #
 
-
 mini_df = ANA_all[TOT_key]
-
 
 my_config = ANA_DF_CSV[ANA_DF_CSV.trial_id=='1cf5052a'] # 349 
 
 
+# 
 
+import numpy as np
+TOT_max = -np.Inf
+TOT_key = ""
+for key in ANA_all.keys():
+	trial_max = np.max(ANA_all[key]['AV_V_PC'])
+	if trial_max > TOT_max :
+		TOT_max = trial_max
+		TOT_key = key
+#
+
+mini_df = ANA_all[TOT_key]
+
+round(np.max(mini_df.AV_V_PC), 4)
+round(np.min(mini_df.AV_V_LS), 4)
 
 
 

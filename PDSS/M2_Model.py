@@ -180,15 +180,14 @@ class EarlyStopping:
         return self.patience >= self.patience_limit
 
 
-
-
 def weighted_mse_loss(input, target, weight):
 	return (weight * (input - target) ** 2).mean()
 
+# 이걸 한번더 고쳐야하나 고민 
 
 
 
-def inner_train ( TRAIN_DATA, LOSS_WEIGHT, THIS_MODEL, THIS_OPTIMIZER , use_cuda=False) :
+def inner_train ( TRAIN_DATA, LOSS_WEIGHT, THIS_MODEL, THIS_OPTIMIZER , device) :
 	THIS_MODEL.train()
     #
 	running_loss = 0
@@ -203,13 +202,13 @@ def inner_train ( TRAIN_DATA, LOSS_WEIGHT, THIS_MODEL, THIS_OPTIMIZER , use_cuda
 		expB = expB.view(-1,3)#### 다른점 
 		adj_w = adj_w.squeeze()
 		# move to GPU
-		if use_cuda:
+		if device.type != 'cpu':
 			drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, adj_w, y = drug1_f.cuda(), drug2_f.cuda(), drug1_a.cuda(), drug2_a.cuda(), expA.cuda(), expB.cuda(), adj.cuda(), adj_w.cuda(), y.cuda()
 		# 
 		THIS_OPTIMIZER.zero_grad()
 		output = THIS_MODEL(drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, adj_w, y)
 		wc = torch.Tensor(batch_cut_weight[batch_idx_t]).view(-1,1)
-		if torch.cuda.is_available():
+		if device.type != 'cpu':
 			wc = wc.cuda()
 		loss = weighted_mse_loss(output, y, wc ) # weight 더해주기 
 		loss.backward()
@@ -226,7 +225,7 @@ def inner_train ( TRAIN_DATA, LOSS_WEIGHT, THIS_MODEL, THIS_OPTIMIZER , use_cuda
 
 
 
-def inner_val( VAL_DATA, THIS_MODEL , use_cuda = False) :
+def inner_val( VAL_DATA, THIS_MODEL, device) :
 	THIS_MODEL.eval()
 	#
 	running_loss = 0
@@ -242,7 +241,7 @@ def inner_val( VAL_DATA, THIS_MODEL , use_cuda = False) :
 			expA = expA.view(-1,3)
 			expB = expB.view(-1,3)
 			adj_w = adj_w.squeeze()
-			if use_cuda:
+			if device.type != 'cpu':
 				drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, adj_w, y = drug1_f.cuda(), drug2_f.cuda(), drug1_a.cuda(), drug2_a.cuda(), expA.cuda(), expB.cuda(), adj.cuda(), adj_w.cuda(), y.cuda()
 			output = THIS_MODEL(drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, adj_w, y)
 			loss = MSE(output, y) 
@@ -254,87 +253,91 @@ def inner_val( VAL_DATA, THIS_MODEL , use_cuda = False) :
 	last_loss = running_loss / (batch_idx_v+1)
 	val_sc, _ = stats.spearmanr(pred_list, ans_list)
 	val_pc, _ = stats.pearsonr(pred_list, ans_list)
-	return last_loss, val_pc, val_sc, THIS_MODEL     
+	return last_loss, val_pc, val_sc, THIS_MODEL, ans_list, pred_list
 
 
 
-
-
-# 그래서 그냥 training 하는거만 바꿔주면 될것 같음. 
-# main 에서 진행하는거까지만 진행하면 돌리는거 자체는 문제없을듯? 
-# early stopping 한번만 더 확인하기 
-
-def training_model(config_dict, use_cuda = False) :
-    n_epochs = 500
-    #
+def training_model(save_path, T_train, T_val, T_test, es, device, config_dict) :
+    n_epochs = config_dict['max_epoch']
+    # 
     dsn_layers = [int(a) for a in config_dict["dsn_layer"].split('-') ]
     snp_layers = [int(a) for a in config_dict["snp_layer"].split('-') ]
-    inDrop = config_dict["dropout_1"]
-    Drop = config_dict["dropout_2"]
+    # 
+    train_loader = torch.utils.data.DataLoader(T_train, batch_size = config_dict["batch_size"], collate_fn = graph_collate_fn, shuffle =False, num_workers=16)
+    val_loader = torch.utils.data.DataLoader(T_val, batch_size = config_dict["batch_size"], collate_fn = graph_collate_fn, shuffle =False, num_workers=16)
+    test_loader = torch.utils.data.DataLoader(T_test, batch_size = config_dict["batch_size"], collate_fn = graph_collate_fn, shuffle =False, num_workers=16)
+    loss_weight = get_loss_weight(T_train)
+    batch_cut_weight = [loss_weight[i:i+config_dict["batch_size"]] for i in range(0,len(loss_weight), config_dict["batch_size"])]
     #
     early_stop = EarlyStopping(patience=200)
     #
-    CV_0_batch_cut_weight = [CV_0_loss_weight[i:i+config["batch_size"]] for i in range(0,len(CV_0_loss_weight), config["batch_size"])]
+    THIS_MODEL = M2_Model(
+        config_dict["G_chem_layer"], T_train.gcn_drug1_F.shape[-1] , config_dict["G_chem_hdim"], 
+        config_dict["G_exp_layer"], 3 , config_dict["G_exp_hdim"], 
+        dsn_layers, dsn_layers, snp_layers,  1,  
+        config_dict["dropout_1"], config_dict["dropout_2"] )
     #
-    CV_0_loaders = {
-            'train' : torch.utils.data.DataLoader(CV_0_train, batch_size = config["batch_size"], collate_fn = graph_collate_fn, shuffle =False, num_workers=config['n_workers']),
-            'eval' : torch.utils.data.DataLoader(CV_0_val, batch_size = config["batch_size"], collate_fn = graph_collate_fn, shuffle =False, num_workers=config['n_workers']),
-            'test' : torch.utils.data.DataLoader(CV_0_test, batch_size = config["batch_size"], collate_fn = graph_collate_fn, shuffle =False, num_workers=config['n_workers']),
-            'loss_weight' : CV_0_batch_cut_weight
-    }
-    if torch.cuda.is_available():
-		CV_0_MODEL = CV_0_MODEL.cuda()
+	THIS_MODEL = THIS_MODEL.cuda()
     #
-    CV_0_optimizer = torch.optim.Adam(CV_0_MODEL.parameters(), lr = config["lr"] )
+    THIS_optimizer = torch.optim.Adam(THIS_MODEL.parameters(), lr = config_dict["learning_rate"] )
     #
-    train_loss_all = {}
-	valid_loss_all = {}
-	train_pearson_corr_all = {}
-	train_spearman_corr_all = {}
-	val_pearson_corr_all = {}
-	val_spearman_corr_all = {}
-    #
-	for key in key_list :
-		train_loss_all[key] = []
-		valid_loss_all[key] = []
-		train_pearson_corr_all[key]=[]
-		train_spearman_corr_all[key]=[]
-		val_pearson_corr_all[key] = []
-		val_spearman_corr_all[key] = []
+    train_loss_all = []
+	valid_loss_all = []
+	train_pearson_corr_all = []
+	train_spearman_corr_all = []
+	valid_pearson_corr_all = []
+	valid_spearman_corr_all = []
     #
 	for epoch in range(n_epochs):
 		now = datetime.now()
 		train_loss = 0.0
 		valid_loss = 0.0
 		#
-		cv_0_t_loss, cv_0_t_pc, cv_0_t_sc, CV_0_MODEL, CV_0_optimizer  = inner_train(CV_0_loaders, CV_0_MODEL, CV_0_optimizer, True)
-		train_loss_all['CV_0'].append(cv_0_t_loss)
-		train_pearson_corr_all['CV_0'].append(cv_0_t_pc)
-		train_spearman_corr_all['CV_0'].append(cv_0_t_sc)	
+		train_loss, train_pc, train_sc, THIS_MODEL, THIS_optimizer = inner_train(T_train, loss_weight, THIS_MODEL, THIS_optimizer, device)
+		train_loss_all.append(train_loss)
+		train_pearson_corr_all.append(train_pc)
+		train_spearman_corr_all.append(train_sc)	
         #
-		cv_0_v_loss, cv_0_v_pc, cv_0_v_sc, CV_0_MODEL  = inner_val(CV_0_loaders, CV_0_MODEL, True)
-		valid_loss_all['CV_0'].append(cv_0_v_loss)
-		val_pearson_corr_all['CV_0'].append(cv_0_v_pc)
-		val_spearman_corr_all['CV_0'].append(cv_0_v_sc) 
+		val_loss, val_pc, val_sc, THIS_MODEL, _, _ = inner_val(T_val, THIS_MODEL, device)
+		valid_loss_all.append(val_loss)
+		valid_pearson_corr_all.append(val_pc)
+		valid_spearman_corr_all.append(val_sc) 
 		#    
-		AVG_TRAIN_LOSS = np.mean([cv_0_t_loss, cv_1_t_loss, cv_2_t_loss, cv_3_t_loss, cv_4_t_loss])
-		AVG_T_PC = np.mean([cv_0_t_pc, cv_1_t_pc, cv_2_t_pc, cv_3_t_pc, cv_4_t_pc])
-		AVG_T_SC = np.mean([cv_0_t_sc, cv_1_t_sc, cv_2_t_sc, cv_3_t_sc, cv_4_t_sc])
 		done = datetime.now()
 		time_spent = done-now
-        with tune.checkpoint_dir(step = epoch) as checkpoint_dir:
-            print('trial : {}, epoch : {}, TrainLoss : {}, ValLoss : {}'.format(trial_name, epoch, AVG_TRAIN_LOSS, AVG_VAL_LOSS), flush=True)
-        cv_0_path = os.path.join(checkpoint_dir, "CV_0_checkpoint")
-        torch.save((CV_0_MODEL.state_dict(), CV_0_optimizer.state_dict()), cv_0_path)
-        result_dict = {
-		'train_loss_all' : train_loss_all, 'valid_loss_all' : valid_loss_all, 
-		'train_pearson_corr_all' : train_pearson_corr_all, 'train_spearman_corr_all' : train_spearman_corr_all, 
-		'val_pearson_corr_all' : val_pearson_corr_all, 'val_spearman_corr_all' : val_spearman_corr_all, 
-	    }
-
-
-
-
+        #
+        print('epoch : {}, TrainLoss : {}, ValLoss : {}'.format(epoch, train_loss, val_loss), flush=True)
+        # 
+        if config_dict['EarlyStop'] == 'es'
+            early_stop.step(val_loss)
+        #
+        if epoch == n_epochs-1 : 
+            test_loss, test_pc, test_sc, THIS_MODEL, ans_list, pred_list = inner_val(T_test, THIS_MODEL, device)
+            print("Best Test Pearson is : {}".format(test_pc))
+            test_dict = {'ANS' : ans_list, 'PRED' : pred_list}
+            test_dict_DF = pd.DataFrame(test_dict)
+            torch.save(THIS_MODEL.state_dict(), os.path.join(save_path, 'MODEL.pt'))
+            test_dict_DF.to_csv(os.path.join(save_path, 'test_result_table.csv'))
+        #
+        if config_dict['EarlyStop'] == 'es' :
+            if val_loss < np.min(valid_loss_all) :
+                result_dict = {
+                    'train_loss_all' : train_loss_all, 'valid_loss_all' : valid_loss_all, 
+                    'train_pearson_corr_all' : train_pearson_corr_all, 'train_spearman_corr_all' : train_spearman_corr_all, 
+                    'val_pearson_corr_all' : val_pearson_corr_all, 'val_spearman_corr_all' : val_spearman_corr_all, 
+                    }
+                result_dict_DF = pd.DataFrame(result_dict)
+                print('Best Val Loss : {}'.format(val_loss))
+                test_loss, test_pc, test_sc, THIS_MODEL, ans_list, pred_list = inner_val(T_test, THIS_MODEL, device)
+                test_dict = {'ANS' : ans_list, 'PRED' : pred_list}
+                test_dict_DF = pd.DataFrame(test_dict)
+                torch.save(THIS_MODEL.state_dict(), os.path.join(save_path, 'MODEL.pt'))
+            #
+            if early_stop.is_stop():
+                print('Early Stopping in epoch {}'.format(epoch))
+                print("Best Test Pearson is : {}".format(test_pc))
+                result_dict_DF.to_csv(os.path.join(save_path, 'train_result_table.csv'))
+                test_dict_DF.to_csv(os.path.join(save_path, 'test_result_table.csv'))
 
 
 
