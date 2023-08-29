@@ -32,14 +32,14 @@ conda activate py37
 
 
 ## Training model
-**(1) Module_1 (PDIGEC)
-**```
+(1) Module_1 (PDIGEC)
+```
 code
 ```
 
-**(2) Module_2 (PDSS)
-**
+(2) Module_2 (PDSS)
 In case you want to use early stopping in training module, you can use the option `--early_stopping`
+
 
 The example code is presented below : 
 ```
