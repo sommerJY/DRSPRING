@@ -5,6 +5,9 @@ The module_1, PDIGEC, predicts Drug Induced gene expression of each Drug-Cell li
 
 The module_2, PDSS, predicts Drug synergy score(Loewe score) of each drug-drug-cell triads.
 
+![alt text](total_fig.png)
+
+
 
 ## Prerequisites
 cuda 11.6 (in case of using GPU)
