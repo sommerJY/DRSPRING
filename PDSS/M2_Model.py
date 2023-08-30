@@ -8,6 +8,10 @@ import numpy as np
 import pandas as pd
 import random
 from prep_input import *
+from scipy import stats
+import os
+import datetime
+from datetime import *
 
 
 seed = 42
@@ -16,19 +20,19 @@ random.seed(a=seed)
 torch.manual_seed(seed)
 
 
-class M2_Model(torch.nn.Module):
+class Module_2(torch.nn.Module):
 	def __init__(self, G_layer_chem, G_indim_chem, G_hiddim_chem, 
 	G_layer_exp, G_indim_exp, G_hiddim_exp, 
 	layers_1, layers_2, layers_3, 
 	out_dim, inDrop, drop):
-		super(M2_Model, self).__init__()
+		super(Module_2, self).__init__()
 		self.G_layer_chem = G_layer_chem
 		self.G_indim_chem = G_indim_chem
 		self.G_hiddim_chem = G_hiddim_chem
 		self.G_layer_exp = G_layer_exp
 		self.G_indim_exp = G_indim_exp
 		self.G_hiddim_exp = G_hiddim_exp
-		self.G_Common_dim = min([G_hiddim_chem,G_hiddim_exp])
+		self.G_Common_dim = min([G_hiddim_chem, G_hiddim_exp])
 		self.layers_1 = [int(a) for a in layers_1]
 		self.layers_2 = [int(a) for a in layers_2]
 		self.layers_3 = [int(a) for a in layers_3]
@@ -81,8 +85,7 @@ class M2_Model(torch.nn.Module):
 			batch_labels = batch_labels.cuda()
 		return batch_labels
 	#
-	def forward(self, Drug1_F, Drug2_F, Drug1_ADJ, Drug2_ADJ, EXP1, EXP2, EXP_ADJ, syn ):
-		EXP_ADJ_WGT = [1 for a in range(EXP_ADJ.shape[1])]
+	def forward(self, Drug1_F, Drug2_F, Drug1_ADJ, Drug2_ADJ, EXP1, EXP2, EXP_ADJ, EXP_ADJ_WGT, syn ):
 		Drug_batch_label = self.calc_batch_label(syn, Drug1_F)
 		Exp_batch_label = self.calc_batch_label(syn, EXP1)
 		#
@@ -166,37 +169,44 @@ class M2_Model(torch.nn.Module):
 
 
 class EarlyStopping:
-    def __init__(self, patience=200):
-        self.loss = np.inf
-        self.patience = 0
-        self.patience_limit = patience
-    def step(self, loss):
-        if self.loss > loss:
-            self.loss = loss
-            self.patience = 0
-        else:
-            self.patience += 1
-    def is_stop(self):
-        return self.patience >= self.patience_limit
+	def __init__(self, patience_limit=200):
+		self.loss = np.inf
+		self.patience = 0
+		self.patience_limit = patience_limit
+	#
+	def step(self, loss):
+		if self.loss > loss:
+			self.loss = loss
+			self.patience = 0
+		else:
+			print('count stop {}/{}'.format(self.patience+1, self.patience_limit))
+			self.patience += 1
+	#
+	def is_stop(self):
+		return self.patience >= self.patience_limit
+
+
 
 
 def weighted_mse_loss(input, target, weight):
-	return (weight * (input - target) ** 2).mean()
+	#return (weight * (input - target) ** 2).mean()
+	return sum((weight * ((input-target)**2)).squeeze()) / sum(weight.squeeze())
 
-# 이걸 한번더 고쳐야하나 고민 
+
+
 
 
 
 def inner_train ( TRAIN_DATA, LOSS_WEIGHT, THIS_MODEL, THIS_OPTIMIZER , device) :
 	THIS_MODEL.train()
-    #
+	#
 	running_loss = 0
 	last_loss = 0 
 	#
 	ans_list = []
 	pred_list = []
 	batch_cut_weight = LOSS_WEIGHT
-    #
+	#
 	for batch_idx_t, (drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, adj_w, y) in enumerate(TRAIN_DATA) :
 		expA = expA.view(-1,3)#### 다른점 
 		expB = expB.view(-1,3)#### 다른점 
@@ -224,7 +234,6 @@ def inner_train ( TRAIN_DATA, LOSS_WEIGHT, THIS_MODEL, THIS_OPTIMIZER , device) 
 	return last_loss, train_pc, train_sc, THIS_MODEL, THIS_OPTIMIZER     
 
 
-
 def inner_val( VAL_DATA, THIS_MODEL, device) :
 	THIS_MODEL.eval()
 	#
@@ -233,9 +242,9 @@ def inner_val( VAL_DATA, THIS_MODEL, device) :
 	#
 	ans_list = []
 	pred_list = []
-    #
-    MSE = torch.nn.MSELoss()
-    #
+	#
+	MSE = torch.nn.MSELoss()
+	#
 	with torch.no_grad() :
 		for batch_idx_v, (drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, adj_w, y) in enumerate(VAL_DATA) :
 			expA = expA.view(-1,3)
@@ -249,7 +258,7 @@ def inner_val( VAL_DATA, THIS_MODEL, device) :
 			running_loss = running_loss + loss.item()
 			pred_list = pred_list + output.squeeze().tolist()
 			ans_list = ans_list + y.squeeze().tolist()
-    #
+	#
 	last_loss = running_loss / (batch_idx_v+1)
 	val_sc, _ = stats.spearmanr(pred_list, ans_list)
 	val_pc, _ = stats.pearsonr(pred_list, ans_list)
@@ -258,101 +267,112 @@ def inner_val( VAL_DATA, THIS_MODEL, device) :
 
 
 def training_model(save_path, T_train, T_val, T_test, es, device, config_dict) :
-    n_epochs = config_dict['max_epoch']
-    # 
-    dsn_layers = [int(a) for a in config_dict["dsn_layer"].split('-') ]
-    snp_layers = [int(a) for a in config_dict["snp_layer"].split('-') ]
-    # 
-    train_loader = torch.utils.data.DataLoader(T_train, batch_size = config_dict["batch_size"], collate_fn = graph_collate_fn, shuffle =False, num_workers=16)
-    val_loader = torch.utils.data.DataLoader(T_val, batch_size = config_dict["batch_size"], collate_fn = graph_collate_fn, shuffle =False, num_workers=16)
-    test_loader = torch.utils.data.DataLoader(T_test, batch_size = config_dict["batch_size"], collate_fn = graph_collate_fn, shuffle =False, num_workers=16)
-    loss_weight = get_loss_weight(T_train)
-    batch_cut_weight = [loss_weight[i:i+config_dict["batch_size"]] for i in range(0,len(loss_weight), config_dict["batch_size"])]
-    #
-    early_stop = EarlyStopping(patience=200)
-    #
-    THIS_MODEL = M2_Model(
-        config_dict["G_chem_layer"], T_train.gcn_drug1_F.shape[-1] , config_dict["G_chem_hdim"], 
-        config_dict["G_exp_layer"], 3 , config_dict["G_exp_hdim"], 
-        dsn_layers, dsn_layers, snp_layers,  1,  
-        config_dict["dropout_1"], config_dict["dropout_2"] )
-    #
-	THIS_MODEL = THIS_MODEL.cuda()
-    #
-    THIS_optimizer = torch.optim.Adam(THIS_MODEL.parameters(), lr = config_dict["learning_rate"] )
-    #
-    train_loss_all = []
+	n_epochs = config_dict['max_epoch']
+	# 
+	dsn_layers = [int(a) for a in config_dict["dsn_layer"].split('-') ]
+	snp_layers = [int(a) for a in config_dict["snp_layer"].split('-') ]
+	# 
+	train_loader = torch.utils.data.DataLoader(T_train, batch_size = config_dict["batch_size"], collate_fn = graph_collate_fn, shuffle =False, num_workers=16)
+	val_loader = torch.utils.data.DataLoader(T_val, batch_size = config_dict["batch_size"], collate_fn = graph_collate_fn, shuffle =False, num_workers=16)
+	test_loader = torch.utils.data.DataLoader(T_test, batch_size = config_dict["batch_size"], collate_fn = graph_collate_fn, shuffle =False, num_workers=16)
+	loss_weight = get_loss_weight(T_train)
+	batch_cut_weight = [loss_weight[i:i+config_dict["batch_size"]] for i in range(0,len(loss_weight), config_dict["batch_size"])]
+	#
+	early_stop = EarlyStopping()
+	#
+	THIS_MODEL = Module_2(
+		config_dict["G_chem_layer"], T_train.gcn_drug1_F.shape[-1] , config_dict["G_chem_hdim"], 
+		config_dict["G_exp_layer"], 3 , config_dict["G_exp_hdim"], 
+		dsn_layers, dsn_layers, snp_layers,  1,  
+		config_dict["dropout_1"], config_dict["dropout_2"] )
+	#
+	THIS_MODEL = THIS_MODEL.to(device)
+	#
+	THIS_optimizer = torch.optim.Adam(THIS_MODEL.parameters(), lr = config_dict["learning_rate"] )
+	#
+	train_loss_all = []
 	valid_loss_all = []
 	train_pearson_corr_all = []
 	train_spearman_corr_all = []
 	valid_pearson_corr_all = []
 	valid_spearman_corr_all = []
-    #
+	#
+	print('Start Training')
+	now = datetime.now()
+	print(now)
+	#
 	for epoch in range(n_epochs):
 		now = datetime.now()
 		train_loss = 0.0
 		valid_loss = 0.0
 		#
-		train_loss, train_pc, train_sc, THIS_MODEL, THIS_optimizer = inner_train(T_train, loss_weight, THIS_MODEL, THIS_optimizer, device)
+		train_loss, train_pc, train_sc, THIS_MODEL, THIS_optimizer = inner_train(train_loader, batch_cut_weight, THIS_MODEL, THIS_optimizer, device)
 		train_loss_all.append(train_loss)
 		train_pearson_corr_all.append(train_pc)
 		train_spearman_corr_all.append(train_sc)	
-        #
-		val_loss, val_pc, val_sc, THIS_MODEL, _, _ = inner_val(T_val, THIS_MODEL, device)
+		#
+		val_loss, val_pc, val_sc, THIS_MODEL, _, _ = inner_val(val_loader, THIS_MODEL, device)
 		valid_loss_all.append(val_loss)
 		valid_pearson_corr_all.append(val_pc)
 		valid_spearman_corr_all.append(val_sc) 
 		#    
 		done = datetime.now()
 		time_spent = done-now
-        #
-        print('epoch : {}, TrainLoss : {}, ValLoss : {}'.format(epoch, train_loss, val_loss), flush=True)
-        # 
-        if config_dict['EarlyStop'] == 'es'
-            early_stop.step(val_loss)
-        #
-        if epoch == n_epochs-1 : 
-            test_loss, test_pc, test_sc, THIS_MODEL, ans_list, pred_list = inner_val(T_test, THIS_MODEL, device)
-            print("Best Test Pearson is : {}".format(test_pc))
-            test_dict = {'ANS' : ans_list, 'PRED' : pred_list}
-            test_dict_DF = pd.DataFrame(test_dict)
-            torch.save(THIS_MODEL.state_dict(), os.path.join(save_path, 'MODEL.pt'))
-            test_dict_DF.to_csv(os.path.join(save_path, 'test_result_table.csv'))
-        #
-        if config_dict['EarlyStop'] == 'es' :
-            if val_loss < np.min(valid_loss_all) :
-                result_dict = {
-                    'train_loss_all' : train_loss_all, 'valid_loss_all' : valid_loss_all, 
-                    'train_pearson_corr_all' : train_pearson_corr_all, 'train_spearman_corr_all' : train_spearman_corr_all, 
-                    'val_pearson_corr_all' : val_pearson_corr_all, 'val_spearman_corr_all' : val_spearman_corr_all, 
-                    }
-                result_dict_DF = pd.DataFrame(result_dict)
-                print('Best Val Loss : {}'.format(val_loss))
-                test_loss, test_pc, test_sc, THIS_MODEL, ans_list, pred_list = inner_val(T_test, THIS_MODEL, device)
-                test_dict = {'ANS' : ans_list, 'PRED' : pred_list}
-                test_dict_DF = pd.DataFrame(test_dict)
-                torch.save(THIS_MODEL.state_dict(), os.path.join(save_path, 'MODEL.pt'))
-            #
-            if early_stop.is_stop():
-                print('Early Stopping in epoch {}'.format(epoch))
-                print("Best Test Pearson is : {}".format(test_pc))
-                result_dict_DF.to_csv(os.path.join(save_path, 'train_result_table.csv'))
-                test_dict_DF.to_csv(os.path.join(save_path, 'test_result_table.csv'))
+		#
+		print('epoch : {}, Train Loss : {:.4f}, Train PCOR : {:.4f}, Val Loss : {:.4f}, Val PCOR : {:.4f}'.format(epoch, train_loss, train_pc, val_loss, val_pc), flush=True)
+		# 
+		if config_dict['EarlyStop'] == 'es' :
+			early_stop.step(val_loss)
+			if val_loss <= np.min(valid_loss_all) :
+				result_dict = {
+					'train_loss_all' : train_loss_all, 'valid_loss_all' : valid_loss_all, 
+					'train_pearson_corr_all' : train_pearson_corr_all, 'train_spearman_corr_all' : train_spearman_corr_all, 
+					'val_pearson_corr_all' : valid_pearson_corr_all, 'val_spearman_corr_all' : valid_spearman_corr_all, 
+					}
+				result_dict_DF = pd.DataFrame(result_dict)
+				print('New Best Val Loss : {:.4f}'.format(val_loss))
+				test_loss, test_pc, test_sc, THIS_MODEL, ans_list, pred_list = inner_val(test_loader, THIS_MODEL, device)
+				test_dict = {'ANS' : ans_list, 'PRED' : pred_list}
+				test_dict_DF = pd.DataFrame(test_dict)
+				torch.save(THIS_MODEL.state_dict(), os.path.join(save_path, 'MODEL.pt'))
+			#
+			if early_stop.is_stop()==True:
+				print('Early Stopping in epoch {}'.format(epoch))
+				print("Best Test Pearson is : {:.4f}".format(test_pc))
+				result_dict_DF.to_csv(os.path.join(save_path, 'train_result_table.csv'))
+				test_dict_DF.to_csv(os.path.join(save_path, 'test_result_table.csv'))
+				break
+		#
+		if epoch == n_epochs-1 : 
+			result_dict = {
+					'train_loss_all' : train_loss_all, 'valid_loss_all' : valid_loss_all, 
+					'train_pearson_corr_all' : train_pearson_corr_all, 'train_spearman_corr_all' : train_spearman_corr_all, 
+					'val_pearson_corr_all' : valid_pearson_corr_all, 'val_spearman_corr_all' : valid_spearman_corr_all, 
+					}
+			result_dict_DF = pd.DataFrame(result_dict)
+			test_loss, test_pc, test_sc, THIS_MODEL, ans_list, pred_list = inner_val(test_loader, THIS_MODEL, device)
+			print("Best Test Pearson is : {:.4f}".format(test_pc))
+			test_dict = {'ANS' : ans_list, 'PRED' : pred_list}
+			test_dict_DF = pd.DataFrame(test_dict)
+			torch.save(THIS_MODEL.state_dict(), os.path.join(save_path, 'MODEL.pt'))
+			test_dict_DF.to_csv(os.path.join(save_path, 'test_result_table.csv'))
+			result_dict_DF.to_csv(os.path.join(save_path, 'train_result_table.csv'))
 
 
 
 
-def pred_simple_synergy (my_config, SM_A, SM_B, CELL):
-	G_chem_layer = my_config['config/G_chem_layer'].item()
-	G_chem_hdim = my_config['config/G_chem_hdim'].item()
-	G_exp_layer = my_config['config/G_exp_layer'].item()
-	G_exp_hdim = my_config['config/G_exp_hdim'].item()
-	dsn_layers = [int(a) for a in my_config["config/dsn_layer"].split('-') ]
-	snp_layers = [int(a) for a in my_config["config/snp_layer"].split('-') ]
-	inDrop = my_config['config/dropout_1'].item()
-	Drop = my_config['config/dropout_2'].item()
+
+def pred_simple_synergy (save_path, my_config, saved_model, SM_A, SM_B, CELL):
+	G_chem_layer = my_config['G_chem_layer']
+	G_chem_hdim = my_config['G_chem_hdim']
+	G_exp_layer = my_config['G_exp_layer']
+	G_exp_hdim = my_config['G_exp_hdim']
+	dsn_layers = [int(a) for a in my_config["dsn_layer"].split('-') ]
+	snp_layers = [int(a) for a in my_config["snp_layer"].split('-') ]
+	inDrop = my_config['dropout_1']
+	Drop = my_config['dropout_2']
 	#      
-	best_model = MY_expGCN_parallel_model(
+	best_model = Module_2(
 				G_chem_layer, 64 , G_chem_hdim,
 				G_exp_layer, 3, G_exp_hdim,
 				dsn_layers, dsn_layers, snp_layers, 
@@ -362,18 +382,16 @@ def pred_simple_synergy (my_config, SM_A, SM_B, CELL):
 	#
 	device = "cuda:0" if torch.cuda.is_available() else "cpu"
 	if torch.cuda.is_available():
-		state_dict = torch.load(CKP_PATH) #### change ! 
+		state_dict = torch.load(saved_model) #### change ! 
 	else:
-		state_dict = torch.load(CKP_PATH, map_location=torch.device('cpu'))
+		state_dict = torch.load(saved_model, map_location=torch.device('cpu'))
 	# 
 	# 
-	#print("state_dict_done", flush = True)
 	if type(state_dict) == tuple:
 		best_model.load_state_dict(state_dict[0])
 	else : 
 		best_model.load_state_dict(state_dict)
 	#
-	#print("state_load_done", flush = True)
 	#
 	best_model.to(device)
 	best_model.eval()
@@ -384,6 +402,65 @@ def pred_simple_synergy (my_config, SM_A, SM_B, CELL):
 	output_2 = best_model(drug2_f, drug1_f, drug2_a, drug1_a, FEAT_B, FEAT_A, adj, adj_w, single) 
 	result_value = np.round(np.mean([output_1.item(), output_2.item()]),4)
 	print('Expected Loewe Score is : {}'.format(result_value))
+	print('\n')
+
+
+
+
+
+
+
+
+def pred_cell_synergy (save_path, my_config, saved_model, SM_A, SM_B, M1_A , M1_B, new_ccle = None):
+	G_chem_layer = my_config['G_chem_layer']
+	G_chem_hdim = my_config['G_chem_hdim']
+	G_exp_layer = my_config['G_exp_layer']
+	G_exp_hdim = my_config['G_exp_hdim']
+	dsn_layers = [int(a) for a in my_config["dsn_layer"].split('-') ]
+	snp_layers = [int(a) for a in my_config["snp_layer"].split('-') ]
+	inDrop = my_config['dropout_1']
+	Drop = my_config['dropout_2']
+	#    
+	best_model = Module_2(
+				G_chem_layer, 64 , G_chem_hdim,
+				G_exp_layer, 3, G_exp_hdim,
+				dsn_layers, dsn_layers, snp_layers, 
+				1,
+				inDrop, Drop
+				) 
+	#
+	device = "cuda:0" if torch.cuda.is_available() else "cpu"
+	if torch.cuda.is_available():
+		state_dict = torch.load(saved_model) #### change ! 
+	else:
+		state_dict = torch.load(saved_model, map_location=torch.device('cpu'))
+	# 
+	if type(state_dict) == tuple:
+		best_model.load_state_dict(state_dict[0])
+	else : 
+		best_model.load_state_dict(state_dict)
+	#
+	best_model.to(device)
+	best_model.eval()
+	#
+	single = torch.Tensor([[0]])
+	#
+	if new_ccle == None : 
+		result_cell_dict = make_input_by_cell(SM_A, SM_B, M1_A , M1_B)
+	else :
+		result_cell_dict = make_input_by_cell(SM_A, SM_B, M1_A , M1_B, new_ccle)
+	#
+	result_DF = pd.DataFrame(columns = ['Cell Line', 'Score'])
+	for CELL in result_cell_dict.keys() :
+		drug1_f, drug2_f, drug1_a, drug2_a, FEAT_A, FEAT_B, adj, adj_w = result_cell_dict[CELL]
+		output_1 = best_model(drug1_f, drug2_f, drug1_a, drug2_a, FEAT_A, FEAT_B, adj, adj_w, single) 
+		output_2 = best_model(drug2_f, drug1_f, drug2_a, drug1_a, FEAT_B, FEAT_A, adj, adj_w, single) 
+		result_value = np.round(np.mean([output_1.item(), output_2.item()]),4)
+		tmp_DF = pd.DataFrame({'Cell Line' : [CELL], 'Score' : [result_value]})
+		result_DF = pd.concat([result_DF, tmp_DF])
+	#
+	result_DF.to_csv( os.path.join(save_path, 'Result_by_cells.csv'), index = False)
+	print('saved results!')
 	print('\n')
 
 

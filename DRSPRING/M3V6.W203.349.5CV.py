@@ -1181,8 +1181,8 @@ PPI_NAME = '349'
 MISS_NAME = 'MIS2'
 
 W_NAME = 'W203'
-WORK_NAME = 'WORK_203_3' # 349
-WORK_DATE = '23.06.23' # 349
+WORK_NAME = 'WORK_203' # 349 WORK_203_3
+WORK_DATE = '23.06.22' # 349
 
 
 
@@ -1269,8 +1269,8 @@ VLS_cv4_PATH
 
 
 KEY_EPC
-round(epc_result.loc[KEY_EPC].V_LS_mean,3)
-round(epc_result.loc[KEY_EPC].V_LS_std,3)
+round(epc_result.loc[KEY_EPC].V_LS_mean,4)
+round(epc_result.loc[KEY_EPC].V_LS_std,4)
 
 
 
@@ -1293,8 +1293,8 @@ VPC_cv4_PATH
 
 
 KEY_EPC
-round(epc_result.loc[KEY_EPC].V_PC_mean,3)
-round(epc_result.loc[KEY_EPC].V_PC_std,3)
+round(epc_result.loc[KEY_EPC].V_PC_mean,4)
+round(epc_result.loc[KEY_EPC].V_PC_std,4)
 
 
 3) SC best 
@@ -1315,8 +1315,8 @@ VSC_cv4_PATH = cv4_key + checkpoint
 VSC_cv4_PATH
 
 KEY_EPC
-round(epc_result.loc[KEY_EPC].V_SC_mean,3)
-round(epc_result.loc[KEY_EPC].V_SC_std,3)
+round(epc_result.loc[KEY_EPC].V_SC_mean,4)
+round(epc_result.loc[KEY_EPC].V_SC_std,4)
 
 
 
@@ -1696,7 +1696,7 @@ PPI_NAME = '349'
 PRJ_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/{}_{}_{}_{}/'.format(PRJ_NAME, W_NAME, PPI_NAME, MISS_NAME)
 
 # 저장해둔거랑 같은지 확인 
-with open('{}/CV_SM_list.pickle'.format(PRJ_PATH), 'rb') as f:
+with open('{}/CV_SM_list.{}.pickle'.format(PRJ_PATH, WORK_NAME), 'rb') as f:
 	CV_ND_INDS_ray = pickle.load(f)
  
 for kk in ['CV0_train', 'CV0_test', 'CV1_train', 'CV1_test', 'CV2_train', 'CV2_test', 'CV3_train', 'CV3_test', 'CV4_train', 'CV4_test'] :
@@ -2387,8 +2387,7 @@ R_2_T_CV2, R_2_1_CV2, R_2_2_CV2, pred_2_CV2, ans_2_CV2 = TEST_CPU(PRJ_PATH, 'CV_
 R_2_T_CV3, R_2_1_CV3, R_2_2_CV3, pred_2_CV3, ans_2_CV3 = TEST_CPU(PRJ_PATH, 'CV_3', my_config, PRJ_PATH, 'VLS_CV_3_model.pth', 'VLS')
 R_2_T_CV4, R_2_1_CV4, R_2_2_CV4, pred_2_CV4, ans_2_CV4 = TEST_CPU(PRJ_PATH, 'CV_4', my_config, PRJ_PATH, 'VLS_CV_4_model.pth', 'VLS')
 
-
-
+# 3) PC 
 R_3_T_CV0, R_3_1_CV0, R_3_2_CV0, pred_3_CV0, ans_3_CV0 = TEST_CPU(PRJ_PATH, 'CV_0', my_config, PRJ_PATH, 'VPC_CV_0_model.pth', 'VPC')
 R_3_T_CV1, R_3_1_CV1, R_3_2_CV1, pred_3_CV1, ans_3_CV1 = TEST_CPU(PRJ_PATH, 'CV_1', my_config, PRJ_PATH, 'VPC_CV_1_model.pth', 'VPC')
 R_3_T_CV2, R_3_1_CV2, R_3_2_CV2, pred_3_CV2, ans_3_CV2 = TEST_CPU(PRJ_PATH, 'CV_2', my_config, PRJ_PATH, 'VPC_CV_2_model.pth', 'VPC')
@@ -2396,20 +2395,20 @@ R_3_T_CV3, R_3_1_CV3, R_3_2_CV3, pred_3_CV3, ans_3_CV3 = TEST_CPU(PRJ_PATH, 'CV_
 R_3_T_CV4, R_3_1_CV4, R_3_2_CV4, pred_3_CV4, ans_3_CV4 = TEST_CPU(PRJ_PATH, 'CV_4', my_config, PRJ_PATH, 'VPC_CV_4_model.pth', 'VPC')
 
 
-
-R_4_T_CV0, R_4_1_CV0, R_4_2_CV0, pred_4_CV0, ans_4_CV0 = TEST_CPU(PRJ_PATH, 'CV_0', my_config, PRJ_PATH, 'VSC_CV_0_model.pth', 'VLS')
-R_4_T_CV1, R_4_1_CV1, R_4_2_CV1, pred_4_CV1, ans_4_CV1 = TEST_CPU(PRJ_PATH, 'CV_1', my_config, PRJ_PATH, 'VSC_CV_1_model.pth', 'VLS')
-R_4_T_CV2, R_4_1_CV2, R_4_2_CV2, pred_4_CV2, ans_4_CV2 = TEST_CPU(PRJ_PATH, 'CV_2', my_config, PRJ_PATH, 'VSC_CV_2_model.pth', 'VLS')
-R_4_T_CV3, R_4_1_CV3, R_4_2_CV3, pred_4_CV3, ans_4_CV3 = TEST_CPU(PRJ_PATH, 'CV_3', my_config, PRJ_PATH, 'VSC_CV_3_model.pth', 'VLS')
-R_4_T_CV4, R_4_1_CV4, R_4_2_CV4, pred_4_CV4, ans_4_CV4 = TEST_CPU(PRJ_PATH, 'CV_4', my_config, PRJ_PATH, 'VSC_CV_4_model.pth', 'VLS')
+# 4) SC
+R_4_T_CV0, R_4_1_CV0, R_4_2_CV0, pred_4_CV0, ans_4_CV0 = TEST_CPU(PRJ_PATH, 'CV_0', my_config, PRJ_PATH, 'VSC_CV_0_model.pth', 'VLC')
+R_4_T_CV1, R_4_1_CV1, R_4_2_CV1, pred_4_CV1, ans_4_CV1 = TEST_CPU(PRJ_PATH, 'CV_1', my_config, PRJ_PATH, 'VSC_CV_1_model.pth', 'VLC')
+R_4_T_CV2, R_4_1_CV2, R_4_2_CV2, pred_4_CV2, ans_4_CV2 = TEST_CPU(PRJ_PATH, 'CV_2', my_config, PRJ_PATH, 'VSC_CV_2_model.pth', 'VLC')
+R_4_T_CV3, R_4_1_CV3, R_4_2_CV3, pred_4_CV3, ans_4_CV3 = TEST_CPU(PRJ_PATH, 'CV_3', my_config, PRJ_PATH, 'VSC_CV_3_model.pth', 'VLC')
+R_4_T_CV4, R_4_1_CV4, R_4_2_CV4, pred_4_CV4, ans_4_CV4 = TEST_CPU(PRJ_PATH, 'CV_4', my_config, PRJ_PATH, 'VSC_CV_4_model.pth', 'VLC')
 
 
 
 # 이거 끝나면 저장해서 plot 그려야함 
 
-아. 이제 이해함. 
-PRED_1 은 그냥 특정 모델번호인거임. 
-바보냐 진자 
+				아. 이제 이해함. 
+				PRED_1 은 그냥 특정 모델번호인거임. 
+				바보냐 진자 
 
 ABCS_test_0 = A_B_C_S_SET_SM[A_B_C_S_SET_SM.SM_C_CHECK.isin(CV_ND_INDS['CV0_test'])]
 ABCS_test_0['ANS'] = ans_1_CV0 ; ABCS_test_0['PRED_1'] = pred_1_CV0; ABCS_test_0['PRED_2'] = pred_2_CV0 ; ABCS_test_0['PRED_3'] = pred_3_CV0 ;  ABCS_test_0['PRED_4'] = pred_4_CV0
