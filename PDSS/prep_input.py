@@ -308,57 +308,6 @@ def make_input_by_cell (SM_A, SM_B, M1_A , M1_B, new_ccle = None):
 
 
 
-
-
-
-SM_A = 'C1C(N(C2=C(N1)N=C(NC2=O)N)C=O)CNC3=CC=C(C=C3)C(=O)NC(CCC(=O)O)C(=O)O'
-SM_B = 'C1=C(C(=O)NC(=O)N1)F'
-		
-
-# cutting data 
-A_B_C_S_SET_ADD = pd.read_csv('/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V8_349_FULL/M3V8_349_MISS2_FULL.A_B_C_S_SET_ADD.csv')
-MY_chem_A_feat_RE2 = torch.load('/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V8_349_FULL/M3V8_349_MISS2_FULL.MY_chem_A_feat.pt')
-MY_chem_B_feat_RE2 = torch.load('/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V8_349_FULL/M3V8_349_MISS2_FULL.MY_chem_B_feat.pt')
-MY_chem_A_adj_RE2 = torch.load('/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V8_349_FULL/M3V8_349_MISS2_FULL.MY_chem_A_adj.pt')
-MY_chem_B_adj_RE2 = torch.load('/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V8_349_FULL/M3V8_349_MISS2_FULL.MY_chem_B_adj.pt')
-MY_g_EXP_A_RE2 = torch.load('/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V8_349_FULL/M3V8_349_MISS2_FULL.MY_g_EXP_A.pt')
-MY_g_EXP_B_RE2 = torch.load('/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V8_349_FULL/M3V8_349_MISS2_FULL.MY_g_EXP_B.pt')
-MY_Target_A2 = torch.load('/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V8_349_FULL/M3V8_349_MISS2_FULL.MY_Target_1_A.pt')
-MY_Target_B2 = torch.load('/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V8_349_FULL/M3V8_349_MISS2_FULL.MY_Target_1_B.pt')
-MY_CellBase_RE2 = torch.load('/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V8_349_FULL/M3V8_349_MISS2_FULL.MY_CellBase.pt')
-MY_syn_RE2 = torch.load('/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V8_349_FULL/M3V8_349_MISS2_FULL.MY_syn.pt')
-
-
-A_B_C_S_SET_SM_sample = A_B_C_S_SET_SM.sample(100)
-sample_index = list(A_B_C_S_SET_SM_sample.index)
-MY_chem_A_feat_sample = MY_chem_A_feat_RE2[sample_index]
-MY_chem_B_feat_sample = MY_chem_B_feat_RE2[sample_index]
-MY_chem_A_adj_sample = MY_chem_A_adj_RE2[sample_index]
-MY_chem_B_adj_sample = MY_chem_B_adj_RE2[sample_index]
-MY_g_EXP_A_sample = MY_g_EXP_A_RE2[sample_index]
-MY_g_EXP_B_sample = MY_g_EXP_B_RE2[sample_index]
-MY_Target_A_sample = MY_Target_A2[sample_index]
-MY_Target_B_sample = MY_Target_B2[sample_index]
-MY_CellBase_sample = MY_CellBase_RE2[sample_index]
-MY_syn_sample = MY_syn_RE2[sample_index]
-
-A_B_C_S_SET_SM_sample.to_csv('/st06/jiyeonH/11.TOX/DR_SPRING/TO_GIT/PDSS/data/final_dataset.csv', index = False)
-torch.save(MY_chem_A_feat_sample, '/st06/jiyeonH/11.TOX/DR_SPRING/TO_GIT/PDSS/data/Chem_A_feat.pt')
-torch.save(MY_chem_B_feat_sample, '/st06/jiyeonH/11.TOX/DR_SPRING/TO_GIT/PDSS/data/Chem_B_feat.pt')
-torch.save(MY_chem_A_adj_sample, '/st06/jiyeonH/11.TOX/DR_SPRING/TO_GIT/PDSS/data/Chem_A_adj.pt')
-torch.save(MY_chem_B_adj_sample, '/st06/jiyeonH/11.TOX/DR_SPRING/TO_GIT/PDSS/data/Chem_B_adj.pt')
-torch.save(MY_g_EXP_A_sample, '/st06/jiyeonH/11.TOX/DR_SPRING/TO_GIT/PDSS/data/EXP_A.pt')
-torch.save(MY_g_EXP_B_sample, '/st06/jiyeonH/11.TOX/DR_SPRING/TO_GIT/PDSS/data/EXP_B.pt')
-torch.save(MY_Target_A_sample, '/st06/jiyeonH/11.TOX/DR_SPRING/TO_GIT/PDSS/data/TARGET_A.pt')
-torch.save(MY_Target_B_sample, '/st06/jiyeonH/11.TOX/DR_SPRING/TO_GIT/PDSS/data/TARGET_B.pt')
-torch.save(MY_CellBase_sample, '/st06/jiyeonH/11.TOX/DR_SPRING/TO_GIT/PDSS/data/BASAL.pt')
-torch.save(MY_syn_sample, '/st06/jiyeonH/11.TOX/DR_SPRING/TO_GIT/PDSS/data/SYN.pt')
-
-
-
-
-
-
 def prepare_data_GCN(A_B_C_S_SET_SM, MY_chem_A_feat_RE2, MY_chem_B_feat_RE2, MY_chem_A_adj_RE2, MY_chem_B_adj_RE2, 
 MY_g_EXP_A_RE2, MY_g_EXP_B_RE2, MY_Target_A2, MY_Target_B2, MY_CellBase_RE2, MY_syn_RE2 ) : 
 	#

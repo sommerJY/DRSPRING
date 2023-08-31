@@ -3,7 +3,6 @@
 
 NETWORK_PATH = '/st06/jiyeonH/13.DD_SESS/HumanNetV3/'
 LINCS_PATH = '/st06/jiyeonH/11.TOX/MY_TRIAL_5/' 
-DATA_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V3_FULL/'
 DC_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/'
 
 
@@ -97,8 +96,11 @@ BETA_NEWNOD_ORDER = list(BETA_ORDER_DF.new_node)
 
 SAVE_PATH = '/home01/k040a01/02.M3V6/M3V6_349_DATA/'
 # SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V6_349_FULL/'
+# SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V8_349_FULL/'
+
 
 file_name = 'M3V6_349_MISS2_ONEIL'
+file_name = 'M3V8_349_MISS2_ONEIL'
 
 A_B_C_S_SET_ADD = pd.read_csv(SAVE_PATH+'{}.A_B_C_S_SET_ADD.csv'.format(file_name), low_memory=False)
 MY_chem_A_feat = torch.load(SAVE_PATH+'{}.MY_chem_A_feat.pt'.format(file_name))
