@@ -471,17 +471,17 @@ def get_loss_weight(T_train) :
 def make_merged_data() :
 	MY_G, G_ADJ_IDX, G_IDX_WEIGHT, _ = define_graph()
 	#
-	A_B_C_S_SET_SM = pd.read_csv('/st06/jiyeonH/11.TOX/DR_SPRING/TO_GIT/PDSS/data/' + 'final_dataset.csv')
-	MY_chem_A_feat_RE2 = torch.load('/st06/jiyeonH/11.TOX/DR_SPRING/TO_GIT/PDSS/data/'+'Chem_A_feat.pt')
-	MY_chem_B_feat_RE2 = torch.load('/st06/jiyeonH/11.TOX/DR_SPRING/TO_GIT/PDSS/data/'+'Chem_B_feat.pt')
-	MY_chem_A_adj_RE2 = torch.load('/st06/jiyeonH/11.TOX/DR_SPRING/TO_GIT/PDSS/data/'+'Chem_A_adj.pt')
-	MY_chem_B_adj_RE2 = torch.load('/st06/jiyeonH/11.TOX/DR_SPRING/TO_GIT/PDSS/data/'+'Chem_B_adj.pt')
-	MY_g_EXP_A_RE2 = torch.load('/st06/jiyeonH/11.TOX/DR_SPRING/TO_GIT/PDSS/data/'+'EXP_A.pt')
-	MY_g_EXP_B_RE2 = torch.load('/st06/jiyeonH/11.TOX/DR_SPRING/TO_GIT/PDSS/data/'+'EXP_B.pt')
-	MY_Target_A2 = torch.load('/st06/jiyeonH/11.TOX/DR_SPRING/TO_GIT/PDSS/data/'+'TARGET_A.pt')
-	MY_Target_B2 = torch.load('/st06/jiyeonH/11.TOX/DR_SPRING/TO_GIT/PDSS/data/'+'TARGET_B.pt')
-	MY_CellBase_RE2 = torch.load('/st06/jiyeonH/11.TOX/DR_SPRING/TO_GIT/PDSS/data/'+'BASAL.pt')
-	MY_syn_RE2 = torch.load('/st06/jiyeonH/11.TOX/DR_SPRING/TO_GIT/PDSS/data/'+'SYN.pt')
+	A_B_C_S_SET_SM = pd.read_csv('~/DRSPRING/PDSS/data/' + 'final_dataset.csv')
+	MY_chem_A_feat_RE2 = torch.load('~/DRSPRING/PDSS/data/'+'Chem_A_feat.pt')
+	MY_chem_B_feat_RE2 = torch.load('~/DRSPRING/PDSSdata/'+'Chem_B_feat.pt')
+	MY_chem_A_adj_RE2 = torch.load('~/DRSPRING/PDSSdata/'+'Chem_A_adj.pt')
+	MY_chem_B_adj_RE2 = torch.load('~/DRSPRING/PDSS/data/'+'Chem_B_adj.pt')
+	MY_g_EXP_A_RE2 = torch.load('~/DRSPRING/PDSS/data/'+'EXP_A.pt')
+	MY_g_EXP_B_RE2 = torch.load('~/DRSPRING/PDSS/data/'+'EXP_B.pt')
+	MY_Target_A2 = torch.load('~/DRSPRING/PDSS/data/'+'TARGET_A.pt')
+	MY_Target_B2 = torch.load('~/DRSPRING/PDSS/data/'+'TARGET_B.pt')
+	MY_CellBase_RE2 = torch.load('~/DRSPRING/PDSS/data/'+'BASAL.pt')
+	MY_syn_RE2 = torch.load('~/DRSPRING/PDSS/data/'+'SYN.pt')
 	#
 	train_data, val_data, test_data = prepare_data_GCN(
 		A_B_C_S_SET_SM, MY_chem_A_feat_RE2, MY_chem_B_feat_RE2, MY_chem_A_adj_RE2, MY_chem_B_adj_RE2, 
