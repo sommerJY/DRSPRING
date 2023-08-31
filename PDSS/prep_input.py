@@ -473,8 +473,8 @@ def make_merged_data() :
 	#
 	A_B_C_S_SET_SM = pd.read_csv('~/DRSPRING/PDSS/data/' + 'final_dataset.csv')
 	MY_chem_A_feat_RE2 = torch.load('~/DRSPRING/PDSS/data/'+'Chem_A_feat.pt')
-	MY_chem_B_feat_RE2 = torch.load('~/DRSPRING/PDSSdata/'+'Chem_B_feat.pt')
-	MY_chem_A_adj_RE2 = torch.load('~/DRSPRING/PDSSdata/'+'Chem_A_adj.pt')
+	MY_chem_B_feat_RE2 = torch.load('~/DRSPRING/PDSS/data/'+'Chem_B_feat.pt')
+	MY_chem_A_adj_RE2 = torch.load('~/DRSPRING/PDSS/data/'+'Chem_A_adj.pt')
 	MY_chem_B_adj_RE2 = torch.load('~/DRSPRING/PDSS/data/'+'Chem_B_adj.pt')
 	MY_g_EXP_A_RE2 = torch.load('~/DRSPRING/PDSS/data/'+'EXP_A.pt')
 	MY_g_EXP_B_RE2 = torch.load('~/DRSPRING/PDSS/data/'+'EXP_B.pt')
