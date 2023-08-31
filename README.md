@@ -21,6 +21,8 @@ Use the requirement.txt file in directory
 ```
 conda env create --file environment.yml
 conda activate py37
+pip install torch-scatter -f https://data.pyg.org/whl/torch-1.13.0+cu116.html
+pip install torch-sparse -f https://data.pyg.org/whl/torch-1.13.0+cu116.html 
 ```
 
 아니면 
