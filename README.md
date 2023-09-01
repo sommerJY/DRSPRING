@@ -19,10 +19,12 @@ cuda 11.6 (in case of using GPU)
 Use the requirement.txt file in directory
 둘중에 하나 활용 가능할듯 
 ```
-conda env create --file environment.yml
+conda create -y --name py37 python=3.7.16
 conda activate py37
+conda env update --file environment.yml
 pip install torch-scatter -f https://data.pyg.org/whl/torch-1.13.0+cu116.html
-pip install torch-sparse -f https://data.pyg.org/whl/torch-1.13.0+cu116.html 
+pip install torch-sparse -f https://data.pyg.org/whl/torch-1.13.0+cu116.html
+pip install torch-geometric==2.0.4
 ```
 
 아니면 
