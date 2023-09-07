@@ -96,10 +96,13 @@ BETA_NEWNOD_ORDER = list(BETA_ORDER_DF.new_node)
 
 
 SAVE_PATH = '/home01/k040a01/02.M3V6/M3V6_349_DATA/'
-# SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V6_349_FULL/'
+SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V6_349_FULL/'
+SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V8_349_FULL/'
 
 file_name = 'M3V6_349_MISS2_FULL' # my total 
 file_name = 'M3V6_349_MISS2_ONEIL'
+file_name = 'M3V8_349_MISS2_ONEIL'
+
 
 A_B_C_S_SET_ADD = pd.read_csv(SAVE_PATH+'{}.A_B_C_S_SET_ADD.csv'.format(file_name), low_memory=False)
 
@@ -118,17 +121,17 @@ ccle = list(A_B_C_S_SET_ADD2['CELL'])
 A_B_C_S_SET_ADD2['CID_CID'] = [str(int(cid_a[i])) + '___' + str(int(cid_b[i])) if cid_a[i] < cid_b[i] else str(int(cid_b[i])) + '___' + str(int(cid_a[i])) for i in range(A_B_C_S_SET_ADD2.shape[0])]
 A_B_C_S_SET_ADD2['SM_C_CHECK'] = [sm_a[i] + '___' + sm_b[i]+ '___' + ccle[i] if sm_a[i] < sm_b[i] else sm_b[i] + '___' + sm_a[i]+ '___' + ccle[i] for i in range(A_B_C_S_SET_ADD2.shape[0])]
 
-A_B_C_S_SET_ADD2['ori_index'] = list(A_B_C_S_SET_ADD2.index)
+A_B_C_S_SET_ADD2['ori_index'] = list(A_B_C_S_SET_ADD2.index) # 16422
 
 MISS_filter = ['AOBO','AXBX','AXBO','AOBX'] # 
 
-A_B_C_S_SET = A_B_C_S_SET_ADD2[A_B_C_S_SET_ADD2.Basal_Exp == 'O']
+A_B_C_S_SET = A_B_C_S_SET_ADD2[A_B_C_S_SET_ADD2.Basal_Exp == 'O'] 
 
 # A_B_C_S_SET = A_B_C_S_SET[A_B_C_S_SET.ONEIL == 'O'] # 16422
 
-A_B_C_S_SET = A_B_C_S_SET[A_B_C_S_SET.SYN_OX == 'O'] # 11639
+# A_B_C_S_SET = A_B_C_S_SET[A_B_C_S_SET.SYN_OX == 'O'] # 11639 # M3V8 11864
 
-# A_B_C_S_SET = A_B_C_S_SET[A_B_C_S_SET.T1OX == 'O'] # 8086 -> 이걸 빼야하나 말아야하나 #################
+# A_B_C_S_SET = A_B_C_S_SET[A_B_C_S_SET.T1OX == 'O'] # 8086 -> 이걸 빼야하나 말아야하나 이번엔 빼는걸로 
 
 A_B_C_S_SET = A_B_C_S_SET[A_B_C_S_SET.type.isin(MISS_filter)]
 
@@ -250,7 +253,9 @@ change_cellname('SW620','SW-620')
 change_cellname('NCIH460','NCI-H460')
 change_cellname('T47D','T-47D')
 
-
+# len(set(list(DS_labels_RE.drug_a_CID) + list(DS_labels_RE.drug_b_CID)))
+# len(set(DS_labels_RE.ON_CID_CID))
+# len(set(DS_labels_RE.cell_line))
 
 
 ###########################################################################################
@@ -775,9 +780,14 @@ all_cell = my_CELL & DS_CELL ; len(all_cell) # 34
 no_TF_CID = [104842, 208908, 46926350, 24964624, 5394, 11977753, 60700, 15953832, 3062316, 24748204, 216239, 3385, 5288382, 5311, 59691338, 60750, 5329102, 11960529, 31703, 2907, 126941, 9826528, 176870, 36462, 5743, 5746, 24856436, 387447, 24958200, 4091]
 no_TF_CELL = ['T-47D', 'RKO', 'ES2', 'RPMI7951', 'NCIH520', 'MSTO', 'NCIH2122', 'MDAMB436', 'OV90', 'KPL1', 'HT144', 'A375', 'PA1', 'CAOV3', 'OVCAR3', 'LOVO', 'NCIH1650', 'A427', 'VCAP', 'NCI-H460', 'SK-OV-3', 'DLD1', 'A2058', 'SW837', 'SKMES1', 'UWB1289', 'HCT116', 'A2780', 'ZR751', 'UACC62', 'SW-620', 'NCIH23', 'SKMEL30', 'HT29']
 
-# 27 & 34
-yes_TF_CID = [208908, 46926350, 24964624, 5394, 11977753, 60700, 15953832, 3062316, 216239, 3385, 5288382, 5311, 60750, 5329102, 11960529, 31703, 2907, 126941, 9826528, 176870, 36462, 5743, 5746, 24856436, 387447, 24958200, 4091]
-yes_TF_CELL = ['T-47D', 'RKO', 'ES2', 'RPMI7951', 'NCIH520', 'MSTO', 'NCIH2122', 'MDAMB436', 'OV90', 'KPL1', 'HT144', 'A375', 'PA1', 'CAOV3', 'OVCAR3', 'LOVO', 'NCIH1650', 'A427', 'VCAP', 'NCI-H460', 'SK-OV-3', 'DLD1', 'A2058', 'SW837', 'SKMES1', 'UWB1289', 'HCT116', 'A2780', 'ZR751', 'UACC62', 'SW-620', 'NCIH23', 'SKMEL30', 'HT29']
+
+# 27 & 34 old ver 
+# yes_TF_CID = [208908, 46926350, 24964624, 5394, 11977753, 60700, 15953832, 3062316, 216239, 3385, 5288382, 5311, 60750, 5329102, 11960529, 31703, 2907, 126941, 9826528, 176870, 36462, 5743, 5746, 24856436, 387447, 24958200, 4091]
+# yes_TF_CELL = ['T-47D', 'RKO', 'ES2', 'RPMI7951', 'NCIH520', 'MSTO', 'NCIH2122', 'MDAMB436', 'OV90', 'KPL1', 'HT144', 'A375', 'PA1', 'CAOV3', 'OVCAR3', 'LOVO', 'NCIH1650', 'A427', 'VCAP', 'NCI-H460', 'SK-OV-3', 'DLD1', 'A2058', 'SW837', 'SKMES1', 'UWB1289', 'HCT116', 'A2780', 'ZR751', 'UACC62', 'SW-620', 'NCIH23', 'SKMEL30', 'HT29']
+
+
+
+
 
 'T-47D', 
 'RKO', 

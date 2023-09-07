@@ -725,8 +725,8 @@ A_B_C_S_SET = A_B_C_S_SET_clen.reset_index(drop=True) #
 A_B_C_S_SET.columns = [
 	'drug_row_CID', 'drug_col_CID', 'DrugCombCCLE', 'ROWCHECK', 'COLCHECK',
 	   'ROW_CAN_SMILES', 'COL_CAN_SMILES', 'ROW_pert_id', 'ROW_BETA_sig_id',
-	   'COL_pert_id', 'COL_BETA_sig_id', 'cid_cid_cell', 'sig_sig_cell','type', 'ROW_len',
-	   'COL_len'
+	   'COL_pert_id', 'COL_BETA_sig_id', 'cid_cid_cell', 'sig_sig_cell',
+	   'type', 'ROW_len', 'COL_len'
 ]
 
 
@@ -1453,6 +1453,7 @@ def save_cell_json (cell_name) :
 
 for cell_name in avail_cell_list :
 	save_cell_json(cell_name)
+
 
 
 

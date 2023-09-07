@@ -78,10 +78,10 @@ import pandas as pd
 
 
 
-#NETWORK_PATH = '/st06/jiyeonH/13.DD_SESS/HumanNetV3/'
-#LINCS_PATH = '/st06/jiyeonH/11.TOX/MY_TRIAL_5/' 
-#DATA_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V3_FULL/'
-#DC_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/'
+NETWORK_PATH = '/st06/jiyeonH/13.DD_SESS/HumanNetV3/'
+LINCS_PATH = '/st06/jiyeonH/11.TOX/MY_TRIAL_5/' 
+DATA_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V3_FULL/'
+DC_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/'
 
 
 
@@ -169,7 +169,7 @@ BETA_NEWNOD_ORDER = list(BETA_ORDER_DF.new_node)
 
 
 SAVE_PATH = '/home01/k040a01/02.M3V8/M3V8_349_DATA/'
-# SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V6_349_FULL/'
+# SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V8_349_FULL/'
 
 file_name = 'M3V8_349_MISS2_FULL' # 0608
 
@@ -272,7 +272,6 @@ A_B_C_S_SET_COH = pd.merge(A_B_C_S_SET, DC_CELL_info_filt, on = 'CELL', how = 'l
 
 
 # sample number filter 
-
 # 빈도 확인 
 
 C_names = list(set(A_B_C_S_SET_COH.DC_cellname))
@@ -1774,6 +1773,7 @@ DC_CELL_DF2 = pd.concat([
 	pd.DataFrame({'cell_line_id' : [1],'DC_cellname' : ['786O'],'DrugCombCello' : ['CVCL_1051'],'DrugCombCCLE':['786O_KIDNEY']})])
 
 DC_CELL_info_filt = DC_CELL_DF2[DC_CELL_DF2.DrugCombCCLE.isin(A_B_C_S_SET.CELL)] # 38
+# DC_CELL_info_filt = DC_CELL_DF2[DC_CELL_DF2.DrugCombCCLE.isin(A_B_C_S_SET_ADD.CELL)] # 38
 
 DC_CELL_info_filt = DC_CELL_info_filt.drop(['Unnamed: 0'], axis = 1)
 DC_CELL_info_filt.columns = ['cell_line_id', 'DC_cellname', 'DrugCombCello', 'CELL']
@@ -2641,7 +2641,7 @@ R_4_T_CV3, R_4_1_CV3, R_4_2_CV3, pred_4_CV3, ans_4_CV3 = TEST_CPU(PRJ_PATH, 'CV_
 R_4_T_CV4, R_4_1_CV4, R_4_2_CV4, pred_4_CV4, ans_4_CV4 = TEST_CPU(PRJ_PATH, 'CV_4', my_config, PRJ_PATH, 'VSC_CV_4_model.pth', 'VSC')
 
 
-
+# 같은 코드인데 왜 GPU 와 CPU 에서의 성능이 다른건지 모르겠음 
 # 다시 GPU 에서 해가지고 가져옴 
                 def re_test(ABCS, CV_NUM, model_path, model_name, colname, use_cuda = False) :
                     CV__test = ray.get(RAY_test_list[CV_NUM])
@@ -2800,6 +2800,13 @@ ABCS_CV_3 = pd.read_csv(PRJ_PATH+'ABCS_test_CV3.csv', index_col = 0)
 ABCS_CV_4 = pd.read_csv(PRJ_PATH+'ABCS_test_CV4.csv', index_col = 0)
 
 
+ABCS_CV_0['tissue'] = ABCS_CV_0.CELL.apply(lambda x : '_'.join(x.split('_')[1:] ) )
+ABCS_CV_1['tissue'] = ABCS_CV_1.CELL.apply(lambda x : '_'.join(x.split('_')[1:] ) )
+ABCS_CV_2['tissue'] = ABCS_CV_2.CELL.apply(lambda x : '_'.join(x.split('_')[1:] ) )
+ABCS_CV_3['tissue'] = ABCS_CV_3.CELL.apply(lambda x : '_'.join(x.split('_')[1:] ) )
+ABCS_CV_4['tissue'] = ABCS_CV_4.CELL.apply(lambda x : '_'.join(x.split('_')[1:] ) )
+
+
                         ABCS_test_0 = A_B_C_S_SET_SM[A_B_C_S_SET_SM.SM_C_CHECK.isin(CV_ND_INDS['CV0_test'])]
                         ABCS_test_0['ANS'] = ans_1_CV0 ; ABCS_test_0['PRED_1'] = pred_1_CV0; ABCS_test_0['PRED_2'] = pred_2_CV0 ; ABCS_test_0['PRED_3'] = pred_3_CV0 ;  ABCS_test_0['PRED_4'] = pred_4_CV0
 
@@ -2862,8 +2869,8 @@ cell_num = []
 
 for cell in list(test_cell_df.DC_cellname) :
 	tmp_test_re = ABCS_test_result[ABCS_test_result.DC_cellname == cell]
-	cell_P_corr, _ = stats.pearsonr(tmp_test_re.ANS, tmp_test_re.VPC)
-	cell_S_corr, _ = stats.spearmanr(tmp_test_re.ANS, tmp_test_re.VPC)
+	cell_P_corr, _ = stats.pearsonr(tmp_test_re.ANS, tmp_test_re.FULL)
+	cell_S_corr, _ = stats.spearmanr(tmp_test_re.ANS, tmp_test_re.FULL)
 	cell_nums = tmp_test_re.shape[0]
 	cell_P.append(cell_P_corr)
 	cell_S.append(cell_S_corr)
@@ -2932,8 +2939,91 @@ plt.close()
 
 
 
-max(ABCS_test_result.VPC)
-min(ABCS_test_result.VPC)
+
+
+
+
+
+
+
+# 추가적으로 궁금해져서 
+# AXBX 의 비율을 살펴보기로 함 
+# total 10552
+TEST_ALL_O = ABCS_test_result[ABCS_test_result.type.isin(['AOBO'])] # 1348 -> 659 
+TEST_HALF_O = ABCS_test_result[ABCS_test_result.type.isin(['AXBO','AOBX'])] # 2179 -> 1074
+TEST_NO_O = ABCS_test_result[ABCS_test_result.type.isin(['AXBX'])] # 7025 -> 16854
+
+
+
+
+def give_test_result_corDF (ABCS_test_result) : 
+	THIS_TEST = pd.merge(ABCS_test_result, DC_CELL_info_filt[['CELL', 'tissue']], on = 'CELL', how = 'left'  )
+	test_cell_df = pd.DataFrame({'DC_cellname' : list(set(THIS_TEST.DC_cellname))})
+	#
+	cell_P = []
+	cell_S = []
+	cell_num = []
+	#
+	for cell in list(test_cell_df.DC_cellname) :
+		tmp_test_re = THIS_TEST[THIS_TEST.DC_cellname == cell]
+		if tmp_test_re.shape[0] > 1 :
+			cell_P_corr, _ = stats.pearsonr(tmp_test_re.ANS, tmp_test_re.FULL)
+			cell_S_corr, _ = stats.spearmanr(tmp_test_re.ANS, tmp_test_re.FULL)
+			cell_nums = tmp_test_re.shape[0]
+			cell_P.append(cell_P_corr)
+			cell_S.append(cell_S_corr)
+			cell_num.append(cell_nums)
+		else :
+			cell_nums = tmp_test_re.shape[0]
+			cell_P.append(0)
+			cell_S.append(0)
+			cell_num.append(cell_nums)
+	#
+	test_cell_df['P_COR'] = cell_P
+	test_cell_df['S_COR'] = cell_S
+	test_cell_df['cell_num'] = cell_num
+	#
+	test_cell_df = pd.merge(test_cell_df, DC_CELL_info_filt[['DC_cellname','tissue']], on = 'DC_cellname', how = 'left'  )
+	#
+	tissue_set = ['CENTRAL_NERVOUS_SYSTEM', 'LUNG', 'BREAST', 'BONE', 'OVARY', 'PROSTATE', 'HAEMATOPOIETIC_AND_LYMPHOID_TISSUE', 'LARGE_INTESTINE', 'SKIN', 'PLEURA', 'KIDNEY' ] # list(set(test_cell_df['tissue']))
+	color_set = ['#CF3476','#FF7514','#025669','#308446','#84C3BE','#D53032','#4ddcfd','#ffcd36','#ac8cff',"#0000ffff","#7bff68ff"] # "#1E1E1E"
+	color_dict = {a : color_set[tissue_set.index(a)] for a in tissue_set}
+	#
+	test_cell_df['tissue_oh'] = [color_dict[a] for a in list(test_cell_df['tissue'])]
+	test_cell_df = test_cell_df.sort_values('S_COR')
+	return test_cell_df
+
+
+
+
+TEST_ALL_O_RESULT = give_test_result_corDF(TEST_ALL_O)
+TEST_HALF_O_RESULT = give_test_result_corDF(TEST_HALF_O)
+TEST_NO_O_RESULT = give_test_result_corDF(TEST_NO_O)
+
+TEST_ALL_O_RESULT
+
+TEST_HALF_O_RESULT
+
+TEST_NO_O_RESULT
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+max(ABCS_test_result.FULL)
+min(ABCS_test_result.FULL)
 
 
 
@@ -2944,11 +3034,15 @@ min(ABCS_test_result.ANS)
 # violin plot for tissue 
 from matplotlib import colors as mcolors
 
-tiss_list = tissue_set
-my_order = test_cell_df.groupby(by=["tissue"])["P_COR"].mean().sort_values().iloc[::-1].index
+
+# remove only one sample tissues
+
+test_cell_df_filt = test_cell_df[test_cell_df.tissue.isin(['LARGE_INTESTINE', 'PROSTATE', 'OVARY', 'LUNG', 'SKIN','KIDNEY', 'CENTRAL_NERVOUS_SYSTEM', 'HAEMATOPOIETIC_AND_LYMPHOID_TISSUE', 'BREAST'])]
+
+my_order = test_cell_df_filt.groupby(by=["tissue"])["P_COR"].mean().sort_values().iloc[::-1].index
 
 fig, ax = plt.subplots(figsize=(25, 15))
-sns.violinplot(ax = ax, data  = test_cell_df, x = 'tissue', y = 'P_COR', linewidth=1,  edgecolor="dimgrey", order=my_order,  inner = 'point') # width = 3,
+sns.violinplot(ax = ax, data  = test_cell_df_filt, x = 'tissue', y = 'P_COR', linewidth=1,  edgecolor="dimgrey", order=my_order,  inner = 'point') # width = 3,
 violins = [c for i,c in enumerate(ax.collections) if i%2 == 0] # pollycollection 가져오기 위함 
 
 				#'LARGE_INTESTINE', 'PROSTATE', 'OVARY', 'PLEURA', 'LUNG', 'SKIN','KIDNEY', 'CENTRAL_NERVOUS_SYSTEM', 'HAEMATOPOIETIC_AND_LYMPHOID_TISSUE', 'BREAST', 'BONE'
@@ -2958,8 +3052,8 @@ violins = [c for i,c in enumerate(ax.collections) if i%2 == 0] # pollycollection
 
 
 # 하나밖에 없는애들은 violin 안그려져서 문제 
-violins[0].set_facecolor(mcolors.to_rgba(color_dict['LARGE_INTESTINE'], 0.7))
-violins[1].set_facecolor(mcolors.to_rgba(color_dict['OVARY'], 0.7))
+violins[0].set_facecolor(mcolors.to_rgba(color_dict['OVARY'], 0.7))
+violins[1].set_facecolor(mcolors.to_rgba(color_dict['LARGE_INTESTINE'], 0.7))
 violins[2].set_facecolor(mcolors.to_rgba(color_dict['PROSTATE'], 0.7))
 violins[3].set_facecolor(mcolors.to_rgba(color_dict['LUNG'], 0.7))
 violins[4].set_facecolor(mcolors.to_rgba(color_dict['KIDNEY'], 0.7))
@@ -2988,10 +3082,10 @@ plt.close()
 from matplotlib import colors as mcolors
 
 tiss_list = tissue_set
-my_order = test_cell_df.groupby(by=["tissue"])["P_COR"].mean().sort_values().iloc[::-1].index
+my_order = test_cell_df_filt.groupby(by=["tissue"])["P_COR"].mean().sort_values().iloc[::-1].index
 
 fig, ax = plt.subplots(figsize=(25, 10))
-sns.violinplot(ax = ax, data  = test_cell_df, x = 'tissue', y = 'P_COR', linewidth=1,  edgecolor="dimgrey", order=my_order) # width = 3,,  inner = 'point'
+sns.violinplot(ax = ax, data  = test_cell_df_filt, x = 'tissue', y = 'P_COR', linewidth=1,  edgecolor="dimgrey", order=my_order) # width = 3,,  inner = 'point'
 violins = [c for i,c in enumerate(ax.collections) if i%2 == 0] # pollycollection 가져오기 위함 
 
 				#'LARGE_INTESTINE', 'PROSTATE', 'OVARY', 'PLEURA', 'LUNG', 'SKIN','KIDNEY', 'CENTRAL_NERVOUS_SYSTEM', 'HAEMATOPOIETIC_AND_LYMPHOID_TISSUE', 'BREAST', 'BONE'
@@ -3017,7 +3111,7 @@ breast_check = ccle_info[ccle_info.stripped_cell_line_name.isin(avail_cell_dict[
 breast_check.columns = ['DC_cellname','subclass']
 
 
-test_cell_df2 = pd.merge(test_cell_df, breast_check, on = 'DC_cellname', how = 'left')
+test_cell_df2 = pd.merge(test_cell_df_filt, breast_check, on = 'DC_cellname', how = 'left')
 test_cell_df2['subclass'] = test_cell_df2.subclass.apply(lambda x : "NA" if type(x) != str else x)
 
 test_cell_df2.at[test_cell_df2[test_cell_df2.DC_cellname=='ZR751'].index.item(),'subclass'] = 'luminal'
@@ -3047,10 +3141,10 @@ plt.close()
 from matplotlib import colors as mcolors
 
 tiss_list = tissue_set
-my_order = test_cell_df.groupby(by=["tissue"])["P_COR"].mean().sort_values().iloc[::-1].index
+my_order = test_cell_df_filt.groupby(by=["tissue"])["P_COR"].mean().sort_values().iloc[::-1].index
 
 fig, ax = plt.subplots(figsize=(23, 13))
-sns.violinplot(ax = ax, data  = test_cell_df, x = 'tissue', y = 'P_COR', linewidth=2,  edgecolor="black", order=my_order, width = 1, inner = None) # width = 3,,  
+sns.violinplot(ax = ax, data  = test_cell_df_filt, x = 'tissue', y = 'P_COR', linewidth=2,  edgecolor="black", order=my_order, width = 1, inner = None) # width = 3,,  
 violins = [c for i,c in enumerate(ax.collections) ] # pollycollection 가져오기 위함 # if i%2 == 0
 
 				#'LARGE_INTESTINE', 'PROSTATE', 'OVARY', 'PLEURA', 'LUNG', 'SKIN','KIDNEY', 'CENTRAL_NERVOUS_SYSTEM', 'HAEMATOPOIETIC_AND_LYMPHOID_TISSUE', 'BREAST', 'BONE'
@@ -3058,8 +3152,8 @@ violins = [c for i,c in enumerate(ax.collections) ] # pollycollection 가져오�
 
 
 # 하나밖에 없는애들은 violin 안그려져서 문제 
-violins[0].set_facecolor(mcolors.to_rgba(color_dict['LARGE_INTESTINE'], 0.8))
-violins[1].set_facecolor(mcolors.to_rgba(color_dict['OVARY'], 0.8))
+violins[0].set_facecolor(mcolors.to_rgba(color_dict['OVARY'], 0.8))
+violins[1].set_facecolor(mcolors.to_rgba(color_dict['LARGE_INTESTINE'], 0.8))
 violins[2].set_facecolor(mcolors.to_rgba(color_dict['PROSTATE'], 0.8))
 violins[3].set_facecolor(mcolors.to_rgba(color_dict['LUNG'], 0.8))
 violins[4].set_facecolor(mcolors.to_rgba(color_dict['KIDNEY'], 0.8))
@@ -3074,7 +3168,7 @@ breast_check = ccle_info[ccle_info.stripped_cell_line_name.isin(avail_cell_dict[
 breast_check.columns = ['DC_cellname','subclass']
 
 
-test_cell_df2 = pd.merge(test_cell_df, breast_check, on = 'DC_cellname', how = 'left')
+test_cell_df2 = pd.merge(test_cell_df_filt, breast_check, on = 'DC_cellname', how = 'left')
 test_cell_df2['subclass'] = test_cell_df2.subclass.apply(lambda x : "NA" if type(x) != str else x)
 
 test_cell_df2.at[test_cell_df2[test_cell_df2.DC_cellname=='ZR751'].index.item(),'subclass'] = 'luminal'
@@ -3103,6 +3197,1150 @@ plt.savefig(os.path.join(PRJ_PATH,'tissue_pearson3.{}.png'.format(W_NAME)), dpi 
 plt.savefig('{}/{}.pdf'.format(PRJ_PATH, 'tissue_pearson3.{}.pdf'.format(W_NAME)), format="pdf", bbox_inches = 'tight')
 
 plt.close()
+
+
+
+
+
+
+
+# 하위 조직 violin plot 
+
+
+# breast 따로 그리기 1 
+
+
+fig, ax = plt.subplots(figsize=(6, 13))
+
+test_cell_df_mini = test_cell_df[test_cell_df.tissue=='BREAST']
+test_cell_df_mini = pd.merge(test_cell_df_mini, DC_CELL_DF2[['DC_cellname','DrugCombCCLE']], on = 'DC_cellname', how='left')
+
+
+sns.violinplot(ax = ax, data  = test_cell_df_mini, x = 'tissue', y = 'P_COR', linewidth=1,  edgecolor="dimgrey") # width = 3,,  inner = 'point'
+violins = [c for i,c in enumerate(ax.collections) if i%2 == 0] # pollycollection 가져오기 위함 
+violins[0].set_facecolor(mcolors.to_rgba(color_dict['BREAST'], 0.7))
+
+
+MY_B = ['BT474_BREAST' ,'MDAMB231_BREAST','MDAMB175VII_BREAST','MDAMB468_BREAST','HCC1419_BREAST','MDAMB361_BREAST','HCC1500_BREAST','T47D_BREAST','MCF7_BREAST','KPL1_BREAST','CAMA1_BREAST','MDAMB436_BREAST','ZR751_BREAST','BT549_BREAST','HS578T_BREAST','UACC812_BREAST']
+
+breast_check = ccle_info[ccle_info.CCLE_Name.isin(MY_B)][['CCLE_Name','sample_collection_site','primary_or_metastasis','lineage_subtype','lineage_sub_subtype','lineage_molecular_subtype']]
+
+test_cell_df_mini2 = pd.merge(test_cell_df_mini, breast_check, left_on = 'DrugCombCCLE', right_on = 'CCLE_Name', how = 'left')
+
+# test_cell_df2.subclass.factorize()
+sns.swarmplot(ax = ax, data  = test_cell_df_mini2, size = 10,
+x = 'tissue', y = 'P_COR', hue='lineage_molecular_subtype', palette=sns.color_palette(['yellow', 'pink', 'lawngreen','cyan']))
+
+
+ax.set_xlabel('tissue names', fontsize=15)
+ax.set_ylabel('Pearson Corr', fontsize=15)
+ax.set_xticks(ax.get_xticks())
+ax.set_xticklabels(ax.get_xticklabels(), rotation = 90, fontsize=25)
+ax.set_yticklabels(ax.get_yticklabels(),  fontsize=25)
+ax.tick_params(axis='both', which='major', labelsize=20 )
+plt.tight_layout()
+plt.grid(True)
+plt.savefig(os.path.join(PRJ_PATH,'tissue_pearson.BREAST1.{}.png'.format(W_NAME)), dpi = 300)
+
+plt.close()
+
+
+# breast 2 
+
+fig, ax = plt.subplots(figsize=(6, 13))
+
+test_cell_df_mini = test_cell_df[test_cell_df.tissue=='BREAST']
+test_cell_df_mini = pd.merge(test_cell_df_mini, DC_CELL_DF2[['DC_cellname','DrugCombCCLE']], on = 'DC_cellname', how='left')
+
+sns.violinplot(ax = ax, data  = test_cell_df_mini, x = 'tissue', y = 'P_COR', linewidth=1,  edgecolor="dimgrey") # width = 3,,  inner = 'point'
+violins = [c for i,c in enumerate(ax.collections) if i%2 == 0] # pollycollection 가져오기 위함 
+violins[0].set_facecolor(mcolors.to_rgba(color_dict['BREAST'], 0.7))
+
+MY_B = ['BT474_BREAST' ,'MDAMB231_BREAST','MDAMB175VII_BREAST','MDAMB468_BREAST','HCC1419_BREAST','MDAMB361_BREAST','HCC1500_BREAST','T47D_BREAST','MCF7_BREAST','KPL1_BREAST','CAMA1_BREAST','MDAMB436_BREAST','ZR751_BREAST','BT549_BREAST','HS578T_BREAST','UACC812_BREAST']
+
+breast_check = ccle_info[ccle_info.CCLE_Name.isin(MY_B)][['CCLE_Name','sample_collection_site','primary_or_metastasis','lineage_subtype','lineage_sub_subtype','lineage_molecular_subtype']]
+
+test_cell_df_mini2 = pd.merge(test_cell_df_mini, breast_check, left_on = 'DrugCombCCLE', right_on = 'CCLE_Name', how = 'left')
+
+# test_cell_df2.subclass.factorize()
+sns.swarmplot(ax = ax, data  = test_cell_df_mini2, size = 10,
+x = 'tissue', y = 'P_COR', hue='lineage_sub_subtype', palette=sns.color_palette(['yellow', 'pink','cyan']))
+
+
+ax.set_xlabel('tissue names', fontsize=15)
+ax.set_ylabel('Pearson Corr', fontsize=15)
+ax.set_xticks(ax.get_xticks())
+ax.set_xticklabels(ax.get_xticklabels(), rotation = 90, fontsize=25)
+ax.set_yticklabels(ax.get_yticklabels(),  fontsize=25)
+ax.tick_params(axis='both', which='major', labelsize=20 )
+plt.tight_layout()
+plt.grid(True)
+plt.savefig(os.path.join(PRJ_PATH,'tissue_pearson.BREAST2.{}.png'.format(W_NAME)), dpi = 300)
+
+plt.close()
+
+
+
+
+# breast 3
+
+fig, ax = plt.subplots(figsize=(6, 13))
+
+test_cell_df_mini = test_cell_df[test_cell_df.tissue=='BREAST']
+test_cell_df_mini = pd.merge(test_cell_df_mini, DC_CELL_DF2[['DC_cellname','DrugCombCCLE']], on = 'DC_cellname', how='left')
+
+sns.violinplot(ax = ax, data  = test_cell_df_mini, x = 'tissue', y = 'P_COR', linewidth=1,  edgecolor="dimgrey") # width = 3,,  inner = 'point'
+violins = [c for i,c in enumerate(ax.collections) if i%2 == 0] # pollycollection 가져오기 위함 
+violins[0].set_facecolor(mcolors.to_rgba(color_dict['BREAST'], 0.7))
+
+MY_B = ['BT474_BREAST' ,'MDAMB231_BREAST','MDAMB175VII_BREAST','MDAMB468_BREAST','HCC1419_BREAST','MDAMB361_BREAST','HCC1500_BREAST','T47D_BREAST','MCF7_BREAST','KPL1_BREAST','CAMA1_BREAST','MDAMB436_BREAST','ZR751_BREAST','BT549_BREAST','HS578T_BREAST','UACC812_BREAST']
+
+breast_check = ccle_info[ccle_info.CCLE_Name.isin(MY_B)][['CCLE_Name','sample_collection_site','primary_or_metastasis','lineage_subtype','lineage_sub_subtype','lineage_molecular_subtype']]
+
+test_cell_df_mini2 = pd.merge(test_cell_df_mini, breast_check, left_on = 'DrugCombCCLE', right_on = 'CCLE_Name', how = 'left')
+
+# test_cell_df2.subclass.factorize()
+sns.swarmplot(ax = ax, data  = test_cell_df_mini2, size = 10,
+x = 'tissue', y = 'P_COR', hue='sample_collection_site', palette=sns.color_palette(['yellow', 'pink','cyan','lawngreen']))
+
+
+ax.set_xlabel('tissue names', fontsize=15)
+ax.set_ylabel('Pearson Corr', fontsize=15)
+ax.set_xticks(ax.get_xticks())
+ax.set_xticklabels(ax.get_xticklabels(), rotation = 90, fontsize=25)
+ax.set_yticklabels(ax.get_yticklabels(),  fontsize=25)
+ax.tick_params(axis='both', which='major', labelsize=20 )
+plt.tight_layout()
+plt.grid(True)
+plt.savefig(os.path.join(PRJ_PATH,'tissue_pearson.BREAST3.{}.png'.format(W_NAME)), dpi = 300)
+
+plt.close()
+
+
+
+
+# breast 4
+
+fig, ax = plt.subplots(figsize=(6, 13))
+
+test_cell_df_mini = test_cell_df[test_cell_df.tissue=='BREAST']
+test_cell_df_mini = pd.merge(test_cell_df_mini, DC_CELL_DF2[['DC_cellname','DrugCombCCLE']], on = 'DC_cellname', how='left')
+
+sns.violinplot(ax = ax, data  = test_cell_df_mini, x = 'tissue', y = 'P_COR', linewidth=1,  edgecolor="dimgrey") # width = 3,,  inner = 'point'
+violins = [c for i,c in enumerate(ax.collections) if i%2 == 0] # pollycollection 가져오기 위함 
+violins[0].set_facecolor(mcolors.to_rgba(color_dict['BREAST'], 0.7))
+
+MY_B = ['BT474_BREAST' ,'MDAMB231_BREAST','MDAMB175VII_BREAST','MDAMB468_BREAST','HCC1419_BREAST','MDAMB361_BREAST','HCC1500_BREAST','T47D_BREAST','MCF7_BREAST','KPL1_BREAST','CAMA1_BREAST','MDAMB436_BREAST','ZR751_BREAST','BT549_BREAST','HS578T_BREAST','UACC812_BREAST']
+
+breast_check = ccle_info[ccle_info.CCLE_Name.isin(MY_B)][['CCLE_Name','sample_collection_site','primary_or_metastasis','lineage_subtype','lineage_sub_subtype','lineage_molecular_subtype']]
+
+test_cell_df_mini2 = pd.merge(test_cell_df_mini, breast_check, left_on = 'DrugCombCCLE', right_on = 'CCLE_Name', how = 'left')
+
+# test_cell_df2.subclass.factorize()
+sns.swarmplot(ax = ax, data  = test_cell_df_mini2, size = 10,
+x = 'tissue', y = 'P_COR', hue='lineage_subtype', palette=sns.color_palette(['yellow', 'pink']))
+
+
+ax.set_xlabel('tissue names', fontsize=15)
+ax.set_ylabel('Pearson Corr', fontsize=15)
+ax.set_xticks(ax.get_xticks())
+ax.set_xticklabels(ax.get_xticklabels(), rotation = 90, fontsize=25)
+ax.set_yticklabels(ax.get_yticklabels(),  fontsize=25)
+ax.tick_params(axis='both', which='major', labelsize=20 )
+plt.tight_layout()
+plt.grid(True)
+plt.savefig(os.path.join(PRJ_PATH,'tissue_pearson.BREAST4.{}.png'.format(W_NAME)), dpi = 300)
+
+plt.close()
+
+
+
+
+
+
+
+
+
+
+# breast 따로 그리기 5
+# 세가지로만 만들어서 보여주기 
+
+
+fig, ax = plt.subplots(figsize=(6, 13))
+
+test_cell_df_mini = test_cell_df[test_cell_df.tissue=='BREAST']
+test_cell_df_mini = pd.merge(test_cell_df_mini, DC_CELL_DF2[['DC_cellname','DrugCombCCLE']], on = 'DC_cellname', how='left')
+
+
+sns.violinplot(ax = ax, data  = test_cell_df_mini, x = 'tissue', y = 'P_COR', linewidth=2,  edgecolor="black") # width = 3,,  inner = 'point'
+violins = [c for i,c in enumerate(ax.collections) if i%2 == 0] # pollycollection 가져오기 위함 
+violins[0].set_facecolor(mcolors.to_rgba(color_dict['BREAST'], 0.8))
+
+
+MY_B = ['BT474_BREAST' ,'MDAMB231_BREAST','MDAMB175VII_BREAST','MDAMB468_BREAST','HCC1419_BREAST','MDAMB361_BREAST','HCC1500_BREAST','T47D_BREAST','MCF7_BREAST','KPL1_BREAST','CAMA1_BREAST','MDAMB436_BREAST','ZR751_BREAST','BT549_BREAST','HS578T_BREAST','UACC812_BREAST']
+
+breast_check = ccle_info[ccle_info.CCLE_Name.isin(MY_B)][['CCLE_Name','sample_collection_site','primary_or_metastasis','lineage_subtype','lineage_sub_subtype','lineage_molecular_subtype']]
+breast_check['Subtypes'] = breast_check.lineage_molecular_subtype.apply(lambda x : 'Basal' if 'basal' in x else x)
+breast_check['Subtypes'] = breast_check.Subtypes.apply(lambda x : 'Luminal' if 'luminal' in x else x)
+
+test_cell_df_mini2 = pd.merge(test_cell_df_mini, breast_check, left_on = 'DrugCombCCLE', right_on = 'CCLE_Name', how = 'left')
+
+# test_cell_df2.subclass.factorize()
+sns.swarmplot(ax = ax, data  = test_cell_df_mini2, linewidth=1, edgecolor="white", size = 15,
+x = 'tissue', y = 'P_COR', hue='Subtypes', 
+palette=sns.color_palette(['yellow', 'pink','cyan']))
+
+
+ax.set_xlabel('', fontsize=15)
+ax.set_ylabel('Avg Pearson Corr', fontsize=15)
+ax.set_xticks(ax.get_xticks())
+ax.set_xticklabels([''], rotation = 90, fontsize=25) # ax.get_xticklabels()
+
+ytick_names = np.array(['', 0.0 , 0.2, 0.4, 0.6, 0.8, 1.0, ''])
+ax.set_yticklabels(ytick_names,  fontsize=25)
+ax.tick_params(axis='both', which='major', labelsize=20 )
+plt.grid(True)
+plt.legend(bbox_to_anchor=(1.1, 1.1), loc="upper right", fontsize=15)
+plt.tight_layout()
+
+plt.savefig(os.path.join(PRJ_PATH,'tissue_pearson.BREAST5.{}.png'.format(W_NAME)), dpi = 300)
+
+plt.close()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# CENTRAL_NERVOUS_SYSTEM 1
+
+NN_filt = ccle_info[ccle_info.CCLE_Name.isin(N_list)][['CCLE_Name','Subtype','lineage_subtype','lineage_sub_subtype','lineage_molecular_subtype']]
+
+
+fig, ax = plt.subplots(figsize=(6, 13))
+
+test_cell_df_mini = test_cell_df[test_cell_df.tissue=='CENTRAL_NERVOUS_SYSTEM']
+test_cell_df_mini = pd.merge(test_cell_df_mini, DC_CELL_DF2[['DC_cellname','DrugCombCCLE']], on = 'DC_cellname', how='left')
+
+sns.violinplot(ax = ax, data  = test_cell_df_mini, x = 'tissue', y = 'P_COR', linewidth=1,  edgecolor="dimgrey") # width = 3,,  inner = 'point'
+violins = [c for i,c in enumerate(ax.collections) if i%2 == 0] # pollycollection 가져오기 위함 
+violins[0].set_facecolor(mcolors.to_rgba(color_dict['CENTRAL_NERVOUS_SYSTEM'], 0.7))
+
+MY_N = ['SF295_CENTRAL_NERVOUS_SYSTEM','U251MG_CENTRAL_NERVOUS_SYSTEM','T98G_CENTRAL_NERVOUS_SYSTEM','SF268_CENTRAL_NERVOUS_SYSTEM','SNB75_CENTRAL_NERVOUS_SYSTEM','SF539_CENTRAL_NERVOUS_SYSTEM']
+
+nn_check = ccle_info[ccle_info.CCLE_Name.isin(MY_N)][['CCLE_Name','Subtype','lineage_subtype','lineage_sub_subtype','lineage_molecular_subtype']]
+
+test_cell_df_mini2 = pd.merge(test_cell_df_mini, nn_check, left_on = 'DrugCombCCLE', right_on = 'CCLE_Name', how = 'left')
+
+# test_cell_df2.subclass.factorize()
+sns.swarmplot(ax = ax, data  = test_cell_df_mini2, size = 10,
+x = 'tissue', y = 'P_COR', hue='Subtype', palette=sns.color_palette(['yellow', 'lawngreen','cyan']))
+
+
+ax.set_xlabel('tissue names', fontsize=15)
+ax.set_ylabel('Pearson Corr', fontsize=15)
+ax.set_xticks(ax.get_xticks())
+ax.set_xticklabels(ax.get_xticklabels(), rotation = 90, fontsize=25)
+ax.set_yticklabels(ax.get_yticklabels(),  fontsize=25)
+ax.tick_params(axis='both', which='major', labelsize=20 )
+plt.tight_layout()
+plt.grid(True)
+plt.savefig(os.path.join(PRJ_PATH,'tissue_pearson.NN1.{}.png'.format(W_NAME)), dpi = 300)
+
+plt.close()
+
+
+
+
+
+
+# CENTRAL_NERVOUS_SYSTEM 2
+
+NN_filt = ccle_info[ccle_info.CCLE_Name.isin(N_list)][['CCLE_Name','Subtype','lineage_subtype','lineage_sub_subtype','lineage_molecular_subtype']]
+
+
+fig, ax = plt.subplots(figsize=(6, 13))
+
+test_cell_df_mini = test_cell_df[test_cell_df.tissue=='CENTRAL_NERVOUS_SYSTEM']
+test_cell_df_mini = pd.merge(test_cell_df_mini, DC_CELL_DF2[['DC_cellname','DrugCombCCLE']], on = 'DC_cellname', how='left')
+
+sns.violinplot(ax = ax, data  = test_cell_df_mini, x = 'tissue', y = 'P_COR', linewidth=1,  edgecolor="dimgrey") # width = 3,,  inner = 'point'
+violins = [c for i,c in enumerate(ax.collections) if i%2 == 0] # pollycollection 가져오기 위함 
+violins[0].set_facecolor(mcolors.to_rgba(color_dict['CENTRAL_NERVOUS_SYSTEM'], 0.7))
+
+MY_N = ['SF295_CENTRAL_NERVOUS_SYSTEM','U251MG_CENTRAL_NERVOUS_SYSTEM','T98G_CENTRAL_NERVOUS_SYSTEM','SF268_CENTRAL_NERVOUS_SYSTEM','SNB75_CENTRAL_NERVOUS_SYSTEM','SF539_CENTRAL_NERVOUS_SYSTEM']
+
+nn_check = ccle_info[ccle_info.CCLE_Name.isin(MY_N)][['CCLE_Name','Subtype','lineage_subtype','lineage_sub_subtype','lineage_molecular_subtype','culture_type']]
+
+test_cell_df_mini2 = pd.merge(test_cell_df_mini, nn_check, left_on = 'DrugCombCCLE', right_on = 'CCLE_Name', how = 'left')
+test_cell_df_mini2['culture_type'] = test_cell_df_mini2.culture_type.apply(lambda x : 'NA' if type(x)!= str else x)
+
+# test_cell_df2.subclass.factorize()
+sns.swarmplot(ax = ax, data  = test_cell_df_mini2, size = 10,
+x = 'tissue', y = 'P_COR', hue='culture_type', palette=sns.color_palette(['yellow', 'lawngreen','cyan']))
+
+
+ax.set_xlabel('tissue names', fontsize=15)
+ax.set_ylabel('Pearson Corr', fontsize=15)
+ax.set_xticks(ax.get_xticks())
+ax.set_xticklabels(ax.get_xticklabels(), rotation = 90, fontsize=25)
+ax.set_yticklabels(ax.get_yticklabels(),  fontsize=25)
+ax.tick_params(axis='both', which='major', labelsize=20 )
+plt.tight_layout()
+plt.grid(True)
+plt.savefig(os.path.join(PRJ_PATH,'tissue_pearson.NN2.{}.png'.format(W_NAME)), dpi = 300)
+
+plt.close()
+
+
+
+
+
+# CENTRAL_NERVOUS_SYSTEM 3
+
+NN_filt = ccle_info[ccle_info.CCLE_Name.isin(N_list)][['CCLE_Name','Subtype','lineage_subtype','lineage_sub_subtype','lineage_molecular_subtype']]
+
+
+fig, ax = plt.subplots(figsize=(6, 13))
+
+test_cell_df_mini = test_cell_df[test_cell_df.tissue=='CENTRAL_NERVOUS_SYSTEM']
+test_cell_df_mini = pd.merge(test_cell_df_mini, DC_CELL_DF2[['DC_cellname','DrugCombCCLE']], on = 'DC_cellname', how='left')
+
+sns.violinplot(ax = ax, data  = test_cell_df_mini, x = 'tissue', y = 'P_COR', linewidth=1,  edgecolor="dimgrey") # width = 3,,  inner = 'point'
+violins = [c for i,c in enumerate(ax.collections) if i%2 == 0] # pollycollection 가져오기 위함 
+violins[0].set_facecolor(mcolors.to_rgba(color_dict['CENTRAL_NERVOUS_SYSTEM'], 0.7))
+
+MY_N = ['SF295_CENTRAL_NERVOUS_SYSTEM','U251MG_CENTRAL_NERVOUS_SYSTEM','T98G_CENTRAL_NERVOUS_SYSTEM','SF268_CENTRAL_NERVOUS_SYSTEM','SNB75_CENTRAL_NERVOUS_SYSTEM','SF539_CENTRAL_NERVOUS_SYSTEM']
+
+nn_check = ccle_info[ccle_info.CCLE_Name.isin(MY_N)][['CCLE_Name','Subtype','lineage_subtype','lineage_sub_subtype','lineage_molecular_subtype','culture_type','source']]
+
+test_cell_df_mini2 = pd.merge(test_cell_df_mini, nn_check, left_on = 'DrugCombCCLE', right_on = 'CCLE_Name', how = 'left')
+test_cell_df_mini2['culture_type'] = test_cell_df_mini2.culture_type.apply(lambda x : 'NA' if type(x)!= str else x)
+
+# test_cell_df2.subclass.factorize()
+sns.swarmplot(ax = ax, data  = test_cell_df_mini2, size = 10,
+x = 'tissue', y = 'P_COR', hue='source', palette=sns.color_palette(['yellow', 'lawngreen','cyan', 'black']))
+
+
+ax.set_xlabel('tissue names', fontsize=15)
+ax.set_ylabel('Pearson Corr', fontsize=15)
+ax.set_xticks(ax.get_xticks())
+ax.set_xticklabels(ax.get_xticklabels(), rotation = 90, fontsize=25)
+ax.set_yticklabels(ax.get_yticklabels(),  fontsize=25)
+ax.tick_params(axis='both', which='major', labelsize=20 )
+plt.tight_layout()
+plt.grid(True)
+plt.savefig(os.path.join(PRJ_PATH,'tissue_pearson.NN3.{}.png'.format(W_NAME)), dpi = 300)
+
+plt.close()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# haemato 
+
+
+fig, ax = plt.subplots(figsize=(6, 13))
+
+test_cell_df_mini = test_cell_df[test_cell_df.tissue=='HAEMATOPOIETIC_AND_LYMPHOID_TISSUE']
+test_cell_df_mini = pd.merge(test_cell_df_mini, DC_CELL_DF2[['DC_cellname','DrugCombCCLE']], on = 'DC_cellname', how='left')
+
+sns.violinplot(ax = ax, data  = test_cell_df_mini, x = 'tissue', y = 'P_COR', linewidth=1,  edgecolor="dimgrey") # width = 3,,  inner = 'point'
+violins = [c for i,c in enumerate(ax.collections) if i%2 == 0] # pollycollection 가져오기 위함 
+violins[0].set_facecolor(mcolors.to_rgba(color_dict['HAEMATOPOIETIC_AND_LYMPHOID_TISSUE'], 0.7))
+
+MY_M = ['UHO1_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE','RPMI8226_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE','K562_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE','L1236_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE','SR786_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE']
+
+nn_check = ccle_info[ccle_info.CCLE_Name.isin(MY_M)][['CCLE_Name','sample_collection_site','primary_or_metastasis','lineage_subtype','lineage_sub_subtype']]
+
+test_cell_df_mini2 = pd.merge(test_cell_df_mini, nn_check, left_on = 'DrugCombCCLE', right_on = 'CCLE_Name', how = 'left')
+# test_cell_df_mini2['culture_type'] = test_cell_df_mini2.culture_type.apply(lambda x : 'NA' if type(x)!= str else x)
+
+# test_cell_df2.subclass.factorize()
+sns.swarmplot(ax = ax, data  = test_cell_df_mini2, size = 10,
+x = 'tissue', y = 'P_COR', hue='sample_collection_site', palette=sns.color_palette(['yellow', 'pink']))
+
+
+ax.set_xlabel('tissue names', fontsize=15)
+ax.set_ylabel('Pearson Corr', fontsize=15)
+ax.set_xticks(ax.get_xticks())
+ax.set_xticklabels(ax.get_xticklabels(), rotation = 90, fontsize=25)
+ax.set_yticklabels(ax.get_yticklabels(),  fontsize=25)
+ax.tick_params(axis='both', which='major', labelsize=20 )
+plt.tight_layout()
+plt.grid(True)
+plt.savefig(os.path.join(PRJ_PATH,'tissue_pearson.HM1.{}.png'.format(W_NAME)), dpi = 300)
+
+plt.close()
+
+
+
+22222 
+
+
+fig, ax = plt.subplots(figsize=(6, 13))
+
+test_cell_df_mini = test_cell_df[test_cell_df.tissue=='HAEMATOPOIETIC_AND_LYMPHOID_TISSUE']
+test_cell_df_mini = pd.merge(test_cell_df_mini, DC_CELL_DF2[['DC_cellname','DrugCombCCLE']], on = 'DC_cellname', how='left')
+
+sns.violinplot(ax = ax, data  = test_cell_df_mini, x = 'tissue', y = 'P_COR', linewidth=1,  edgecolor="dimgrey") # width = 3,,  inner = 'point'
+violins = [c for i,c in enumerate(ax.collections) if i%2 == 0] # pollycollection 가져오기 위함 
+violins[0].set_facecolor(mcolors.to_rgba(color_dict['HAEMATOPOIETIC_AND_LYMPHOID_TISSUE'], 0.7))
+
+MY_M = ['UHO1_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE','RPMI8226_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE','K562_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE','L1236_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE','SR786_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE']
+
+nn_check = ccle_info[ccle_info.CCLE_Name.isin(MY_M)][['CCLE_Name','sample_collection_site','primary_or_metastasis','lineage_subtype','lineage_sub_subtype']]
+
+test_cell_df_mini2 = pd.merge(test_cell_df_mini, nn_check, left_on = 'DrugCombCCLE', right_on = 'CCLE_Name', how = 'left')
+test_cell_df_mini2['primary_or_metastasis'] = test_cell_df_mini2.primary_or_metastasis.apply(lambda x : 'NA' if type(x)!= str else x)
+
+# test_cell_df2.subclass.factorize()
+sns.swarmplot(ax = ax, data  = test_cell_df_mini2, size = 10,
+x = 'tissue', y = 'P_COR', hue='primary_or_metastasis', palette=sns.color_palette(['yellow', 'pink', 'black']))
+
+
+ax.set_xlabel('tissue names', fontsize=15)
+ax.set_ylabel('Pearson Corr', fontsize=15)
+ax.set_xticks(ax.get_xticks())
+ax.set_xticklabels(ax.get_xticklabels(), rotation = 90, fontsize=25)
+ax.set_yticklabels(ax.get_yticklabels(),  fontsize=25)
+ax.tick_params(axis='both', which='major', labelsize=20 )
+plt.tight_layout()
+plt.grid(True)
+plt.savefig(os.path.join(PRJ_PATH,'tissue_pearson.HM2.{}.png'.format(W_NAME)), dpi = 300)
+
+plt.close()
+
+
+
+
+
+
+
+fig, ax = plt.subplots(figsize=(6, 13))
+
+test_cell_df_mini = test_cell_df[test_cell_df.tissue=='HAEMATOPOIETIC_AND_LYMPHOID_TISSUE']
+test_cell_df_mini = pd.merge(test_cell_df_mini, DC_CELL_DF2[['DC_cellname','DrugCombCCLE']], on = 'DC_cellname', how='left')
+
+sns.violinplot(ax = ax, data  = test_cell_df_mini, x = 'tissue', y = 'P_COR', linewidth=1,  edgecolor="dimgrey") # width = 3,,  inner = 'point'
+violins = [c for i,c in enumerate(ax.collections) if i%2 == 0] # pollycollection 가져오기 위함 
+violins[0].set_facecolor(mcolors.to_rgba(color_dict['HAEMATOPOIETIC_AND_LYMPHOID_TISSUE'], 0.7))
+
+MY_M = ['UHO1_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE','RPMI8226_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE','K562_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE','L1236_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE','SR786_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE']
+
+nn_check = ccle_info[ccle_info.CCLE_Name.isin(MY_M)][['CCLE_Name','sample_collection_site','primary_or_metastasis','lineage_subtype','lineage_sub_subtype','source', 'culture_type']]
+
+test_cell_df_mini2 = pd.merge(test_cell_df_mini, nn_check, left_on = 'DrugCombCCLE', right_on = 'CCLE_Name', how = 'left')
+# test_cell_df_mini2['primary_or_metastasis'] = test_cell_df_mini2.primary_or_metastasis.apply(lambda x : 'NA' if type(x)!= str else x)
+
+# test_cell_df2.subclass.factorize()
+sns.swarmplot(ax = ax, data  = test_cell_df_mini2, size = 10,
+x = 'tissue', y = 'P_COR', hue='lineage_subtype', palette=sns.color_palette(['yellow', 'pink', 'black', 'red']))
+
+
+ax.set_xlabel('tissue names', fontsize=15)
+ax.set_ylabel('Pearson Corr', fontsize=15)
+ax.set_xticks(ax.get_xticks())
+ax.set_xticklabels(ax.get_xticklabels(), rotation = 90, fontsize=25)
+ax.set_yticklabels(ax.get_yticklabels(),  fontsize=25)
+ax.tick_params(axis='both', which='major', labelsize=20 )
+plt.tight_layout()
+plt.grid(True)
+plt.savefig(os.path.join(PRJ_PATH,'tissue_pearson.HM3.{}.png'.format(W_NAME)), dpi = 300)
+
+plt.close()
+
+
+
+
+
+
+
+
+# haemato 다시!!!
+
+fig, ax = plt.subplots(figsize=(6, 13))
+
+test_cell_df_mini = test_cell_df[test_cell_df.tissue=='HAEMATOPOIETIC_AND_LYMPHOID_TISSUE']
+test_cell_df_mini = pd.merge(test_cell_df_mini, DC_CELL_DF2[['DC_cellname','DrugCombCCLE']], on = 'DC_cellname', how='left')
+
+sns.violinplot(ax = ax, data  = test_cell_df_mini, x = 'tissue', y = 'P_COR', linewidth=2,  edgecolor="black") # width = 3,,  inner = 'point'
+violins = [c for i,c in enumerate(ax.collections) if i%2 == 0] # pollycollection 가져오기 위함 
+violins[0].set_facecolor(mcolors.to_rgba(color_dict['HAEMATOPOIETIC_AND_LYMPHOID_TISSUE'], 0.8))
+
+MY_M = ['UHO1_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE','RPMI8226_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE','K562_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE','L1236_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE','SR786_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE']
+
+nn_check = ccle_info[ccle_info.CCLE_Name.isin(MY_M)][['CCLE_Name','sample_collection_site','primary_or_metastasis','lineage_subtype','lineage_sub_subtype']]
+nn_check['Subtype'] = ['Non Hodgkin Lymphoma', 'Chronic Myelogenous Leukemia', 'Hodgkin Lymphoma', 'Multiple Myeloma', 'Hodgkin Lymphoma']
+
+test_cell_df_mini2 = pd.merge(test_cell_df_mini, nn_check, left_on = 'DrugCombCCLE', right_on = 'CCLE_Name', how = 'left')
+# test_cell_df_mini2['culture_type'] = test_cell_df_mini2.culture_type.apply(lambda x : 'NA' if type(x)!= str else x)
+
+# test_cell_df2.subclass.factorize()
+sns.swarmplot(ax = ax, data  = test_cell_df_mini2, linewidth=1, edgecolor="white", size = 15,
+x = 'tissue', y = 'P_COR', hue='Subtype', palette=sns.color_palette(['purple', 'red', 'darkgreen', 'yellow']))
+
+
+ax.set_xlabel('tissue names', fontsize=15)
+ax.set_ylabel('Pearson Corr', fontsize=15)
+ax.set_xticks(ax.get_xticks())
+ax.set_xticklabels([''], rotation = 90, fontsize=25) # ax.get_xticklabels()
+
+ytick_names = np.array(['', 0.0 , 0.2, 0.4, 0.6, 0.8, 1.0, ''])
+ax.set_yticklabels(ytick_names,  fontsize=25)
+ax.tick_params(axis='both', which='major', labelsize=20 )
+plt.grid(True)
+plt.legend(bbox_to_anchor=(1.2, 1.2), loc="upper right", fontsize=15)
+plt.tight_layout()
+
+plt.savefig(os.path.join(PRJ_PATH,'tissue_pearson.HM4.{}.png'.format(W_NAME)), dpi = 300)
+
+plt.close()
+
+
+
+
+
+
+고통스러우므로 그냥 subplot 으로 해결해보자 
+
+
+fig, ax = plt.subplots(1,2 ,figsize=(12, 4))
+ax1 = ax[0]
+ax2 = ax[1]
+
+test_cell_df_mini = test_cell_df[test_cell_df.tissue=='BREAST']
+test_cell_df_mini = pd.merge(test_cell_df_mini, DC_CELL_DF2[['DC_cellname','DrugCombCCLE']], on = 'DC_cellname', how='left')
+sns.violinplot(ax = ax1, data  = test_cell_df_mini, x = 'tissue', y = 'P_COR', linewidth=2,  edgecolor="black") # width = 3,,  inner = 'point'
+violins = [c for i,c in enumerate(ax1.collections) if i%2 == 0] # pollycollection 가져오기 위함 
+violins[0].set_facecolor(mcolors.to_rgba(color_dict['BREAST'], 0.8))
+
+MY_B = ['BT474_BREAST' ,'MDAMB231_BREAST','MDAMB175VII_BREAST','MDAMB468_BREAST','HCC1419_BREAST','MDAMB361_BREAST','HCC1500_BREAST','T47D_BREAST','MCF7_BREAST','KPL1_BREAST','CAMA1_BREAST','MDAMB436_BREAST','ZR751_BREAST','BT549_BREAST','HS578T_BREAST','UACC812_BREAST']
+
+breast_check = ccle_info[ccle_info.CCLE_Name.isin(MY_B)][['CCLE_Name','sample_collection_site','primary_or_metastasis','lineage_subtype','lineage_sub_subtype','lineage_molecular_subtype']]
+breast_check['Subtypes'] = breast_check.lineage_molecular_subtype.apply(lambda x : 'Basal' if 'basal' in x else x)
+breast_check['Subtypes'] = breast_check.Subtypes.apply(lambda x : 'Luminal' if 'luminal' in x else x)
+
+test_cell_df_mini2 = pd.merge(test_cell_df_mini, breast_check, left_on = 'DrugCombCCLE', right_on = 'CCLE_Name', how = 'left')
+
+sns.swarmplot(ax = ax1, data  = test_cell_df_mini2, linewidth=1, edgecolor="white", size = 15,
+x = 'tissue', y = 'P_COR', hue='Subtypes', 
+palette=sns.color_palette(['yellow', 'pink','cyan']))
+
+ax1.set_xlabel('', fontsize=15)
+ax1.set_ylabel('Avg Pearson Corr', fontsize=15)
+ax1.set_xticks(ax1.get_xticks())
+ax1.set_xticklabels([''], rotation = 90, fontsize=25) # ax.get_xticklabels()
+
+ytick_names = np.array(['', 0.0 , 0.2, 0.4, 0.6, 0.8, 1.0, ''])
+ax1.set_yticklabels(ytick_names,  fontsize=25)
+ax1.tick_params(axis='both', which='major', labelsize=20 )
+ax1.legend(bbox_to_anchor=(1, 1.2), loc="upper right", fontsize = 15)
+
+
+
+test_cell_df_mini = test_cell_df[test_cell_df.tissue=='HAEMATOPOIETIC_AND_LYMPHOID_TISSUE']
+test_cell_df_mini = pd.merge(test_cell_df_mini, DC_CELL_DF2[['DC_cellname','DrugCombCCLE']], on = 'DC_cellname', how='left')
+
+sns.violinplot(ax = ax2, data  = test_cell_df_mini, x = 'tissue', y = 'P_COR', linewidth=2,  edgecolor="black") # width = 3,,  inner = 'point'
+violins = [c for i,c in enumerate(ax2.collections) if i%2 == 0] # pollycollection 가져오기 위함 
+violins[0].set_facecolor(mcolors.to_rgba(color_dict['HAEMATOPOIETIC_AND_LYMPHOID_TISSUE'], 0.8))
+
+MY_M = ['UHO1_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE','RPMI8226_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE','K562_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE','L1236_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE','SR786_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE']
+
+nn_check = ccle_info[ccle_info.CCLE_Name.isin(MY_M)][['CCLE_Name','sample_collection_site','primary_or_metastasis','lineage_subtype','lineage_sub_subtype']]
+nn_check['Subtype'] = ['Non Hodgkin Lymphoma', 'Chronic Myelogenous Leukemia', 'Hodgkin Lymphoma', 'Multiple Myeloma', 'Hodgkin Lymphoma']
+
+test_cell_df_mini2 = pd.merge(test_cell_df_mini, nn_check, left_on = 'DrugCombCCLE', right_on = 'CCLE_Name', how = 'left')
+
+sns.swarmplot(ax = ax2, data  = test_cell_df_mini2, linewidth=1, edgecolor="white", size = 15,
+x = 'tissue', y = 'P_COR', hue='Subtype', palette=sns.color_palette(['purple', 'red', 'darkgreen', 'yellow']))
+
+ax2.set_xlabel('', fontsize=15)
+ax2.set_ylabel('Avg Pearson Corr', fontsize=15)
+ax2.set_xticks(ax2.get_xticks())
+ax2.set_xticklabels([''], rotation = 90, fontsize=25) # ax.get_xticklabels()
+
+ytick_names = np.array(['', 0.0 , 0.2, 0.4, 0.6, 0.8, 1.0, ''])
+ax2.set_yticklabels(ytick_names,  fontsize=25)
+ax2.tick_params(axis='both', which='major', labelsize=20 )
+ax2.legend(bbox_to_anchor=(1, 1.2), loc="upper right", fontsize = 15)
+
+
+
+plt.tight_layout()
+
+plt.savefig(os.path.join(PRJ_PATH,'tissue_pearson.2tissue.{}.png'.format(W_NAME)), dpi = 300)
+plt.savefig(os.path.join(PRJ_PATH,'tissue_pearson.2tissue.{}.pdf'.format(W_NAME)), format="pdf", bbox_inches = 'tight')
+
+plt.close()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+"hue="label", palette={
+    'Label 1': '#d7191c',
+    'Label 2': '#2b83ba'
+}
+
+ABCS_test_result['tissue'] = [ '_'.join(a.split('_')[1:]) if type(a) == str else 'NA' for a in list(ABCS_test_result['CELL'])]
+ABCS_test_result['color'] = [color_dict[a] for a in ABCS_test_result.tissue]
+
+jplot = sns.jointplot(data = ABCS_test_result , x='PRED_3', y='ANS', ci=68, kind='reg', scatter = False)
+pr,pp = stats.pearsonr(ABCS_test_result['PRED_3'], ABCS_test_result['ANS'])
+sr,sp = stats.spearmanr(ABCS_test_result['PRED_3'], ABCS_test_result['ANS'])
+jplot.ax_joint.annotate(f'$pearson = {pr:.3f}, spearman = {sr:.3f}$',xy=(min(ABCS_test_result.PRED_3)+ 0.01, max(ABCS_test_result.ANS)- 0.01 ), ha='left', va='center',)
+#jplot.ax_joint.scatter(data = ABCS_test_result , x='PRED_3', y='ANS', c =  )
+sns.scatterplot(data = ABCS_test_result , x='PRED_3', y='ANS', hue='tissue', palette=color_dict)
+jplot.set_axis_labels(xlabel='Predicted', ylabel='Answer', size=15)
+jplot.figure.savefig('{}/{}.png'.format(PRJ_PATH, 'total_scatter'), bbox_inches = 'tight')
+jplot.figure.savefig('{}/{}.pdf'.format(PRJ_PATH, 'total_scatter'), format="pdf", bbox_inches = 'tight')
+
+
+g = sns.jointplot(data = ABCS_test_result , x='PRED_3', y='ANS', ci=68, kind='reg', color='black', scatter = False )
+for i, subdata in ABCS_test_result.groupby("tissue"):
+    sns.kdeplot(subdata.loc[:,'PRED_3'], ax=g.ax_marg_x, legend=False)
+    sns.kdeplot(subdata.loc[:,'ANS'], ax=g.ax_marg_y, vertical=True, legend=False)
+    g.ax_joint.plot(subdata.loc[:,'PRED_3'], subdata.loc[:,'ANS'], "o", ms = 1, alpha=.5, mfc=list(subdata.color)[0] )
+
+pr,pp = stats.pearsonr(ABCS_test_result['PRED_3'], ABCS_test_result['ANS'])
+sr,sp = stats.spearmanr(ABCS_test_result['PRED_3'], ABCS_test_result['ANS'])
+g.ax_joint.annotate(f'$pearson = {pr:.3f}, spearman = {sr:.3f}$',xy=(min(ABCS_test_result.PRED_3)+ 0.01, max(ABCS_test_result.ANS)- 0.01 ), ha='left', va='center',)
+g.set_axis_labels(xlabel='Predicted', ylabel='Answer', size=15)
+g.figure.savefig('{}/{}.png'.format(PRJ_PATH, 'total_scatter'), bbox_inches = 'tight')
+g.figure.savefig('{}/{}.pdf'.format(PRJ_PATH, 'total_scatter'), format="pdf", bbox_inches = 'tight')
+
+
+
+tissue_set = ['CENTRAL_NERVOUS_SYSTEM', 'LUNG', 'BREAST', 'BONE', 'OVARY', 'PROSTATE', 'HAEMATOPOIETIC_AND_LYMPHOID_TISSUE', 'LARGE_INTESTINE', 'SKIN', 'PLEURA', 'KIDNEY' ] # list(set(test_cell_df['tissue']))
+color_set = ['#CF3476','#FF7514','#025669','#308446','#84C3BE','#D53032','#4ddcfd','#ffcd36','#ac8cff',"#0000ffff","#7bff68ff"] # "#1E1E1E"
+color_dict = {a : color_set[tissue_set.index(a)] for a in tissue_set}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+PRED_list = list(ABCS_test_result.FULL)
+Y_list = list(ABCS_test_result.ANS)
+
+jplot = sns.jointplot(x=PRED_list, y=Y_list, ci=68, kind='reg', color='black', scatter = False  )
+pr,pp = stats.pearsonr(PRED_list, Y_list)
+print("Pearson correlation is {} and related p_value is {}".format(pr, pp), flush=True)
+sr,sp = stats.spearmanr(PRED_list, Y_list)
+print("Spearman correlation is {} and related p_value is {}".format(sr, sp), flush=True)
+jplot.ax_joint.annotate(f'$pearson = {pr:.3f}, spearman = {sr:.3f}$',xy=(min(PRED_list)+ 0.01, max(Y_list)- 0.01 ), ha='left', va='center',)
+jplot.ax_joint.scatter(PRED_list, Y_list, s = 1, alpha=.8)
+jplot.set_axis_labels(xlabel='Predicted', ylabel='Answer', size=15)
+jplot.figure.savefig('{}new.corrplot.png'.format(PRJ_PATH), bbox_inches = 'tight')
+jplot.figure.savefig('{}new.corrplot.pdf'.format(PRJ_PATH), format="pdf", bbox_inches = 'tight')
+
+plt.close()
+
+
+
+
+
+
+
+
+
+
+
+
+
+# pred * ans violin 확인 
+##### 
+
+test_cell_df = test_cell_df.sort_values('P_COR')
+
+order = list(test_cell_df.DC_cellname)
+
+
+ABCS_test_result_filt1 = ABCS_test_result[['DC_cellname','CELL','tissue','ANS']]
+ABCS_test_result_filt1.columns = ['DC_cellname','CELL','tissue','value']
+ABCS_test_result_filt1['label'] = 'y_data'
+
+
+ABCS_test_result_filt2 = ABCS_test_result[['DC_cellname','CELL','tissue','FULL']]
+ABCS_test_result_filt2.columns = ['DC_cellname','CELL','tissue','value']
+ABCS_test_result_filt2['label'] = 'pred_result'
+
+
+for_split_vio = pd.concat([ABCS_test_result_filt1, ABCS_test_result_filt2])
+
+#my_order = test_cell_df.groupby(by=["tissue"])["P_COR"].mean().sort_values().iloc[::-1].index
+
+
+fig, ax = plt.subplots(figsize=(20, 8))
+sns.violinplot(
+	ax =ax, data  = for_split_vio, order=order,
+	x = 'DC_cellname', y = 'value', 
+	split = True, hue = 'label',
+	inner = 'quart',
+	palette = {'y_data' : '0.85', 'pred_result' : 'b'},
+	linewidth=1,  edgecolor="dimgrey")
+
+
+
+ax.set_xlabel('cell names', fontsize=20)
+ax.set_ylabel('value', fontsize=20)
+ax.set_xticks(ax.get_xticks())
+ax.set_xticklabels(ax.get_xticklabels(), rotation = 90)
+ax.tick_params(axis='y', which='major', labelsize=20 )
+plt.tight_layout()
+plt.savefig(os.path.join(PRJ_PATH,'cell_compare.png'), dpi = 300)
+plt.savefig(os.path.join(PRJ_PATH,'cell_compare.pdf'),format="pdf", bbox_inches = 'tight')
+
+plt.close()
+
+
+
+
+
+
+
+
+
+for cell_name in list(set(test_cell_df.DC_cellname)) :
+	cell_min = min(ABCS_test_result_filt1[ABCS_test_result_filt1.DC_cellname==cell_name]['value'])
+	cell_max = max(ABCS_test_result_filt1[ABCS_test_result_filt1.DC_cellname==cell_name]['value'])
+	cell_mean = np.mean(ABCS_test_result_filt1[ABCS_test_result_filt1.DC_cellname==cell_name]['value'])
+	cell_std = np.std(ABCS_test_result_filt1[ABCS_test_result_filt1.DC_cellname==cell_name]['value'])
+	#
+	cell_min2 = min(ABCS_test_result_filt2[ABCS_test_result_filt2.DC_cellname==cell_name]['value'])
+	cell_max2 = max(ABCS_test_result_filt2[ABCS_test_result_filt2.DC_cellname==cell_name]['value'])
+	cell_mean2 = np.mean(ABCS_test_result_filt2[ABCS_test_result_filt2.DC_cellname==cell_name]['value'])
+	cell_std2 = np.std(ABCS_test_result_filt2[ABCS_test_result_filt2.DC_cellname==cell_name]['value'])
+	#
+	print('ORI {} : min {:.2f}, max {:.2f}, mean {:.2f} + {:.2f}'.format(cell_name, cell_min, cell_max, cell_mean, cell_std))
+	print('PRED {} : min {:.2f}, max {:.2f}, mean {:.2f} + {:.2f}'.format(cell_name, cell_min2, cell_max2, cell_mean2, cell_std2))
+	print('\n')
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+###############################################################
+###############################################################
+###############################################################
+###############################################################
+
+
+# 혹시 TSNE 그려보기 
+
+from sklearn.datasets import load_digits
+from sklearn.manifold import TSNE
+
+ABCS_test_result_tsne = ABCS_test_result[['CID_CID','CELL','tissue', 'ANS']]
+cell_list = list(set(ABCS_test_result_tsne.CELL))
+cell_list.sort()
+
+test_1 = ABCS_test_result_tsne[ABCS_test_result_tsne.CELL == 'A375_SKIN']
+test_2 = ABCS_test_result_tsne[ABCS_test_result_tsne.CELL == 'RVH421_SKIN']
+common_n = len(set(test_1.CID_CID) & set(test_2.CID_CID))
+
+
+'148177___135398510'
+test_1[test_1.CID_CID=='148177___135398510']['ANS'].item()
+test_2[test_2.CID_CID=='148177___135398510']['ANS'].item()
+
+
+cell_array = pd.DataFrame(columns = cell_list, index = cell_list)
+
+for cell_1 in cell_list : 
+	cell_1
+	for cell_2 in cell_list : 
+		ABCS_res_cell_1 = ABCS_test_result_tsne[ABCS_test_result_tsne.CELL == cell_1]
+		ABCS_res_cell_2 = ABCS_test_result_tsne[ABCS_test_result_tsne.CELL == cell_2]
+		common_n = list(set(ABCS_res_cell_1.CID_CID) & set(ABCS_res_cell_2.CID_CID))
+		common_n.sort()
+		std_list = []
+		for cc in common_n : 
+			test_1 = ABCS_res_cell_1[ABCS_res_cell_1.CID_CID==cc]['ANS'].item()
+			test_2 = ABCS_res_cell_2[ABCS_res_cell_2.CID_CID==cc]['ANS'].item()
+			std_res = np.std([test_1, test_2])
+			std_list.append(std_res)
+		cell_cell_res = np.mean(std_list)
+		cell_array.at[cell_1, cell_2] = cell_cell_res
+	
+
+
+
+cell_array.to_csv('/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V6_W203_349_MIS2/TSNE_array.csv', sep = '\t')
+
+cell_array2 = np.array(cell_array)
+cell_array2[np.isnan(cell_array2)] = 0
+# 안머깋는디 
+
+# 이거 반복해줘야할듯 
+new_df = []
+for ind in range(92) : 
+	cell_row = cell_array2[ind]
+	new_row_ind = [a for a in range(len(cell_row)) if np.isnan(cell_row[a])]
+	cell_row[new_row_ind] = 0.0
+	new_df.append(cell_row)
+
+
+new_df2 = np.array(new_df)
+
+n_components = 2
+# TSNE 모델의 인스턴스를 만듭니다.
+model = TSNE(n_components=n_components)
+# data를 가지고 TSNE 모델을 훈련(적용) 합니다.
+X_embedded = model.fit_transform(np.array(new_df2))
+
+TSNE_DF = pd.DataFrame(X_embedded)
+TSNE_DF.columns = ['comp1','comp2']
+
+cell_check = list(cell_array.index)
+TSNE_DF['cell_lines'] = cell_check
+
+cell_tiss = ['_'.join(a.split('_')[1:]) for a in cell_check]
+TSNE_DF['tissue'] = cell_tiss
+
+cell_strip = [a.split('_')[0] for a in cell_check]
+TSNE_DF['strip'] = cell_strip
+
+
+tissue_set = ['CENTRAL_NERVOUS_SYSTEM', 'LUNG', 'BREAST', 'BONE', 'OVARY', 'PROSTATE', 'HAEMATOPOIETIC_AND_LYMPHOID_TISSUE', 'LARGE_INTESTINE', 'SKIN', 'PLEURA', 'KIDNEY' ] # list(set(test_cell_df['tissue']))
+# 여기서만 central 색깔 좀 여리게 바꿔줌 
+color_set = ['#d95e92','#FF7514','#025669','#308446','#84C3BE','#D53032','#4ddcfd','#ffcd36','#ac8cff',"#0000ffff","#7bff68ff"] # "#1E1E1E"
+color_dict = {a : color_set[tissue_set.index(a)] for a in tissue_set}
+
+
+# 밥먹고 오면 그림 그려보기 ! 
+# palette = sns.color_palette("bright", 10)
+fig = plt.figure(figsize=(10,10))
+sns.scatterplot(data = TSNE_DF, x = 'comp1', y = 'comp2', hue = 'tissue', legend='full', palette=color_dict, size = 'tissue', sizes=[105]*11) 
+for i in range(TSNE_DF.shape[0]):
+    plt.text(TSNE_DF.comp1[i]-0.8, TSNE_DF.comp2[i]+0.6, TSNE_DF.strip[i], size = 8)
+
+plt.tight_layout()
+path = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V6_W203_349_MIS2'
+plotname = 'tsne_trial'
+fig.savefig('{}/{}.png'.format(path, plotname), bbox_inches = 'tight')
+
+
+
+MY_L = ['BT474_BREAST', 'MDAMB231_BREAST', 'MDAMB175VII_BREAST', 'MDAMB468_BREAST', 'HCC1419_BREAST', 'MDAMB361_BREAST', 'HCC1500_BREAST', 'T47D_BREAST', 'MCF7_BREAST', 'KPL1_BREAST', 'CAMA1_BREAST', 'MDAMB436_BREAST', 'ZR751_BREAST', 'BT549_BREAST', 'HS578T_BREAST', 'UACC812_BREAST']
+MY_L = ['IPC298_SKIN', 'SKMEL2_SKIN', 'G361_SKIN', 'UACC62_SKIN', 'A375_SKIN', 'MELHO_SKIN', 'MEWO_SKIN', 'UACC257_SKIN', 'A101D_SKIN', 'RVH421_SKIN', 'COLO829_SKIN', 'SKMEL5_SKIN', 'LOXIMVI_SKIN', 'WM115_SKIN', 'A2058_SKIN', 'COLO800_SKIN', 'SKMEL28_SKIN', 'SKMEL30_SKIN', 'RPMI7951_SKIN', 'HT144_SKIN', 'MALME3M_SKIN', 'COLO792_SKIN']
+MY_L = ['KM12_LARGE_INTESTINE', 'HT29_LARGE_INTESTINE', 'RKO_LARGE_INTESTINE', 'SW620_LARGE_INTESTINE', 'LOVO_LARGE_INTESTINE', 'SW837_LARGE_INTESTINE', 'HCT15_LARGE_INTESTINE', 'HCT116_LARGE_INTESTINE', 'DLD1_LARGE_INTESTINE']
+MY_L = ['NCIH2122_LUNG', 'NCIH226_LUNG', 'NCIH460_LUNG', 'A427_LUNG', 'SKMES1_LUNG', 'NCIH522_LUNG', 'NCIH23_LUNG', 'HOP92_LUNG', 'EKVX_LUNG', 'HOP62_LUNG', 'NCIH1650_LUNG', 'NCIH520_LUNG', 'A549_LUNG']
+MY_L = ['UHO1_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE', 'RPMI8226_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE', 'K562_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE', 'L1236_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE', 'SR786_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE']
+MY_L = ['SF295_CENTRAL_NERVOUS_SYSTEM', 'U251MG_CENTRAL_NERVOUS_SYSTEM', 'T98G_CENTRAL_NERVOUS_SYSTEM', 'SF268_CENTRAL_NERVOUS_SYSTEM', 'SNB75_CENTRAL_NERVOUS_SYSTEM', 'SF539_CENTRAL_NERVOUS_SYSTEM']
+MY_L = ['786O_KIDNEY', 'A498_KIDNEY', 'ACHN_KIDNEY', 'UO31_KIDNEY', 'CAKI1_KIDNEY']
+MY_L = ['VCAP_PROSTATE', 'PC3_PROSTATE']
+MY_L = ['MSTO211H_PLEURA']
+MY_L = ['OVCAR4_OVARY', 'OVCAR8_OVARY', 'PA1_OVARY', 'NIHOVCAR3_OVARY', 'A2780_OVARY', 'IGROV1_OVARY', 'ES2_OVARY', 'OV90_OVARY', 'UWB1289_OVARY', 'OVCAR5_OVARY', 'SKOV3_OVARY', 'CAOV3_OVARY']
+MY_L = ['A673_BONE']
+
+
+my_check = ccle_info[ccle_info.CCLE_Name.isin(MY_L)][['CCLE_Name','sample_collection_site','primary_or_metastasis','lineage_subtype','lineage_sub_subtype']]
+
+
+
+
+
+
+# 혹시 TSNE 3D 가능?
+
+n_components = 3
+model = TSNE(n_components=n_components)
+X_embedded = model.fit_transform(np.array(new_df2))
+
+TSNE_DF = pd.DataFrame(X_embedded)
+TSNE_DF.columns = ['comp1','comp2','comp3']
+
+cell_check = list(cell_array.index)
+TSNE_DF['cell_lines'] = cell_check
+
+cell_tiss = ['_'.join(a.split('_')[1:]) for a in cell_check]
+TSNE_DF['tissue'] = cell_tiss
+TSNE_DF['tissue'] = TSNE_DF['tissue'].as
+
+cell_strip = [a.split('_')[0] for a in cell_check]
+TSNE_DF['strip'] = cell_strip
+
+
+tissue_set = ['CENTRAL_NERVOUS_SYSTEM', 'LUNG', 'BREAST', 'BONE', 'OVARY', 'PROSTATE', 'HAEMATOPOIETIC_AND_LYMPHOID_TISSUE', 'LARGE_INTESTINE', 'SKIN', 'PLEURA', 'KIDNEY' ] # list(set(test_cell_df['tissue']))
+# 여기서만 central 색깔 좀 여리게 바꿔줌 
+color_set = ['#d95e92','#FF7514','#025669','#308446','#84C3BE','#D53032','#4ddcfd','#ffcd36','#ac8cff',"#0000ffff","#7bff68ff"] # "#1E1E1E"
+color_dict2 = {a : mcolors.to_rgba(color_set[tissue_set.index(a)]) for a in tissue_set}
+color_set2 = ['rgb(217,94,146)', 'rgb(255,117,20)', 'rgb(2,86,105)', 'rgb(48,132,70)', 'rgb(132,195,190)', 'rgb(213,48,50)', 'rgb(77,220,253)', 'rgb(255,205,54)', 'rgb(172,140,255)', 'rgb(0,255,255)',  'rgb(255,104,255)']
+color_dict2= {a : color_set2[tissue_set.index(a)] for a in tissue_set}
+
+
+
+# 밥먹고 오면 그림 그려보기 ! 
+import plotly.express as px
+
+fig = px.scatter_3d(TSNE_DF, x='comp1', y='comp2', z='comp3',hover_name="cell_lines",
+              color='tissue', color_discrete_map = color_dict2)
+
+
+path = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V6_W203_349_MIS2'
+plotname = 'tsne_trial'
+fig.write_html('{}/{}.html'.format(path, plotname))
+
+# 아... 3D 는 좀 별로임.... 
+
+
+
+
+
+
+
+
+
+
+# 하위 빼고 그리면 어떨지? 
+
+from sklearn.datasets import load_digits
+from sklearn.manifold import TSNE
+
+
+cells_bad = [
+	'A673_BONE','MDAMB361_BREAST','CAMA1_BREAST','MDAMB175VII_BREAST','L1236_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE',
+	'UACC812_BREAST','HCC1500_BREAST','HCC1419_BREAST', 'UHO1_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE', 'T98G_CENTRAL_NERVOUS_SYSTEM', 'BT474_BREAST']
+
+cells_good = [a for a in cell_array.index if a not in cells_bad]
+
+
+cell_array33 = cell_array.loc[cells_good,cells_good]
+
+cell_array33_2 = np.array(cell_array33)
+
+# 이거 반복해줘야할듯 
+new_df = []
+for ind in range(81) : 
+	cell_row = cell_array33_2[ind]
+	new_row_ind = [a for a in range(len(cell_row)) if np.isnan(cell_row[a])]
+	cell_row[new_row_ind] = 0.0
+	new_df.append(cell_row)
+
+
+new_df2 = np.array(new_df)
+
+n_components = 2
+# TSNE 모델의 인스턴스를 만듭니다.
+model = TSNE(n_components=n_components)
+# data를 가지고 TSNE 모델을 훈련(적용) 합니다.
+X_embedded = model.fit_transform(np.array(new_df2))
+
+TSNE_DF = pd.DataFrame(X_embedded)
+TSNE_DF.columns = ['comp1','comp2']
+
+cell_check = list(cell_array33.index)
+TSNE_DF['cell_lines'] = cell_check
+
+cell_tiss = ['_'.join(a.split('_')[1:]) for a in cell_check]
+TSNE_DF['tissue'] = cell_tiss
+
+cell_strip = [a.split('_')[0] for a in cell_check]
+TSNE_DF['strip'] = cell_strip
+
+
+tissue_set = ['CENTRAL_NERVOUS_SYSTEM', 'LUNG', 'BREAST', 'BONE', 'OVARY', 'PROSTATE', 'HAEMATOPOIETIC_AND_LYMPHOID_TISSUE', 'LARGE_INTESTINE', 'SKIN', 'PLEURA', 'KIDNEY' ] # list(set(test_cell_df['tissue']))
+# 여기서만 central 색깔 좀 여리게 바꿔줌 
+color_set = ['#d95e92','#FF7514','#025669','#308446','#84C3BE','#D53032','#4ddcfd','#ffcd36','#ac8cff',"#0000ffff","#7bff68ff"] # "#1E1E1E"
+color_dict = {a : color_set[tissue_set.index(a)] for a in tissue_set}
+
+
+# 밥먹고 오면 그림 그려보기 ! 
+# palette = sns.color_palette("bright", 10)
+fig = plt.figure(figsize=(10,10))
+sns.scatterplot(data = TSNE_DF, x = 'comp1', y = 'comp2', hue = 'tissue', legend='full', palette=color_dict, size = 'tissue', sizes=[105]*10) 
+for i in range(TSNE_DF.shape[0]):
+    plt.text(TSNE_DF.comp1[i]-0.2, TSNE_DF.comp2[i]+0.2, TSNE_DF.strip[i], size = 8)
+
+plt.tight_layout()
+path = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V6_W203_349_MIS2'
+plotname = 'tsne_trial2'
+fig.savefig('{}/{}.png'.format(path, plotname), bbox_inches = 'tight')
+
+
+
+
+# 혹시 TSNE 3D 가능?
+
+n_components = 3
+model = TSNE(n_components=n_components)
+X_embedded = model.fit_transform(np.array(new_df2))
+
+TSNE_DF = pd.DataFrame(X_embedded)
+TSNE_DF.columns = ['comp1','comp2','comp3']
+
+cell_check = list(cell_array33.index)
+TSNE_DF['cell_lines'] = cell_check
+
+cell_tiss = ['_'.join(a.split('_')[1:]) for a in cell_check]
+TSNE_DF['tissue'] = cell_tiss
+
+cell_strip = [a.split('_')[0] for a in cell_check]
+TSNE_DF['strip'] = cell_strip
+
+
+tissue_set = ['CENTRAL_NERVOUS_SYSTEM', 'LUNG', 'BREAST', 'BONE', 'OVARY', 'PROSTATE', 'HAEMATOPOIETIC_AND_LYMPHOID_TISSUE', 'LARGE_INTESTINE', 'SKIN', 'PLEURA', 'KIDNEY' ] # list(set(test_cell_df['tissue']))
+# 여기서만 central 색깔 좀 여리게 바꿔줌 
+color_set = ['#d95e92','#FF7514','#025669','#308446','#84C3BE','#D53032','#4ddcfd','#ffcd36','#ac8cff',"#0000ffff","#7bff68ff"] # "#1E1E1E"
+color_dict2 = {a : mcolors.to_rgba(color_set[tissue_set.index(a)]) for a in tissue_set}
+color_set2 = ['rgb(217,94,146)', 'rgb(255,117,20)', 'rgb(2,86,105)', 'rgb(48,132,70)', 'rgb(132,195,190)', 'rgb(213,48,50)', 'rgb(77,220,253)', 'rgb(255,205,54)', 'rgb(172,140,255)', 'rgb(0,255,255)',  'rgb(255,104,255)']
+color_dict2= {a : color_set2[tissue_set.index(a)] for a in tissue_set}
+
+
+
+# 밥먹고 오면 그림 그려보기 ! 
+import plotly.express as px
+
+fig = px.scatter_3d(TSNE_DF, x='comp1', y='comp2', z='comp3',hover_name="cell_lines",
+              color='tissue', color_discrete_map = color_dict2)
+
+
+path = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V6_W203_349_MIS2'
+plotname = 'tsne_trial2'
+fig.write_html('{}/{}.html'.format(path, plotname))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

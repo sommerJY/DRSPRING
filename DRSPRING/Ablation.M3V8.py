@@ -36,7 +36,7 @@ def get_mean(ANA_DF, ANA_ALL_DF, limit) :
 	return (epc_result)
 
 
-
+# 각 epoch 별 mean 으로 본거 
 def get_mean_result(epc_result) :
 	#
 	#1) min loss
@@ -72,7 +72,7 @@ def get_mean_result(epc_result) :
 	return(epc_V_LS_mean, epc_V_LS_std, epc_V_PC_mean, epc_V_PC_std, epc_V_SC_mean, epc_V_SC_std)
 
 
-
+#  각 CV 결과에서 제일 좋게 나왔던거 가져다 본거 (early stop 썼다고 생각하기 )
 def get_max_result(ANA_DF, ANA_ALL_DF, nan_check = 0) :
 	#
 	cv_keys = list(ANA_DF['logdir'])
@@ -107,6 +107,48 @@ def get_max_result(ANA_DF, ANA_ALL_DF, nan_check = 0) :
 	return(epc_V_LS_mean, epc_V_LS_std, epc_V_PC_mean, epc_V_PC_std, epc_V_SC_mean, epc_V_SC_std)
 
 
+# 모르겠고 1000 epoch 돌린 결과로 보기 
+def get_last_result(ANA_DF, ANA_ALL_DF) :
+	#
+	cv_keys = list(ANA_DF['logdir'])
+	#
+	epc_T_LS_mean = np.mean([ANA_ALL_DF[kk]['T_LS'][999] for kk in cv_keys])
+	epc_T_LS_std = np.std([ANA_ALL_DF[kk]['T_LS'][999] for kk in cv_keys])
+	#
+	epc_T_PC_mean = np.mean([ANA_ALL_DF[kk]['T_PC'][999] for kk in cv_keys])
+	epc_T_PC_std = np.std([ANA_ALL_DF[kk]['T_PC'][999] for kk in cv_keys])
+	#
+	epc_T_SC_mean = np.mean([ANA_ALL_DF[kk]['T_SC'][999] for kk in cv_keys])
+	epc_T_SC_std = np.std([ANA_ALL_DF[kk]['T_SC'][999] for kk in cv_keys])
+	#
+	epc_V_LS_mean = np.mean([ANA_ALL_DF[kk]['V_LS'][999] for kk in cv_keys])
+	epc_V_LS_std = np.std([ANA_ALL_DF[kk]['V_LS'][999] for kk in cv_keys])
+	#
+	epc_V_PC_mean = np.mean([ANA_ALL_DF[kk]['V_PC'][999] for kk in cv_keys])
+	epc_V_PC_std = np.std([ANA_ALL_DF[kk]['V_PC'][999] for kk in cv_keys])
+	#
+	epc_V_SC_mean = np.mean([ANA_ALL_DF[kk]['V_SC'][999] for kk in cv_keys])
+	epc_V_SC_std = np.std([ANA_ALL_DF[kk]['V_SC'][999] for kk in cv_keys])
+	#
+	print('Train')
+	print(np.round([epc_T_LS_mean, epc_T_LS_std], 4))
+	print(np.round([epc_T_PC_mean, epc_T_PC_std], 4))
+	print(np.round([epc_T_SC_mean, epc_T_SC_std], 4))
+	print('Val')
+	print(np.round([epc_V_LS_mean, epc_V_LS_std], 4))
+	print(np.round([epc_V_PC_mean, epc_V_PC_std], 4))
+	print(np.round([epc_V_SC_mean, epc_V_SC_std], 4))
+	#
+	return(epc_V_LS_mean, epc_V_LS_std, epc_V_PC_mean, epc_V_PC_std, epc_V_SC_mean, epc_V_SC_std)
+
+
+
+
+
+
+
+
+
 
 
 
@@ -131,6 +173,8 @@ import torch
 import os 
 import copy
 import numpy as np
+import seaborn as sns
+
 
 MJ_NAME = 'M3V8'
 PPI_NAME = '349'
@@ -164,6 +208,7 @@ epc_V_LS_mean_D4F3, epc_V_LS_std_D4F3, epc_V_PC_mean_D4F3, epc_V_PC_std_D4F3, ep
 
 all_V_LS_mean_D4F3, all_V_LS_std_D4F3, all_V_PC_mean_D4F3, all_V_PC_std_D4F3, all_V_SC_mean_D4F3, all_V_SC_std_D4F3 = get_max_result(ANA_DF, ANA_ALL_DF)
 
+last_V_LS_mean_D4F3, last_V_LS_std_D4F3, last_V_PC_mean_D4F3, last_V_PC_std_D4F3, last_V_SC_mean_D4F3, last_V_SC_std_D4F3 = get_last_result(ANA_DF, ANA_ALL_DF)
 
 
 			1) AOBO + AOBX + AXBX
@@ -193,6 +238,7 @@ epc_V_LS_mean_D4F1E, epc_V_LS_std_D4F1E, epc_V_PC_mean_D4F1E, epc_V_PC_std_D4F1E
 
 all_V_LS_mean_D4F1E, all_V_LS_std_D4F1E, all_V_PC_mean_D4F1E, all_V_PC_std_D4F1E, all_V_SC_mean_D4F1E, all_V_SC_std_D4F1E = get_max_result(ANA_DF, ANA_ALL_DF)
 
+last_V_LS_mean_D4F1E, last_V_LS_std_D4F1E, last_V_PC_mean_D4F1E, last_V_PC_std_D4F1E, last_V_SC_mean_D4F1E, last_V_SC_std_D4F1E = get_last_result(ANA_DF, ANA_ALL_DF)
 
 
 
@@ -229,6 +275,7 @@ epc_V_LS_mean_D4F1B, epc_V_LS_std_D4F1B, epc_V_PC_mean_D4F1B, epc_V_PC_std_D4F1B
 
 all_V_LS_mean_D4F1B, all_V_LS_std_D4F1B, all_V_PC_mean_D4F1B, all_V_PC_std_D4F1B, all_V_SC_mean_D4F1B, all_V_SC_std_D4F1B = get_max_result(ANA_DF, ANA_ALL_DF, 2)
 
+last_V_LS_mean_D4F1B, last_V_LS_std_D4F1B, last_V_PC_mean_D4F1B, last_V_PC_std_D4F1B, last_V_SC_mean_D4F1B, last_V_SC_std_D4F1B = get_last_result(ANA_DF, ANA_ALL_DF)
 
 
 			1) AOBO + AOBX + AXBX
@@ -258,6 +305,7 @@ epc_V_LS_mean_D4F1T, epc_V_LS_std_D4F1T, epc_V_PC_mean_D4F1T, epc_V_PC_std_D4F1T
 
 all_V_LS_mean_D4F1T, all_V_LS_std_D4F1T, all_V_PC_mean_D4F1T, all_V_PC_std_D4F1T, all_V_SC_mean_D4F1T, all_V_SC_std_D4F1T = get_max_result(ANA_DF, ANA_ALL_DF, 2)
 
+last_V_LS_mean_D4F1T, last_V_LS_std_D4F1T, last_V_PC_mean_D4F1T, last_V_PC_std_D4F1T, last_V_SC_mean_D4F1T, last_V_SC_std_D4F1T = get_last_result(ANA_DF, ANA_ALL_DF)
 
 
 
@@ -293,6 +341,7 @@ epc_V_LS_mean_D4F2BT, epc_V_LS_std_D4F2BT, epc_V_PC_mean_D4F2BT, epc_V_PC_std_D4
 
 all_V_LS_mean_D4F2BT, all_V_LS_std_D4F2BT, all_V_PC_mean_D4F2BT, all_V_PC_std_D4F2BT, all_V_SC_mean_D4F2BT, all_V_SC_std_D4F2BT = get_max_result(ANA_DF, ANA_ALL_DF)
 
+last_V_LS_mean_D4F2BT, last_V_LS_std_D4F2BT, last_V_PC_mean_D4F2BT, last_V_PC_std_D4F2BT, last_V_SC_mean_D4F2BT, last_V_SC_std_D4F2BT = get_last_result(ANA_DF, ANA_ALL_DF)
 
 
 
@@ -330,6 +379,7 @@ epc_V_LS_mean_D4F2ET, epc_V_LS_std_D4F2ET, epc_V_PC_mean_D4F2ET, epc_V_PC_std_D4
 
 all_V_LS_mean_D4F2ET, all_V_LS_std_D4F2ET, all_V_PC_mean_D4F2ET, all_V_PC_std_D4F2ET, all_V_SC_mean_D4F2ET, all_V_SC_std_D4F2ET = get_max_result(ANA_DF, ANA_ALL_DF, 5)
 
+last_V_LS_mean_D4F2ET, last_V_LS_std_D4F2ET, last_V_PC_mean_D4F2ET, last_V_PC_std_D4F2ET, last_V_SC_mean_D4F2ET, last_V_SC_std_D4F2ET = get_last_result(ANA_DF, ANA_ALL_DF)
 
 
 
@@ -368,6 +418,7 @@ epc_V_LS_mean_D4F2EB, epc_V_LS_std_D4F2EB, epc_V_PC_mean_D4F2EB, epc_V_PC_std_D4
 
 all_V_LS_mean_D4F2EB, all_V_LS_std_D4F2EB, all_V_PC_mean_D4F2EB, all_V_PC_std_D4F2EB, all_V_SC_mean_D4F2EB, all_V_SC_std_D4F2EB = get_max_result(ANA_DF, ANA_ALL_DF)
 
+last_V_LS_mean_D4F2EB, last_V_LS_std_D4F2EB, last_V_PC_mean_D4F2EB, last_V_PC_std_D4F2EB, last_V_SC_mean_D4F2EB, last_V_SC_std_D4F2EB = get_last_result(ANA_DF, ANA_ALL_DF)
 
 
 
@@ -404,17 +455,17 @@ epc_result_D1F3 = get_mean(ANA_DF, ANA_ALL_DF, 1000)
 
 epc_V_LS_mean_D1F3, epc_V_LS_std_D1F3, epc_V_PC_mean_D1F3, epc_V_PC_std_D1F3, epc_V_SC_mean_D1F3, epc_V_SC_std_D1F3 = get_mean_result(epc_result_D1F3)
 
-all_V_LS_mean_W203_1, all_V_LS_std_D1F3, all_V_PC_mean_D1F3, all_V_PC_std_D1F3, all_V_SC_mean_D1F3, all_V_SC_std_D1F3 = get_max_result(ANA_DF, ANA_ALL_DF)
+all_V_LS_mean_D1F3, all_V_LS_std_D1F3, all_V_PC_mean_D1F3, all_V_PC_std_D1F3, all_V_SC_mean_D1F3, all_V_SC_std_D1F3 = get_max_result(ANA_DF, ANA_ALL_DF)
 
+last_V_LS_mean_D1F3, last_V_LS_std_D1F3, last_V_PC_mean_D1F3, last_V_PC_std_D1F3, last_V_SC_mean_D1F3, last_V_SC_std_D1F3 = get_last_result(ANA_DF, ANA_ALL_DF)
 
 
 			2) AOBO
-			1-2 ) gene exp 만 먹인거 206_5인데 잘못 표기함 /home01/k040a01/ray_results/PRJ02.23.06.23.M3V6.WORK_206_1.349.MIS2 / RAY_MY_train_28371_00000
+			1-2 ) gene exp 만 
 
-W_NAME = 'W206'
-WORK_NAME = 'WORK_206_1' # 349
-# WORK_NAME = 'WORK_206_5' # 349
-WORK_DATE = '23.06.23' # 349
+W_NAME = 'W405_1'
+WORK_NAME = 'WORK_405_1' # 349
+WORK_DATE = '23.08.29' # 349
 
 anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
 #     anal_dir = '/home01/k040a01/ray_results/PRJ02.23.06.13.M3V5.WORK_37.349.MIS22/'
@@ -432,14 +483,13 @@ ANA_DF = ANA_DF.sort_values('config/CV')
 ANA_DF.index = [0,1,2,3,4]
 ANA_ALL_DF = ANA_ALL_DF_1
 
-epc_result_W206_1 = get_mean(ANA_DF, ANA_ALL_DF, 1000)
+epc_result_D1F1E = get_mean(ANA_DF, ANA_ALL_DF, 1000)
 
-epc_V_LS_mean_W206_1, epc_V_LS_std_W206_1, epc_V_PC_mean_W206_1, epc_V_PC_std_W206_1, epc_V_SC_mean_W206_1, epc_V_SC_std_W206_1 = get_mean_result(epc_result_W206_1)
+epc_V_LS_mean_D1F1E, epc_V_LS_std_D1F1E, epc_V_PC_mean_D1F1E, epc_V_PC_std_D1F1E, epc_V_SC_mean_D1F1E, epc_V_SC_std_D1F1E = get_mean_result(epc_result_D1F1E)
 
-all_V_LS_mean_W206_1, all_V_LS_std_W206_1, all_V_PC_mean_W206_1, all_V_PC_std_W206_1, all_V_SC_mean_W206_1, all_V_SC_std_W206_1 = get_max_result(ANA_DF, ANA_ALL_DF)
+all_V_LS_mean_D1F1E, all_V_LS_std_D1F1E, all_V_PC_mean_D1F1E, all_V_PC_std_D1F1E, all_V_SC_mean_D1F1E, all_V_SC_std_D1F1E = get_max_result(ANA_DF, ANA_ALL_DF)
 
-
-
+last_V_LS_mean_D1F1E, last_V_LS_std_D1F1E, last_V_PC_mean_D1F1E, last_V_PC_std_D1F1E, last_V_SC_mean_D1F1E, last_V_SC_std_D1F1E = get_last_result(ANA_DF, ANA_ALL_DF)
 
 
 
@@ -448,9 +498,9 @@ all_V_LS_mean_W206_1, all_V_LS_std_W206_1, all_V_PC_mean_W206_1, all_V_PC_std_W2
 
 			2) AOBO
 			1-2 ) Basal only / RAY_MY_train_ffb94_00000 
-W_NAME = 'W207'
-WORK_NAME = 'WORK_207_1' # 349
-WORK_DATE = '23.06.23' # 349
+W_NAME = 'W406_1'
+WORK_NAME = 'WORK_406_1' # 349
+WORK_DATE = '23.08.29' # 349
 
 anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
 #     anal_dir = '/home01/k040a01/ray_results/PRJ02.23.06.13.M3V5.WORK_37.349.MIS22/'
@@ -468,12 +518,46 @@ ANA_DF = ANA_DF.sort_values('config/CV')
 ANA_DF.index = [0,1,2,3,4]
 ANA_ALL_DF = ANA_ALL_DF_1
 
-epc_result_W207_1 = get_mean(ANA_DF, ANA_ALL_DF, 1000)
+epc_result_D1F1B = get_mean(ANA_DF, ANA_ALL_DF, 1000)
 
-epc_V_LS_mean_W207_1, epc_V_LS_std_W207_1, epc_V_PC_mean_W207_1, epc_V_PC_std_W207_1, epc_V_SC_mean_W207_1, epc_V_SC_std_W207_1 = get_mean_result(epc_result_W207_1)
+epc_V_LS_mean_D1F1B, epc_V_LS_std_D1F1B, epc_V_PC_mean_D1F1B, epc_V_PC_std_D1F1B, epc_V_SC_mean_D1F1B, epc_V_SC_std_D1F1B = get_mean_result(epc_result_D1F1B)
 
-all_V_LS_mean_W207_1, all_V_LS_std_W207_1, all_V_PC_mean_W207_1, all_V_PC_std_W207_1, all_V_SC_mean_W207_1, all_V_SC_std_W207_1 = get_max_result(ANA_DF, ANA_ALL_DF)
+all_V_LS_mean_D1F1B, all_V_LS_std_D1F1B, all_V_PC_mean_D1F1B, all_V_PC_std_D1F1B, all_V_SC_mean_D1F1B, all_V_SC_std_D1F1B = get_max_result(ANA_DF, ANA_ALL_DF)
 
+last_V_LS_mean_D1F1B, last_V_LS_std_D1F1B, last_V_PC_mean_D1F1B, last_V_PC_std_D1F1B, last_V_SC_mean_D1F1B, last_V_SC_std_D1F1B = get_last_result(ANA_DF, ANA_ALL_DF)
+
+
+
+			2) AOBO
+			1-2 ) TARGET only 
+
+W_NAME = 'W407_1'
+WORK_NAME = 'WORK_407_1' # 349
+WORK_DATE = '23.08.29' # 349
+
+anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
+#     anal_dir = '/home01/k040a01/ray_results/PRJ02.23.06.13.M3V5.WORK_37.349.MIS22/'
+list_dir = os.listdir(anal_dir)
+exp_json = [a for a in list_dir if 'experiment_state' in a]
+exp_json
+anal_df = ExperimentAnalysis(os.path.join(anal_dir, exp_json[0]))
+
+ANA_DF_1 = anal_df.dataframe()
+ANA_ALL_DF_1 = anal_df.trial_dataframes
+
+ANA_DF = ANA_DF_1
+
+ANA_DF = ANA_DF.sort_values('config/CV')
+ANA_DF.index = [0,1,2,3,4]
+ANA_ALL_DF = ANA_ALL_DF_1
+
+epc_result_D1F1T = get_mean(ANA_DF, ANA_ALL_DF, 1000)
+
+epc_V_LS_mean_D1F1T, epc_V_LS_std_D1F1T, epc_V_PC_mean_D1F1T, epc_V_PC_std_D1F1T, epc_V_SC_mean_D1F1T, epc_V_SC_std_D1F1T = get_mean_result(epc_result_D1F1T)
+
+all_V_LS_mean_D1F1T, all_V_LS_std_D1F1T, all_V_PC_mean_D1F1T, all_V_PC_std_D1F1T, all_V_SC_mean_D1F1T, all_V_SC_std_D1F1T = get_max_result(ANA_DF, ANA_ALL_DF)
+
+last_V_LS_mean_D1F1T, last_V_LS_std_D1F1T, last_V_PC_mean_D1F1T, last_V_PC_std_D1F1T, last_V_SC_mean_D1F1T, last_V_SC_std_D1F1T = get_last_result(ANA_DF, ANA_ALL_DF)
 
 
 
@@ -482,9 +566,9 @@ all_V_LS_mean_W207_1, all_V_LS_std_W207_1, all_V_PC_mean_W207_1, all_V_PC_std_W2
 
 			2) AOBO
 			1-2 ) Basal + target 
-W_NAME = 'W208'
-WORK_NAME = 'WORK_208_1' # 349
-WORK_DATE = '23.06.23' # 349
+W_NAME = 'W408_1'
+WORK_NAME = 'WORK_408_1' # 349
+WORK_DATE = '23.08.29' # 349
 
 anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
 #     anal_dir = '/home01/k040a01/ray_results/PRJ02.23.06.13.M3V5.WORK_37.349.MIS22/'
@@ -502,12 +586,13 @@ ANA_DF = ANA_DF.sort_values('config/CV')
 ANA_DF.index = [0,1,2,3,4]
 ANA_ALL_DF = ANA_ALL_DF_1
 
-epc_result_W208_1 = get_mean(ANA_DF, ANA_ALL_DF, 1000)
+epc_result_D1F2BT = get_mean(ANA_DF, ANA_ALL_DF, 1000)
 
-epc_V_LS_mean_W208_1, epc_V_LS_std_W208_1, epc_V_PC_mean_W208_1, epc_V_PC_std_W208_1, epc_V_SC_mean_W208_1, epc_V_SC_std_W208_1 = get_mean_result(epc_result_W208_1)
+epc_V_LS_mean_D1F2BT, epc_V_LS_std_D1F2BT, epc_V_PC_mean_D1F2BT, epc_V_PC_std_D1F2BT, epc_V_SC_mean_D1F2BT, epc_V_SC_std_D1F2BT = get_mean_result(epc_result_D1F2BT)
 
-all_V_LS_mean_W208_1, all_V_LS_std_W208_1, all_V_PC_mean_W208_1, all_V_PC_std_W208_1, all_V_SC_mean_W208_1, all_V_SC_std_W208_1 = get_max_result(ANA_DF, ANA_ALL_DF)
+all_V_LS_mean_D1F2BT, all_V_LS_std_D1F2BT, all_V_PC_mean_D1F2BT, all_V_PC_std_D1F2BT, all_V_SC_mean_D1F2BT, all_V_SC_std_D1F2BT = get_max_result(ANA_DF, ANA_ALL_DF)
 
+last_V_LS_mean_D1F2BT, last_V_LS_std_D1F2BT, last_V_PC_mean_D1F2BT, last_V_PC_std_D1F2BT, last_V_SC_mean_D1F2BT, last_V_SC_std_D1F2BT = get_last_result(ANA_DF, ANA_ALL_DF)
 
 
 
@@ -519,9 +604,9 @@ all_V_LS_mean_W208_1, all_V_LS_std_W208_1, all_V_PC_mean_W208_1, all_V_PC_std_W2
 
 			2) AOBO
 			1-2 ) EXP + target 
-W_NAME = 'W209'
-WORK_NAME = 'WORK_209_1' # 349
-WORK_DATE = '23.06.23' # 349
+W_NAME = 'W409_1'
+WORK_NAME = 'WORK_409_1' # 349
+WORK_DATE = '23.08.29' # 349
 
 anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
 #     anal_dir = '/home01/k040a01/ray_results/PRJ02.23.06.13.M3V5.WORK_37.349.MIS22/'
@@ -539,13 +624,13 @@ ANA_DF = ANA_DF.sort_values('config/CV')
 ANA_DF.index = [0,1,2,3,4]
 ANA_ALL_DF = ANA_ALL_DF_1
 
-epc_result_W209_1 = get_mean(ANA_DF, ANA_ALL_DF, 1000)
+epc_result_D1F2ET = get_mean(ANA_DF, ANA_ALL_DF, 1000)
 
-epc_V_LS_mean_W209_1, epc_V_LS_std_W209_1, epc_V_PC_mean_W209_1, epc_V_PC_std_W209_1, epc_V_SC_mean_W209_1, epc_V_SC_std_W209_1 = get_mean_result(epc_result_W209_1)
+epc_V_LS_mean_D1F2ET, epc_V_LS_std_D1F2ET, epc_V_PC_mean_D1F2ET, epc_V_PC_std_D1F2ET, epc_V_SC_mean_D1F2ET, epc_V_SC_std_D1F2ET = get_mean_result(epc_result_D1F2ET)
 
-all_V_LS_mean_W209_1, all_V_LS_std_W209_1, all_V_PC_mean_W209_1, all_V_PC_std_W209_1, all_V_SC_mean_W209_1, all_V_SC_std_W209_1 = get_max_result(ANA_DF, ANA_ALL_DF)
+all_V_LS_mean_D1F2ET, all_V_LS_std_D1F2ET, all_V_PC_mean_D1F2ET, all_V_PC_std_D1F2ET, all_V_SC_mean_D1F2ET, all_V_SC_std_D1F2ET = get_max_result(ANA_DF, ANA_ALL_DF)
 
-
+last_V_LS_mean_D1F2ET, last_V_LS_std_D1F2ET, last_V_PC_mean_D1F2ET, last_V_PC_std_D1F2ET, last_V_SC_mean_D1F2ET, last_V_SC_std_D1F2ET = get_last_result(ANA_DF, ANA_ALL_DF)
 
 
 
@@ -557,9 +642,9 @@ all_V_LS_mean_W209_1, all_V_LS_std_W209_1, all_V_PC_mean_W209_1, all_V_PC_std_W2
 
 			2) AOBO
 			1-2 ) EXP + basal
-W_NAME = 'W210'
-WORK_NAME = 'WORK_210_1' # 349
-WORK_DATE = '23.06.23' # 349
+W_NAME = 'W410_1'
+WORK_NAME = 'WORK_410_1' # 349
+WORK_DATE = '23.08.29' # 349
 
 anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
 #     anal_dir = '/home01/k040a01/ray_results/PRJ02.23.06.13.M3V5.WORK_37.349.MIS22/'
@@ -577,23 +662,13 @@ ANA_DF = ANA_DF.sort_values('config/CV')
 ANA_DF.index = [0,1,2,3,4]
 ANA_ALL_DF = ANA_ALL_DF_1
 
-epc_result_W210_1 = get_mean(ANA_DF, ANA_ALL_DF, 1000)
+epc_result_D1F2EB = get_mean(ANA_DF, ANA_ALL_DF, 1000)
 
-epc_V_LS_mean_W210_1, epc_V_LS_std_W210_1, epc_V_PC_mean_W210_1, epc_V_PC_std_W210_1, epc_V_SC_mean_W210_1, epc_V_SC_std_W210_1 = get_mean_result(epc_result_W210_1)
+epc_V_LS_mean_D1F2EB, epc_V_LS_std_D1F2EB, epc_V_PC_mean_D1F2EB, epc_V_PC_std_D1F2EB, epc_V_SC_mean_D1F2EB, epc_V_SC_std_D1F2EB = get_mean_result(epc_result_D1F2EB)
 
-all_V_LS_mean_W210_1, all_V_LS_std_W210_1, all_V_PC_mean_W210_1, all_V_PC_std_W210_1, all_V_SC_mean_W210_1, all_V_SC_std_W210_1 = get_max_result(ANA_DF, ANA_ALL_DF)
+all_V_LS_mean_D1F2EB, all_V_LS_std_D1F2EB, all_V_PC_mean_D1F2EB, all_V_PC_std_D1F2EB, all_V_SC_mean_D1F2EB, all_V_SC_std_D1F2EB = get_max_result(ANA_DF, ANA_ALL_DF)
 
-
-
-
-
-
-
-
-
-
-
-
+last_V_LS_mean_D1F2EB, last_V_LS_std_D1F2EB, last_V_PC_mean_D1F2EB, last_V_PC_std_D1F2EB, last_V_SC_mean_D1F2EB, last_V_SC_std_D1F2EB = get_last_result(ANA_DF, ANA_ALL_DF)
 
 
 
@@ -605,12 +680,48 @@ all_V_LS_mean_W210_1, all_V_LS_std_W210_1, all_V_PC_mean_W210_1, all_V_PC_std_W2
 ########################################################
 ########################################################
 
+AXBO 시리즈 
 
-			3) AXBX
+
+
+			2) AXBO + AOBX
 			1-1 ) 전체 다 먹는거 
-W_NAME = 'W203'
-WORK_NAME = 'WORK_203_3' # 349
-WORK_DATE = '23.06.23' # 349
+W_NAME = 'W403_2'
+WORK_NAME = 'WORK_403_2' # 349
+WORK_DATE = '23.08.29' # 349
+
+anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
+list_dir = os.listdir(anal_dir)
+exp_json = [a for a in list_dir if 'experiment_state' in a]
+exp_json
+anal_df = ExperimentAnalysis(os.path.join(anal_dir, exp_json[0]))
+
+ANA_DF_1 = anal_df.dataframe()
+ANA_ALL_DF_1 = anal_df.trial_dataframes
+
+ANA_DF = ANA_DF_1
+
+ANA_DF = ANA_DF.sort_values('config/CV')
+ANA_DF.index = [0,1,2,3,4]
+ANA_ALL_DF = ANA_ALL_DF_1
+
+epc_result_D2F3 = get_mean(ANA_DF, ANA_ALL_DF, 1000)
+
+epc_V_LS_mean_D2F3, epc_V_LS_std_D2F3, epc_V_PC_mean_D2F3, epc_V_PC_std_D2F3, epc_V_SC_mean_D2F3, epc_V_SC_std_D2F3 = get_mean_result(epc_result_D2F3)
+
+all_V_LS_mean_D2F3, all_V_LS_std_D2F3, all_V_PC_mean_D2F3, all_V_PC_std_D2F3, all_V_SC_mean_D2F3, all_V_SC_std_D2F3 = get_max_result(ANA_DF, ANA_ALL_DF)
+
+last_V_LS_mean_D2F3, last_V_LS_std_D2F3, last_V_PC_mean_D2F3, last_V_PC_std_D2F3, last_V_SC_mean_D2F3, last_V_SC_std_D2F3 = get_last_result(ANA_DF, ANA_ALL_DF)
+
+
+
+
+			2) AXBO + AOBX
+			1-2 ) gene exp 만 
+
+W_NAME = 'W405_2'
+WORK_NAME = 'WORK_405_2' # 349
+WORK_DATE = '23.08.29' # 349
 
 anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
 #     anal_dir = '/home01/k040a01/ray_results/PRJ02.23.06.13.M3V5.WORK_37.349.MIS22/'
@@ -628,56 +739,24 @@ ANA_DF = ANA_DF.sort_values('config/CV')
 ANA_DF.index = [0,1,2,3,4]
 ANA_ALL_DF = ANA_ALL_DF_1
 
-epc_result_W203_3 = get_mean(ANA_DF, ANA_ALL_DF, 1000)
+epc_result_D2F1E = get_mean(ANA_DF, ANA_ALL_DF, 1000)
 
-epc_V_LS_mean_W203_3, epc_V_LS_std_W203_3, epc_V_PC_mean_W203_3, epc_V_PC_std_W203_3, epc_V_SC_mean_W203_3, epc_V_SC_std_W203_3 = get_mean_result(epc_result_W203_3)
+epc_V_LS_mean_D2F1E, epc_V_LS_std_D2F1E, epc_V_PC_mean_D2F1E, epc_V_PC_std_D2F1E, epc_V_SC_mean_D2F1E, epc_V_SC_std_D2F1E = get_mean_result(epc_result_D2F1E)
 
-all_V_LS_mean_W203_3, all_V_LS_std_W203_3, all_V_PC_mean_W203_3, all_V_PC_std_W203_3, all_V_SC_mean_W203_3, all_V_SC_std_W203_3 = get_max_result(ANA_DF, ANA_ALL_DF)
+all_V_LS_mean_D2F1E, all_V_LS_std_D2F1E, all_V_PC_mean_D2F1E, all_V_PC_std_D2F1E, all_V_SC_mean_D2F1E, all_V_SC_std_D2F1E = get_max_result(ANA_DF, ANA_ALL_DF)
 
-
-
-			3) AXBX
-			1-2 ) gene exp 만 먹인거 206_5인데 잘못 표기함 /home01/k040a01/ray_results/PRJ02.23.06.23.M3V6.WORK_206_1.349.MIS2 / RAY_MY_train_28371_00000
-
-W_NAME = 'W206'
-WORK_NAME = 'WORK_206_3' # 349
-WORK_DATE = '23.06.22' # 349
-
-anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
-#     anal_dir = '/home01/k040a01/ray_results/PRJ02.23.06.13.M3V5.WORK_37.349.MIS22/'
-list_dir = os.listdir(anal_dir)
-exp_json = [a for a in list_dir if 'experiment_state' in a]
-exp_json
-anal_df = ExperimentAnalysis(os.path.join(anal_dir, exp_json[0]))
-
-ANA_DF_1 = anal_df.dataframe()
-ANA_ALL_DF_1 = anal_df.trial_dataframes
-
-ANA_DF = ANA_DF_1
-
-ANA_DF = ANA_DF.sort_values('config/CV')
-ANA_DF.index = [0,1,2,3,4]
-ANA_ALL_DF = ANA_ALL_DF_1
-
-epc_result_W206_3 = get_mean(ANA_DF, ANA_ALL_DF, 1000)
-
-epc_V_LS_mean_W206_3, epc_V_LS_std_W206_3, epc_V_PC_mean_W206_3, epc_V_PC_std_W206_3, epc_V_SC_mean_W206_3, epc_V_SC_std_W206_3 = get_mean_result(epc_result_W206_3)
-
-all_V_LS_mean_W206_3, all_V_LS_std_W206_3, all_V_PC_mean_W206_3, all_V_PC_std_W206_3, all_V_SC_mean_W206_3, all_V_SC_std_W206_3 = get_max_result(ANA_DF, ANA_ALL_DF)
+last_V_LS_mean_D2F1E, last_V_LS_std_D2F1E, last_V_PC_mean_D2F1E, last_V_PC_std_D2F1E, last_V_SC_mean_D2F1E, last_V_SC_std_D2F1E = get_last_result(ANA_DF, ANA_ALL_DF)
 
 
 
 
 
 
-
-
-
-			3) AXBX
+			2) AXBO + AOBX
 			1-2 ) Basal only / RAY_MY_train_ffb94_00000 
-W_NAME = 'W207'
-WORK_NAME = 'WORK_207_3' # 349
-WORK_DATE = '23.06.23' # 349
+W_NAME = 'W406_2'
+WORK_NAME = 'WORK_406_2' # 349
+WORK_DATE = '23.08.29' # 349
 
 anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
 #     anal_dir = '/home01/k040a01/ray_results/PRJ02.23.06.13.M3V5.WORK_37.349.MIS22/'
@@ -695,23 +774,57 @@ ANA_DF = ANA_DF.sort_values('config/CV')
 ANA_DF.index = [0,1,2,3,4]
 ANA_ALL_DF = ANA_ALL_DF_1
 
-epc_result_W207_3 = get_mean(ANA_DF, ANA_ALL_DF, 1000)
+epc_result_D2F1B = get_mean(ANA_DF, ANA_ALL_DF, 1000)
 
-epc_V_LS_mean_W207_3, epc_V_LS_std_W207_3, epc_V_PC_mean_W207_3, epc_V_PC_std_W207_3, epc_V_SC_mean_W207_3, epc_V_SC_std_W207_3 = get_mean_result(epc_result_W207_3)
+epc_V_LS_mean_D2F1B, epc_V_LS_std_D2F1B, epc_V_PC_mean_D2F1B, epc_V_PC_std_D2F1B, epc_V_SC_mean_D2F1B, epc_V_SC_std_D2F1B = get_mean_result(epc_result_D2F1B)
 
-all_V_LS_mean_W207_3, all_V_LS_std_W207_3, all_V_PC_mean_W207_3, all_V_PC_std_W207_3, all_V_SC_mean_W207_3, all_V_SC_std_W207_3 = get_max_result(ANA_DF, ANA_ALL_DF)
+all_V_LS_mean_D2F1B, all_V_LS_std_D2F1B, all_V_PC_mean_D2F1B, all_V_PC_std_D2F1B, all_V_SC_mean_D2F1B, all_V_SC_std_D2F1B = get_max_result(ANA_DF, ANA_ALL_DF)
 
-
-
-
+last_V_LS_mean_D2F1B, last_V_LS_std_D2F1B, last_V_PC_mean_D2F1B, last_V_PC_std_D2F1B, last_V_SC_mean_D2F1B, last_V_SC_std_D2F1B = get_last_result(ANA_DF, ANA_ALL_DF)
 
 
 
-			3) AXBX
+			2) AXBO + AOBX
+			1-2 ) TARGET only 
+
+W_NAME = 'W407_2'
+WORK_NAME = 'WORK_407_2' # 349
+WORK_DATE = '23.08.29' # 349
+
+anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
+#     anal_dir = '/home01/k040a01/ray_results/PRJ02.23.06.13.M3V5.WORK_37.349.MIS22/'
+list_dir = os.listdir(anal_dir)
+exp_json = [a for a in list_dir if 'experiment_state' in a]
+exp_json
+anal_df = ExperimentAnalysis(os.path.join(anal_dir, exp_json[0]))
+
+ANA_DF_1 = anal_df.dataframe()
+ANA_ALL_DF_1 = anal_df.trial_dataframes
+
+ANA_DF = ANA_DF_1
+
+ANA_DF = ANA_DF.sort_values('config/CV')
+ANA_DF.index = [0,1,2,3,4]
+ANA_ALL_DF = ANA_ALL_DF_1
+
+epc_result_D2F1T = get_mean(ANA_DF, ANA_ALL_DF, 1000)
+
+epc_V_LS_mean_D2F1T, epc_V_LS_std_D2F1T, epc_V_PC_mean_D2F1T, epc_V_PC_std_D2F1T, epc_V_SC_mean_D2F1T, epc_V_SC_std_D2F1T = get_mean_result(epc_result_D2F1T)
+
+all_V_LS_mean_D2F1T, all_V_LS_std_D2F1T, all_V_PC_mean_D2F1T, all_V_PC_std_D2F1T, all_V_SC_mean_D2F1T, all_V_SC_std_D2F1T = get_max_result(ANA_DF, ANA_ALL_DF)
+
+last_V_LS_mean_D2F1T, last_V_LS_std_D2F1T, last_V_PC_mean_D2F1T, last_V_PC_std_D2F1T, last_V_SC_mean_D2F1T, last_V_SC_std_D2F1T = get_last_result(ANA_DF, ANA_ALL_DF)
+
+
+
+
+
+
+			2) AXBO + AOBX
 			1-2 ) Basal + target 
-W_NAME = 'W208'
-WORK_NAME = 'WORK_208_3' # 349
-WORK_DATE = '23.06.23' # 349
+W_NAME = 'W408_2'
+WORK_NAME = 'WORK_408_2' # 349
+WORK_DATE = '23.08.29' # 349
 
 anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
 #     anal_dir = '/home01/k040a01/ray_results/PRJ02.23.06.13.M3V5.WORK_37.349.MIS22/'
@@ -729,26 +842,27 @@ ANA_DF = ANA_DF.sort_values('config/CV')
 ANA_DF.index = [0,1,2,3,4]
 ANA_ALL_DF = ANA_ALL_DF_1
 
-epc_result_W208_3 = get_mean(ANA_DF, ANA_ALL_DF, 1000)
+epc_result_D2F2BT = get_mean(ANA_DF, ANA_ALL_DF, 1000)
 
-epc_V_LS_mean_W208_3, epc_V_LS_std_W208_3, epc_V_PC_mean_W208_3, epc_V_PC_std_W208_3, epc_V_SC_mean_W208_3, epc_V_SC_std_W208_3 = get_mean_result(epc_result_W208_3)
+epc_V_LS_mean_D2F2BT, epc_V_LS_std_D2F2BT, epc_V_PC_mean_D2F2BT, epc_V_PC_std_D2F2BT, epc_V_SC_mean_D2F2BT, epc_V_SC_std_D2F2BT = get_mean_result(epc_result_D2F2BT)
 
-all_V_LS_mean_W208_3, all_V_LS_std_W208_3, all_V_PC_mean_W208_3, all_V_PC_std_W208_3, all_V_SC_mean_W208_3, all_V_SC_std_W208_3 = get_max_result(ANA_DF, ANA_ALL_DF)
+all_V_LS_mean_D2F2BT, all_V_LS_std_D2F2BT, all_V_PC_mean_D2F2BT, all_V_PC_std_D2F2BT, all_V_SC_mean_D2F2BT, all_V_SC_std_D2F2BT = get_max_result(ANA_DF, ANA_ALL_DF)
 
-
-
-
+last_V_LS_mean_D2F2BT, last_V_LS_std_D2F2BT, last_V_PC_mean_D2F2BT, last_V_PC_std_D2F2BT, last_V_SC_mean_D2F2BT, last_V_SC_std_D2F2BT = get_last_result(ANA_DF, ANA_ALL_DF)
 
 
 
 
 
 
-			3) AXBX
+
+
+
+			2) AXBO + AOBX
 			1-2 ) EXP + target 
-W_NAME = 'W209'
-WORK_NAME = 'WORK_209_3' # 349
-WORK_DATE = '23.06.23' # 349
+W_NAME = 'W409_2'
+WORK_NAME = 'WORK_409_2' # 349
+WORK_DATE = '23.08.29' # 349
 
 anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
 #     anal_dir = '/home01/k040a01/ray_results/PRJ02.23.06.13.M3V5.WORK_37.349.MIS22/'
@@ -766,27 +880,22 @@ ANA_DF = ANA_DF.sort_values('config/CV')
 ANA_DF.index = [0,1,2,3,4]
 ANA_ALL_DF = ANA_ALL_DF_1
 
-epc_result_W209_3 = get_mean(ANA_DF, ANA_ALL_DF, 1000)
+epc_result_D2F2ET = get_mean(ANA_DF, ANA_ALL_DF, 1000)
 
-epc_V_LS_mean_W209_3, epc_V_LS_std_W209_3, epc_V_PC_mean_W209_3, epc_V_PC_std_W209_3, epc_V_SC_mean_W209_3, epc_V_SC_std_W209_3 = get_mean_result(epc_result_W209_3)
+epc_V_LS_mean_D2F2ET, epc_V_LS_std_D2F2ET, epc_V_PC_mean_D2F2ET, epc_V_PC_std_D2F2ET, epc_V_SC_mean_D2F2ET, epc_V_SC_std_D2F2ET = get_mean_result(epc_result_D2F2ET)
 
-all_V_LS_mean_W209_3, all_V_LS_std_W209_3, all_V_PC_mean_W209_3, all_V_PC_std_W209_3, all_V_SC_mean_W209_3, all_V_SC_std_W209_3 = get_max_result(ANA_DF, ANA_ALL_DF)
+all_V_LS_mean_D2F2ET, all_V_LS_std_D2F2ET, all_V_PC_mean_D2F2ET, all_V_PC_std_D2F2ET, all_V_SC_mean_D2F2ET, all_V_SC_std_D2F2ET = get_max_result(ANA_DF, ANA_ALL_DF)
 
-
-
-
+last_V_LS_mean_D2F2ET, last_V_LS_std_D2F2ET, last_V_PC_mean_D2F2ET, last_V_PC_std_D2F2ET, last_V_SC_mean_D2F2ET, last_V_SC_std_D2F2ET = get_last_result(ANA_DF, ANA_ALL_DF)
 
 
 
 
-
-
-
-			3) AXBX
+			2) AXBO + AOBX
 			1-2 ) EXP + basal
-W_NAME = 'W210'
-WORK_NAME = 'WORK_210_3' # 349
-WORK_DATE = '23.06.23' # 349
+W_NAME = 'W410_2'
+WORK_NAME = 'WORK_410_2' # 349
+WORK_DATE = '23.08.29' # 349
 
 anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
 #     anal_dir = '/home01/k040a01/ray_results/PRJ02.23.06.13.M3V5.WORK_37.349.MIS22/'
@@ -804,400 +913,356 @@ ANA_DF = ANA_DF.sort_values('config/CV')
 ANA_DF.index = [0,1,2,3,4]
 ANA_ALL_DF = ANA_ALL_DF_1
 
-epc_result_W210_3 = get_mean(ANA_DF, ANA_ALL_DF, 1000)
+epc_result_D2F2EB = get_mean(ANA_DF, ANA_ALL_DF, 1000)
 
-epc_V_LS_mean_W210_3, epc_V_LS_std_W210_3, epc_V_PC_mean_W210_3, epc_V_PC_std_W210_3, epc_V_SC_mean_W210_3, epc_V_SC_std_W210_3 = get_mean_result(epc_result_W210_3)
+epc_V_LS_mean_D2F2EB, epc_V_LS_std_D2F2EB, epc_V_PC_mean_D2F2EB, epc_V_PC_std_D2F2EB, epc_V_SC_mean_D2F2EB, epc_V_SC_std_D2F2EB = get_mean_result(epc_result_D2F2EB)
 
-all_V_LS_mean_W210_3, all_V_LS_std_W210_3, all_V_PC_mean_W210_3, all_V_PC_std_W210_3, all_V_SC_mean_W210_3, all_V_SC_std_W210_3 = get_max_result(ANA_DF, ANA_ALL_DF)
+all_V_LS_mean_D2F2EB, all_V_LS_std_D2F2EB, all_V_PC_mean_D2F2EB, all_V_PC_std_D2F2EB, all_V_SC_mean_D2F2EB, all_V_SC_std_D2F2EB = get_max_result(ANA_DF, ANA_ALL_DF)
 
-
-
-
-
-
-
-
-
-
-
-			() AOBO
-			TARGET only 
-W_NAME = 'W206'
-WORK_NAME = 'WORK_206_2' # 349
-WORK_DATE = '23.07.09' # 349
-
-anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
-#     anal_dir = '/home01/k040a01/ray_results/PRJ02.23.06.13.M3V5.WORK_37.349.MIS22/'
-list_dir = os.listdir(anal_dir)
-exp_json = [a for a in list_dir if 'experiment_state' in a]
-exp_json
-anal_df = ExperimentAnalysis(os.path.join(anal_dir, exp_json[0]))
-
-ANA_DF_1 = anal_df.dataframe()
-ANA_ALL_DF_1 = anal_df.trial_dataframes
-
-ANA_DF = ANA_DF_1
-
-ANA_DF = ANA_DF.sort_values('config/CV')
-ANA_DF.index = [0,1,2,3,4]
-ANA_ALL_DF = ANA_ALL_DF_1
-
-epc_result_W206_2 = get_mean(ANA_DF, ANA_ALL_DF, 1000)
-
-epc_V_LS_mean_W206_2, epc_V_LS_std_W206_2, epc_V_PC_mean_W206_2, epc_V_PC_std_W206_2, epc_V_SC_mean_W206_2, epc_V_SC_std_W206_2 = get_mean_result(epc_result_W206_2)
-
-all_V_LS_mean_W206_2, all_V_LS_std_W206_2, all_V_PC_mean_W206_2, all_V_PC_std_W206_2, all_V_SC_mean_W206_2, all_V_SC_std_W206_2 = get_max_result(ANA_DF, ANA_ALL_DF)
-
-
-
-
-
-
-
-
-			() AXBX
-			TARGET only 
-W_NAME = 'W207'
-WORK_NAME = 'WORK_207_2' # 349
-WORK_DATE = '23.07.09' # 349
-
-anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
-#     anal_dir = '/home01/k040a01/ray_results/PRJ02.23.06.13.M3V5.WORK_37.349.MIS22/'
-list_dir = os.listdir(anal_dir)
-exp_json = [a for a in list_dir if 'experiment_state' in a]
-exp_json
-anal_df = ExperimentAnalysis(os.path.join(anal_dir, exp_json[0]))
-
-ANA_DF_1 = anal_df.dataframe()
-ANA_ALL_DF_1 = anal_df.trial_dataframes
-
-ANA_DF = ANA_DF_1
-
-ANA_DF = ANA_DF.sort_values('config/CV')
-ANA_DF.index = [0,1,2,3,4]
-ANA_ALL_DF = ANA_ALL_DF_1
-
-epc_result_W207_2 = get_mean(ANA_DF, ANA_ALL_DF, 1000)
-
-epc_V_LS_mean_W207_2, epc_V_LS_std_W207_2, epc_V_PC_mean_W207_2, epc_V_PC_std_W207_2, epc_V_SC_mean_W207_2, epc_V_SC_std_W207_2 = get_mean_result(epc_result_W207_2)
-
-all_V_LS_mean_W207_2, all_V_LS_std_W207_2, all_V_PC_mean_W207_2, all_V_PC_std_W207_2, all_V_SC_mean_W207_2, all_V_SC_std_W207_2 = get_max_result(ANA_DF, ANA_ALL_DF)
-
-
-
-
-
-
-
-
-			() AOBO + AXBX
-			TARGET only 
-W_NAME = 'W208'
-WORK_NAME = 'WORK_208_2' # 349
-WORK_DATE = '23.07.09' # 349
-
-anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
-#     anal_dir = '/home01/k040a01/ray_results/PRJ02.23.06.13.M3V5.WORK_37.349.MIS22/'
-list_dir = os.listdir(anal_dir)
-exp_json = [a for a in list_dir if 'experiment_state' in a]
-exp_json
-anal_df = ExperimentAnalysis(os.path.join(anal_dir, exp_json[0]))
-
-ANA_DF_1 = anal_df.dataframe()
-ANA_ALL_DF_1 = anal_df.trial_dataframes
-
-ANA_DF = ANA_DF_1
-
-ANA_DF = ANA_DF.sort_values('config/CV')
-ANA_DF.index = [0,1,2,3,4]
-ANA_ALL_DF = ANA_ALL_DF_1
-
-epc_result_W208_2 = get_mean(ANA_DF, ANA_ALL_DF, 1000)
-
-epc_V_LS_mean_W208_2, epc_V_LS_std_W208_2, epc_V_PC_mean_W208_2, epc_V_PC_std_W208_2, epc_V_SC_mean_W208_2, epc_V_SC_std_W208_2 = get_mean_result(epc_result_W208_2)
-
-all_V_LS_mean_W208_2, all_V_LS_std_W208_2, all_V_PC_mean_W208_2, all_V_PC_std_W208_2, all_V_SC_mean_W208_2, all_V_SC_std_W208_2 = get_max_result(ANA_DF, ANA_ALL_DF)
-
-
-
-
-
-
-
-			() AXBO + AOBX
-			Gene exp only			
-
-W_NAME = 'W216'
-WORK_NAME = 'WORK_216_1' # 349
-WORK_DATE = '23.07.14' # 349
-
-anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
-#     anal_dir = '/home01/k040a01/ray_results/PRJ02.23.06.13.M3V5.WORK_37.349.MIS22/'
-list_dir = os.listdir(anal_dir)
-exp_json = [a for a in list_dir if 'experiment_state' in a]
-exp_json
-anal_df = ExperimentAnalysis(os.path.join(anal_dir, exp_json[0]))
-
-ANA_DF_1 = anal_df.dataframe()
-ANA_ALL_DF_1 = anal_df.trial_dataframes
-
-ANA_DF = ANA_DF_1
-
-ANA_DF = ANA_DF.sort_values('config/CV')
-ANA_DF.index = [0,1,2,3,4]
-ANA_ALL_DF = ANA_ALL_DF_1
-
-epc_result_W216_1 = get_mean(ANA_DF, ANA_ALL_DF, 1000)
-
-epc_V_LS_mean_W216_1, epc_V_LS_std_W216_1, epc_V_PC_mean_W216_1, epc_V_PC_std_W216_1, epc_V_SC_mean_W216_1, epc_V_SC_std_W216_1 = get_mean_result(epc_result_W216_1)
-
-all_V_LS_mean_W216_1, all_V_LS_std_W216_1, all_V_PC_mean_W216_1, all_V_PC_std_W216_1, all_V_SC_mean_W216_1, all_V_SC_std_W216_1 = get_max_result(ANA_DF, ANA_ALL_DF)
-
-
-
-
-
-			() AXBO + AOBX
-			Basal only		
-
-W_NAME = 'W216'
-WORK_NAME = 'WORK_216_2' # 349
-WORK_DATE = '23.07.14' # 349
-
-anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
-#     anal_dir = '/home01/k040a01/ray_results/PRJ02.23.06.13.M3V5.WORK_37.349.MIS22/'
-list_dir = os.listdir(anal_dir)
-exp_json = [a for a in list_dir if 'experiment_state' in a]
-exp_json
-anal_df = ExperimentAnalysis(os.path.join(anal_dir, exp_json[0]))
-
-ANA_DF_1 = anal_df.dataframe()
-ANA_ALL_DF_1 = anal_df.trial_dataframes
-
-ANA_DF = ANA_DF_1
-
-ANA_DF = ANA_DF.sort_values('config/CV')
-ANA_DF.index = [0,1,2,3,4]
-ANA_ALL_DF = ANA_ALL_DF_1
-
-epc_result_W216_2 = get_mean(ANA_DF, ANA_ALL_DF, 1000)
-
-epc_V_LS_mean_W216_2, epc_V_LS_std_W216_2, epc_V_PC_mean_W216_2, epc_V_PC_std_W216_2, epc_V_SC_mean_W216_2, epc_V_SC_std_W216_2 = get_mean_result(epc_result_W216_2)
-
-all_V_LS_mean_W216_2, all_V_LS_std_W216_2, all_V_PC_mean_W216_2, all_V_PC_std_W216_2, all_V_SC_mean_W216_2, all_V_SC_std_W216_2 = get_max_result(ANA_DF, ANA_ALL_DF)
-
-
-
-
-
-
-
-			() AXBO + AOBX
-			Target only
-
-W_NAME = 'W216'
-WORK_NAME = 'WORK_206_3' # 349
-WORK_DATE = '23.07.14' # 349
-
-anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
-#     anal_dir = '/home01/k040a01/ray_results/PRJ02.23.06.13.M3V5.WORK_37.349.MIS22/'
-list_dir = os.listdir(anal_dir)
-exp_json = [a for a in list_dir if 'experiment_state' in a]
-exp_json
-anal_df = ExperimentAnalysis(os.path.join(anal_dir, exp_json[0]))
-
-ANA_DF_1 = anal_df.dataframe()
-ANA_ALL_DF_1 = anal_df.trial_dataframes
-
-ANA_DF = ANA_DF_1
-
-ANA_DF = ANA_DF.sort_values('config/CV')
-ANA_DF.index = [0,1,2,3,4]
-ANA_ALL_DF = ANA_ALL_DF_1
-
-epc_result_W216_3 = get_mean(ANA_DF, ANA_ALL_DF, 1000)
-
-epc_V_LS_mean_W216_3, epc_V_LS_std_W216_3, epc_V_PC_mean_W216_3, epc_V_PC_std_W216_3, epc_V_SC_mean_W216_3, epc_V_SC_std_W216_3 = get_mean_result(epc_result_W216_3)
-
-all_V_LS_mean_W216_3, all_V_LS_std_W216_3, all_V_PC_mean_W216_3, all_V_PC_std_W216_3, all_V_SC_mean_W216_3, all_V_SC_std_W216_3 = get_max_result(ANA_DF, ANA_ALL_DF)
-
-
-
-
-
-
-
-			() AXBO + AOBX
-			Basal + Target
-
-W_NAME = 'W216'
-WORK_NAME = 'WORK_216_4' # 349
-WORK_DATE = '23.07.14' # 349
-
-anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
-#     anal_dir = '/home01/k040a01/ray_results/PRJ02.23.06.13.M3V5.WORK_37.349.MIS22/'
-list_dir = os.listdir(anal_dir)
-exp_json = [a for a in list_dir if 'experiment_state' in a]
-exp_json
-anal_df = ExperimentAnalysis(os.path.join(anal_dir, exp_json[0]))
-
-ANA_DF_1 = anal_df.dataframe()
-ANA_ALL_DF_1 = anal_df.trial_dataframes
-
-ANA_DF = ANA_DF_1
-
-ANA_DF = ANA_DF.sort_values('config/CV')
-ANA_DF.index = [0,1,2,3,4]
-ANA_ALL_DF = ANA_ALL_DF_1
-
-epc_result_W216_4 = get_mean(ANA_DF, ANA_ALL_DF, 1000)
-
-epc_V_LS_mean_W216_4, epc_V_LS_std_W216_4, epc_V_PC_mean_W216_4, epc_V_PC_std_W216_4, epc_V_SC_mean_W216_4, epc_V_SC_std_W216_4 = get_mean_result(epc_result_W216_4)
-
-all_V_LS_mean_W216_4, all_V_LS_std_W216_4, all_V_PC_mean_W216_4, all_V_PC_std_W216_4, all_V_SC_mean_W216_4, all_V_SC_std_W216_4 = get_max_result(ANA_DF, ANA_ALL_DF)
-
-
-
-
-
-
-
-			() AXBO + AOBX
-			EXP + Target
-
-W_NAME = 'W216'
-WORK_NAME = 'WORK_216_5' # 349
-WORK_DATE = '23.07.14' # 349
-
-anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
-#     anal_dir = '/home01/k040a01/ray_results/PRJ02.23.06.13.M3V5.WORK_37.349.MIS22/'
-list_dir = os.listdir(anal_dir)
-exp_json = [a for a in list_dir if 'experiment_state' in a]
-exp_json
-anal_df = ExperimentAnalysis(os.path.join(anal_dir, exp_json[0]))
-
-ANA_DF_1 = anal_df.dataframe()
-ANA_ALL_DF_1 = anal_df.trial_dataframes
-
-ANA_DF = ANA_DF_1
-
-ANA_DF = ANA_DF.sort_values('config/CV')
-ANA_DF.index = [0,1,2,3,4]
-ANA_ALL_DF = ANA_ALL_DF_1
-
-epc_result_W216_5 = get_mean(ANA_DF, ANA_ALL_DF, 1000)
-
-epc_V_LS_mean_W216_5, epc_V_LS_std_W216_5, epc_V_PC_mean_W216_5, epc_V_PC_std_W216_5, epc_V_SC_mean_W216_5, epc_V_SC_std_W216_5 = get_mean_result(epc_result_W216_5)
-
-all_V_LS_mean_W216_5, all_V_LS_std_W216_5, all_V_PC_mean_W216_5, all_V_PC_std_W216_5, all_V_SC_mean_W216_5, all_V_SC_std_W216_5 = get_max_result(ANA_DF, ANA_ALL_DF)
-
-
-
-			() AXBO + AOBX
-			EXP + Basal
-
-W_NAME = 'W216'
-WORK_NAME = 'WORK_216_6' # 349
-WORK_DATE = '23.07.14' # 349
-
-anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
-#     anal_dir = '/home01/k040a01/ray_results/PRJ02.23.06.13.M3V5.WORK_37.349.MIS22/'
-list_dir = os.listdir(anal_dir)
-exp_json = [a for a in list_dir if 'experiment_state' in a]
-exp_json
-anal_df = ExperimentAnalysis(os.path.join(anal_dir, exp_json[0]))
-
-ANA_DF_1 = anal_df.dataframe()
-ANA_ALL_DF_1 = anal_df.trial_dataframes
-
-ANA_DF = ANA_DF_1
-
-ANA_DF = ANA_DF.sort_values('config/CV')
-ANA_DF.index = [0,1,2,3,4]
-ANA_ALL_DF = ANA_ALL_DF_1
-
-epc_result_W216_6 = get_mean(ANA_DF, ANA_ALL_DF, 1000)
-
-epc_V_LS_mean_W216_6, epc_V_LS_std_W216_6, epc_V_PC_mean_W216_6, epc_V_PC_std_W216_6, epc_V_SC_mean_W216_6, epc_V_SC_std_W216_6 = get_mean_result(epc_result_W216_6)
-
-all_V_LS_mean_W216_6, all_V_LS_std_W216_6, all_V_PC_mean_W216_6, all_V_PC_std_W216_6, all_V_SC_mean_W216_6, all_V_SC_std_W216_6 = get_max_result(ANA_DF, ANA_ALL_DF)
-
-
-
-
-
-			() AXBO + AOBX
-			Good 5CV (total)
-
-W_NAME = 'W216'
-WORK_NAME = 'WORK_216_7' # 349
-WORK_DATE = '23.07.14' # 349
-
-anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
-#     anal_dir = '/home01/k040a01/ray_results/PRJ02.23.06.13.M3V5.WORK_37.349.MIS22/'
-list_dir = os.listdir(anal_dir)
-exp_json = [a for a in list_dir if 'experiment_state' in a]
-exp_json
-anal_df = ExperimentAnalysis(os.path.join(anal_dir, exp_json[0]))
-
-ANA_DF_1 = anal_df.dataframe()
-ANA_ALL_DF_1 = anal_df.trial_dataframes
-
-ANA_DF = ANA_DF_1
-
-ANA_DF = ANA_DF.sort_values('config/CV')
-ANA_DF.index = [0,1,2,3,4]
-ANA_ALL_DF = ANA_ALL_DF_1
-
-epc_result_W216_7 = get_mean(ANA_DF, ANA_ALL_DF, 1000)
-
-epc_V_LS_mean_W216_7, epc_V_LS_std_W216_7, epc_V_PC_mean_W216_7, epc_V_PC_std_W216_7, epc_V_SC_mean_W216_7, epc_V_SC_std_W216_7 = get_mean_result(epc_result_W216_7)
-
-all_V_LS_mean_W216_7, all_V_LS_std_W216_7, all_V_PC_mean_W216_7, all_V_PC_std_W216_7, all_V_SC_mean_W216_7, all_V_SC_std_W216_7 = get_max_result(ANA_DF, ANA_ALL_DF)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+last_V_LS_mean_D2F2EB, last_V_LS_std_D2F2EB, last_V_PC_mean_D2F2EB, last_V_PC_std_D2F2EB, last_V_SC_mean_D2F2EB, last_V_SC_std_D2F2EB = get_last_result(ANA_DF, ANA_ALL_DF)
 
 
 
 #################################
 #################################
+
+
+AXBO 시리즈 
+
+
+
+			2) AXBX
+			1-1 ) 전체 다 먹는거 
+W_NAME = 'W403_3'
+WORK_NAME = 'WORK_403_3' # 349
+WORK_DATE = '23.08.30' # 349
+
+anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
+list_dir = os.listdir(anal_dir)
+exp_json = [a for a in list_dir if 'experiment_state' in a]
+exp_json
+anal_df = ExperimentAnalysis(os.path.join(anal_dir, exp_json[0]))
+
+ANA_DF_1 = anal_df.dataframe()
+ANA_ALL_DF_1 = anal_df.trial_dataframes
+
+ANA_DF = ANA_DF_1
+
+ANA_DF = ANA_DF.sort_values('config/CV')
+ANA_DF.index = [0,1,2,3,4]
+ANA_ALL_DF = ANA_ALL_DF_1
+
+epc_result_D3F3 = get_mean(ANA_DF, ANA_ALL_DF, 1000)
+
+epc_V_LS_mean_D3F3, epc_V_LS_std_D3F3, epc_V_PC_mean_D3F3, epc_V_PC_std_D3F3, epc_V_SC_mean_D3F3, epc_V_SC_std_D3F3 = get_mean_result(epc_result_D3F3)
+
+all_V_LS_mean_D3F3, all_V_LS_std_D3F3, all_V_PC_mean_D3F3, all_V_PC_std_D3F3, all_V_SC_mean_D3F3, all_V_SC_std_D3F3 = get_max_result(ANA_DF, ANA_ALL_DF)
+
+last_V_LS_mean_D3F3, last_V_LS_std_D3F3, last_V_PC_mean_D3F3, last_V_PC_std_D3F3, last_V_SC_mean_D3F3, last_V_SC_std_D3F3 = get_last_result(ANA_DF, ANA_ALL_DF)
+
+
+
+			2) AXBX
+			1-2 ) gene exp 만 
+
+W_NAME = 'W405_3'
+WORK_NAME = 'WORK_405_3' # 349
+WORK_DATE = '23.08.30' # 349
+
+anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
+#     anal_dir = '/home01/k040a01/ray_results/PRJ02.23.06.13.M3V5.WORK_37.349.MIS22/'
+list_dir = os.listdir(anal_dir)
+exp_json = [a for a in list_dir if 'experiment_state' in a]
+exp_json
+anal_df = ExperimentAnalysis(os.path.join(anal_dir, exp_json[0]))
+
+ANA_DF_1 = anal_df.dataframe()
+ANA_ALL_DF_1 = anal_df.trial_dataframes
+
+ANA_DF = ANA_DF_1
+
+ANA_DF = ANA_DF.sort_values('config/CV')
+ANA_DF.index = [0,1,2,3,4]
+ANA_ALL_DF = ANA_ALL_DF_1
+
+epc_result_D3F1E = get_mean(ANA_DF, ANA_ALL_DF, 1000)
+epc_result_D3F1E = epc_result_D3F1E.loc[2:,:]
+
+epc_V_LS_mean_D3F1E, epc_V_LS_std_D3F1E, epc_V_PC_mean_D3F1E, epc_V_PC_std_D3F1E, epc_V_SC_mean_D3F1E, epc_V_SC_std_D3F1E = get_mean_result(epc_result_D3F1E)
+
+all_V_LS_mean_D3F1E, all_V_LS_std_D3F1E, all_V_PC_mean_D3F1E, all_V_PC_std_D3F1E, all_V_SC_mean_D3F1E, all_V_SC_std_D3F1E = get_max_result(ANA_DF, ANA_ALL_DF,2)
+
+last_V_LS_mean_D3F1E, last_V_LS_std_D3F1E, last_V_PC_mean_D3F1E, last_V_PC_std_D3F1E, last_V_SC_mean_D3F1E, last_V_SC_std_D3F1E = get_last_result(ANA_DF, ANA_ALL_DF)
+
+
+
+
+
+
+			2) AXBX
+			1-2 ) Basal only / RAY_MY_train_ffb94_00000 
+
+W_NAME = 'W406_3'
+WORK_NAME = 'WORK_406_3' # 349
+WORK_DATE = '23.08.30' # 349
+
+anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
+#     anal_dir = '/home01/k040a01/ray_results/PRJ02.23.06.13.M3V5.WORK_37.349.MIS22/'
+list_dir = os.listdir(anal_dir)
+exp_json = [a for a in list_dir if 'experiment_state' in a]
+exp_json
+anal_df = ExperimentAnalysis(os.path.join(anal_dir, exp_json[0]))
+
+ANA_DF_1 = anal_df.dataframe()
+ANA_ALL_DF_1 = anal_df.trial_dataframes
+
+ANA_DF = ANA_DF_1
+
+ANA_DF = ANA_DF.sort_values('config/CV')
+ANA_DF.index = [0,1,2,3,4]
+ANA_ALL_DF = ANA_ALL_DF_1
+
+epc_result_D3F1B = get_mean(ANA_DF, ANA_ALL_DF, 1000)
+
+epc_V_LS_mean_D3F1B, epc_V_LS_std_D3F1B, epc_V_PC_mean_D3F1B, epc_V_PC_std_D3F1B, epc_V_SC_mean_D3F1B, epc_V_SC_std_D3F1B = get_mean_result(epc_result_D3F1B)
+
+all_V_LS_mean_D3F1B, all_V_LS_std_D3F1B, all_V_PC_mean_D3F1B, all_V_PC_std_D3F1B, all_V_SC_mean_D3F1B, all_V_SC_std_D3F1B = get_max_result(ANA_DF, ANA_ALL_DF)
+
+last_V_LS_mean_D3F1B, last_V_LS_std_D3F1B, last_V_PC_mean_D3F1B, last_V_PC_std_D3F1B, last_V_SC_mean_D3F1B, last_V_SC_std_D3F1B = get_last_result(ANA_DF, ANA_ALL_DF)
+
+
+
+
+
+
+			2) AXBX
+			1-2 ) TARGET only 
+
+W_NAME = 'W407_3'
+WORK_NAME = 'WORK_407_3' # 349
+WORK_DATE = '23.08.30' # 349
+
+anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
+#     anal_dir = '/home01/k040a01/ray_results/PRJ02.23.06.13.M3V5.WORK_37.349.MIS22/'
+list_dir = os.listdir(anal_dir)
+exp_json = [a for a in list_dir if 'experiment_state' in a]
+exp_json
+anal_df = ExperimentAnalysis(os.path.join(anal_dir, exp_json[0]))
+
+ANA_DF_1 = anal_df.dataframe()
+ANA_ALL_DF_1 = anal_df.trial_dataframes
+
+ANA_DF = ANA_DF_1
+
+ANA_DF = ANA_DF.sort_values('config/CV')
+ANA_DF.index = [0,1,2,3,4]
+ANA_ALL_DF = ANA_ALL_DF_1
+
+epc_result_D3F1T = get_mean(ANA_DF, ANA_ALL_DF, 1000)
+
+epc_V_LS_mean_D3F1T, epc_V_LS_std_D3F1T, epc_V_PC_mean_D3F1T, epc_V_PC_std_D3F1T, epc_V_SC_mean_D3F1T, epc_V_SC_std_D3F1T = get_mean_result(epc_result_D3F1T)
+
+all_V_LS_mean_D3F1T, all_V_LS_std_D3F1T, all_V_PC_mean_D3F1T, all_V_PC_std_D3F1T, all_V_SC_mean_D3F1T, all_V_SC_std_D3F1T = get_max_result(ANA_DF, ANA_ALL_DF)
+
+last_V_LS_mean_D3F1T, last_V_LS_std_D3F1T, last_V_PC_mean_D3F1T, last_V_PC_std_D3F1T, last_V_SC_mean_D3F1T, last_V_SC_std_D3F1T = get_last_result(ANA_DF, ANA_ALL_DF)
+
+
+
+
+
+
+			2) AXBX
+			1-2 ) Basal + target 
+W_NAME = 'W408_3'
+WORK_NAME = 'WORK_408_3' # 349
+WORK_DATE = '23.08.30' # 349
+
+anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
+#     anal_dir = '/home01/k040a01/ray_results/PRJ02.23.06.13.M3V5.WORK_37.349.MIS22/'
+list_dir = os.listdir(anal_dir)
+exp_json = [a for a in list_dir if 'experiment_state' in a]
+exp_json
+anal_df = ExperimentAnalysis(os.path.join(anal_dir, exp_json[0]))
+
+ANA_DF_1 = anal_df.dataframe()
+ANA_ALL_DF_1 = anal_df.trial_dataframes
+
+ANA_DF = ANA_DF_1
+
+ANA_DF = ANA_DF.sort_values('config/CV')
+ANA_DF.index = [0,1,2,3,4]
+ANA_ALL_DF = ANA_ALL_DF_1
+
+epc_result_D3F2BT = get_mean(ANA_DF, ANA_ALL_DF, 1000)
+epc_result_D3F2BT = epc_result_D3F2BT.loc[3:,:]
+
+epc_V_LS_mean_D3F2BT, epc_V_LS_std_D3F2BT, epc_V_PC_mean_D3F2BT, epc_V_PC_std_D3F2BT, epc_V_SC_mean_D3F2BT, epc_V_SC_std_D3F2BT = get_mean_result(epc_result_D3F2BT)
+
+all_V_LS_mean_D3F2BT, all_V_LS_std_D3F2BT, all_V_PC_mean_D3F2BT, all_V_PC_std_D3F2BT, all_V_SC_mean_D3F2BT, all_V_SC_std_D3F2BT = get_max_result(ANA_DF, ANA_ALL_DF,3)
+
+last_V_LS_mean_D3F2BT, last_V_LS_std_D3F2BT, last_V_PC_mean_D3F2BT, last_V_PC_std_D3F2BT, last_V_SC_mean_D3F2BT, last_V_SC_std_D3F2BT = get_last_result(ANA_DF, ANA_ALL_DF)
+
+
+
+
+
+
+
+
+
+			2) AXBX
+			1-2 ) EXP + target 
+W_NAME = 'W409_3'
+WORK_NAME = 'WORK_409_3' # 349
+WORK_DATE = '23.08.30' # 349
+
+anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
+#     anal_dir = '/home01/k040a01/ray_results/PRJ02.23.06.13.M3V5.WORK_37.349.MIS22/'
+list_dir = os.listdir(anal_dir)
+exp_json = [a for a in list_dir if 'experiment_state' in a]
+exp_json
+anal_df = ExperimentAnalysis(os.path.join(anal_dir, exp_json[0]))
+
+ANA_DF_1 = anal_df.dataframe()
+ANA_ALL_DF_1 = anal_df.trial_dataframes
+
+ANA_DF = ANA_DF_1
+
+ANA_DF = ANA_DF.sort_values('config/CV')
+ANA_DF.index = [0,1,2,3,4]
+ANA_ALL_DF = ANA_ALL_DF_1
+
+epc_result_D3F2ET = get_mean(ANA_DF, ANA_ALL_DF, 1000)
+
+epc_V_LS_mean_D3F2ET, epc_V_LS_std_D3F2ET, epc_V_PC_mean_D3F2ET, epc_V_PC_std_D3F2ET, epc_V_SC_mean_D3F2ET, epc_V_SC_std_D3F2ET = get_mean_result(epc_result_D3F2ET)
+
+all_V_LS_mean_D3F2ET, all_V_LS_std_D3F2ET, all_V_PC_mean_D3F2ET, all_V_PC_std_D3F2ET, all_V_SC_mean_D3F2ET, all_V_SC_std_D3F2ET = get_max_result(ANA_DF, ANA_ALL_DF)
+
+last_V_LS_mean_D3F2ET, last_V_LS_std_D3F2ET, last_V_PC_mean_D3F2ET, last_V_PC_std_D3F2ET, last_V_SC_mean_D3F2ET, last_V_SC_std_D3F2ET = get_last_result(ANA_DF, ANA_ALL_DF)
+
+
+
+
+			2) AXBX
+			1-2 ) EXP + basal
+W_NAME = 'W410_3'
+WORK_NAME = 'WORK_410_3' # 349
+WORK_DATE = '23.08.30' # 349
+
+anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
+#     anal_dir = '/home01/k040a01/ray_results/PRJ02.23.06.13.M3V5.WORK_37.349.MIS22/'
+list_dir = os.listdir(anal_dir)
+exp_json = [a for a in list_dir if 'experiment_state' in a]
+exp_json
+anal_df = ExperimentAnalysis(os.path.join(anal_dir, exp_json[0]))
+
+ANA_DF_1 = anal_df.dataframe()
+ANA_ALL_DF_1 = anal_df.trial_dataframes
+
+ANA_DF = ANA_DF_1
+
+ANA_DF = ANA_DF.sort_values('config/CV')
+ANA_DF.index = [0,1,2,3,4]
+ANA_ALL_DF = ANA_ALL_DF_1
+
+epc_result_D3F2EB = get_mean(ANA_DF, ANA_ALL_DF, 1000)
+
+epc_V_LS_mean_D3F2EB, epc_V_LS_std_D3F2EB, epc_V_PC_mean_D3F2EB, epc_V_PC_std_D3F2EB, epc_V_SC_mean_D3F2EB, epc_V_SC_std_D3F2EB = get_mean_result(epc_result_D3F2EB)
+
+all_V_LS_mean_D3F2EB, all_V_LS_std_D3F2EB, all_V_PC_mean_D3F2EB, all_V_PC_std_D3F2EB, all_V_SC_mean_D3F2EB, all_V_SC_std_D3F2EB = get_max_result(ANA_DF, ANA_ALL_DF)
+
+last_V_LS_mean_D3F2EB, last_V_LS_std_D3F2EB, last_V_PC_mean_D3F2EB, last_V_PC_std_D3F2EB, last_V_SC_mean_D3F2EB, last_V_SC_std_D3F2EB = get_last_result(ANA_DF, ANA_ALL_DF)
+
+
+
+
+
+
 #################################
 #################################
 
 ablation 
 
 # ALL
-ab_1 = pd.DataFrame({
-	'LINCS+BASAL+TARGET' :  [epc_V_LS_mean_W203, epc_V_PC_mean_W203, epc_V_SC_mean_W203], 
-	'LINCS+BASAL' :  [epc_V_LS_mean_W210_5, epc_V_PC_mean_W210_5, epc_V_SC_mean_W210_5], 
-	'LINCS+TARGET' :  [epc_V_LS_mean_W209_5, epc_V_PC_mean_W209_5, epc_V_SC_mean_W209_5], 
-	'BASAL+TARGET' :  [epc_V_LS_mean_W208_5, epc_V_PC_mean_W208_5, epc_V_SC_mean_W208_5], 
-	'LINCS' :  [epc_V_LS_mean_W206_5, epc_V_PC_mean_W206_5, epc_V_SC_mean_W206_5], 
-	'BASAL' :  [epc_V_LS_mean_W207_5, epc_V_PC_mean_W207_5, epc_V_SC_mean_W207_5], 
-	'TARGET' : [epc_V_LS_mean_W208_2, epc_V_PC_mean_W208_2, epc_V_SC_mean_W208_2]
+epc_D4 = pd.DataFrame({
+	'LINCS+BASAL+TARGET' :  [epc_V_LS_mean_D4F3, epc_V_PC_mean_D4F3, epc_V_SC_mean_D4F3], 
+	'LINCS+BASAL' :  [epc_V_LS_mean_D4F2EB, epc_V_PC_mean_D4F2EB, epc_V_SC_mean_D4F2EB], 
+	'LINCS+TARGET' :  [epc_V_LS_mean_D4F2ET, epc_V_PC_mean_D4F2ET, epc_V_SC_mean_D4F2ET], 
+	'BASAL+TARGET' :  [epc_V_LS_mean_D4F2BT, epc_V_PC_mean_D4F2BT, epc_V_SC_mean_D4F2BT], 
+	'LINCS' :  [epc_V_LS_mean_D4F1E, epc_V_PC_mean_D4F1E, epc_V_SC_mean_D4F1E], 
+	'BASAL' :  [epc_V_LS_mean_D4F1B, epc_V_PC_mean_D4F1B, epc_V_SC_mean_D4F1B], 
+	'TARGET' : [epc_V_LS_mean_D4F1T, epc_V_PC_mean_D4F1T, epc_V_SC_mean_D4F1T]
 	})
 
+all_D4 = pd.DataFrame({
+	'LINCS+BASAL+TARGET' :  [all_V_LS_mean_D4F3, all_V_PC_mean_D4F3, all_V_SC_mean_D4F3], 
+	'LINCS+BASAL' :  [all_V_LS_mean_D4F2EB, all_V_PC_mean_D4F2EB, all_V_SC_mean_D4F2EB], 
+	'LINCS+TARGET' :  [all_V_LS_mean_D4F2ET, all_V_PC_mean_D4F2ET, all_V_SC_mean_D4F2ET], 
+	'BASAL+TARGET' :  [all_V_LS_mean_D4F2BT, all_V_PC_mean_D4F2BT, all_V_SC_mean_D4F2BT], 
+	'LINCS' :  [all_V_LS_mean_D4F1E, all_V_PC_mean_D4F1E, all_V_SC_mean_D4F1E], 
+	'BASAL' :  [all_V_LS_mean_D4F1B, all_V_PC_mean_D4F1B, all_V_SC_mean_D4F1B], 
+	'TARGET' : [all_V_LS_mean_D4F1T, all_V_PC_mean_D4F1T, all_V_SC_mean_D4F1T]
+	})
+
+last_D4 = pd.DataFrame({
+	'LINCS+BASAL+TARGET' :  [last_V_LS_mean_D4F3, last_V_PC_mean_D4F3, last_V_SC_mean_D4F3], 
+	'LINCS+BASAL' :  [last_V_LS_mean_D4F2EB, last_V_PC_mean_D4F2EB, last_V_SC_mean_D4F2EB], 
+	'LINCS+TARGET' :  [last_V_LS_mean_D4F2ET, last_V_PC_mean_D4F2ET, last_V_SC_mean_D4F2ET], 
+	'BASAL+TARGET' :  [last_V_LS_mean_D4F2BT, last_V_PC_mean_D4F2BT, last_V_SC_mean_D4F2BT], 
+	'LINCS' :  [last_V_LS_mean_D4F1E, last_V_PC_mean_D4F1E, last_V_SC_mean_D4F1E], 
+	'BASAL' :  [last_V_LS_mean_D4F1B, last_V_PC_mean_D4F1B, last_V_SC_mean_D4F1B], 
+	'TARGET' : [last_V_LS_mean_D4F1T, last_V_PC_mean_D4F1T, last_V_SC_mean_D4F1T]
+	})
+
+
+ab_4 = last_D4
+
+ab_4_T = ab_4.T
+
+ab_4_re = pd.DataFrame(pd.concat([ab_4_T.iloc[:,0], ab_4_T.iloc[:,1], ab_4_T.iloc[:,2]]))
+
+ab_4_re.columns = ['value']
+ab_4_re['ablation'] = list(ab_4_re.index)
+ab_4_re['Data ablation'] = 'Data All'
+ab_4_re['check'] = ['LOSS']*7 + ['PCOR']*7 + ['SCOR']*7
+
+
+
+
+# AOBO
+
+epc_D1 = pd.DataFrame({
+	'LINCS+BASAL+TARGET' :  [epc_V_LS_mean_D1F3, epc_V_PC_mean_D1F3, epc_V_SC_mean_D1F3], 
+	'LINCS+BASAL' :  [epc_V_LS_mean_D1F2EB, epc_V_PC_mean_D1F2EB, epc_V_SC_mean_D1F2EB], 
+	'LINCS+TARGET' :  [epc_V_LS_mean_D1F2ET, epc_V_PC_mean_D1F2ET, epc_V_SC_mean_D1F2ET], 
+	'BASAL+TARGET' :  [epc_V_LS_mean_D1F2BT, epc_V_PC_mean_D1F2BT, epc_V_SC_mean_D1F2BT], 
+	'LINCS' :  [epc_V_LS_mean_D1F1E, epc_V_PC_mean_D1F1E, epc_V_SC_mean_D1F1E], 
+	'BASAL' :  [epc_V_LS_mean_D1F1B, epc_V_PC_mean_D1F1B, epc_V_SC_mean_D1F1B], 
+	'TARGET' : [epc_V_LS_mean_D1F1T, epc_V_PC_mean_D1F1T, epc_V_SC_mean_D1F1T]
+	})
+
+all_D1 = pd.DataFrame({
+	'LINCS+BASAL+TARGET' :  [all_V_LS_mean_D1F3, all_V_PC_mean_D1F3, all_V_SC_mean_D1F3], 
+	'LINCS+BASAL' :  [all_V_LS_mean_D1F2EB, all_V_PC_mean_D1F2EB, all_V_SC_mean_D1F2EB], 
+	'LINCS+TARGET' :  [all_V_LS_mean_D1F2ET, all_V_PC_mean_D1F2ET, all_V_SC_mean_D1F2ET], 
+	'BASAL+TARGET' :  [all_V_LS_mean_D1F2BT, all_V_PC_mean_D1F2BT, all_V_SC_mean_D1F2BT], 
+	'LINCS' :  [all_V_LS_mean_D1F1E, all_V_PC_mean_D1F1E, all_V_SC_mean_D1F1E], 
+	'BASAL' :  [all_V_LS_mean_D1F1B, all_V_PC_mean_D1F1B, all_V_SC_mean_D1F1B], 
+	'TARGET' : [all_V_LS_mean_D1F1T, all_V_PC_mean_D1F1T, all_V_SC_mean_D1F1T]
+	})
+
+last_D1 = pd.DataFrame({
+	'LINCS+BASAL+TARGET' :  [last_V_LS_mean_D1F3, last_V_PC_mean_D1F3, last_V_SC_mean_D1F3], 
+	'LINCS+BASAL' :  [last_V_LS_mean_D1F2EB, last_V_PC_mean_D1F2EB, last_V_SC_mean_D1F2EB], 
+	'LINCS+TARGET' :  [last_V_LS_mean_D1F2ET, last_V_PC_mean_D1F2ET, last_V_SC_mean_D1F2ET], 
+	'BASAL+TARGET' :  [last_V_LS_mean_D1F2BT, last_V_PC_mean_D1F2BT, last_V_SC_mean_D1F2BT], 
+	'LINCS' :  [last_V_LS_mean_D1F1E, last_V_PC_mean_D1F1E, last_V_SC_mean_D1F1E], 
+	'BASAL' :  [last_V_LS_mean_D1F1B, last_V_PC_mean_D1F1B, last_V_SC_mean_D1F1B], 
+	'TARGET' : [last_V_LS_mean_D1F1T, last_V_PC_mean_D1F1T, last_V_SC_mean_D1F1T]
+	})
+
+
+ab_1 = last_D1
 
 ab_1_T = ab_1.T
 
@@ -1205,32 +1270,8 @@ ab_1_re = pd.DataFrame(pd.concat([ab_1_T.iloc[:,0], ab_1_T.iloc[:,1], ab_1_T.ilo
 
 ab_1_re.columns = ['value']
 ab_1_re['ablation'] = list(ab_1_re.index)
-ab_1_re['Data ablation'] = 'Data All'
+ab_1_re['Data ablation'] = 'LINCS all matched'
 ab_1_re['check'] = ['LOSS']*7 + ['PCOR']*7 + ['SCOR']*7
-
-
-
-
-# AOBO
-ab_2 = pd.DataFrame({
-	'LINCS+BASAL+TARGET' :  [epc_V_LS_mean_W203_1, epc_V_PC_mean_W203_1, epc_V_SC_mean_W203_1], 
-	'LINCS+BASAL' :  [epc_V_LS_mean_W210_1, epc_V_PC_mean_W210_1, epc_V_SC_mean_W210_1], 
-	'LINCS+TARGET' :  [epc_V_LS_mean_W209_1, epc_V_PC_mean_W209_1, epc_V_SC_mean_W209_1], 
-	'BASAL+TARGET' :  [epc_V_LS_mean_W208_1, epc_V_PC_mean_W208_1, epc_V_SC_mean_W208_1], 
-	'LINCS' :  [epc_V_LS_mean_W206_1, epc_V_PC_mean_W206_1, epc_V_SC_mean_W206_1], 
-	'BASAL' :  [epc_V_LS_mean_W207_1, epc_V_PC_mean_W207_1, epc_V_SC_mean_W207_1], 
-	'TARGET' : [epc_V_LS_mean_W206_2, epc_V_PC_mean_W206_2, epc_V_SC_mean_W206_2]
-	})
-
-
-ab_2_T = ab_2.T
-
-ab_2_re = pd.DataFrame(pd.concat([ab_2_T.iloc[:,0], ab_2_T.iloc[:,1], ab_2_T.iloc[:,2]]))
-
-ab_2_re.columns = ['value']
-ab_2_re['ablation'] = list(ab_2_re.index)
-ab_2_re['Data ablation'] = 'LINCS all matched'
-ab_2_re['check'] = ['LOSS']*7 + ['PCOR']*7 + ['SCOR']*7
 
 
 
@@ -1240,53 +1281,83 @@ ab_2_re['check'] = ['LOSS']*7 + ['PCOR']*7 + ['SCOR']*7
 
 
 # AXBO
-ab_25 = pd.DataFrame({
-	'LINCS+BASAL+TARGET' :  [epc_V_LS_mean_W216_7, epc_V_PC_mean_W216_7, epc_V_SC_mean_W216_7], 
-	'LINCS+BASAL' :  [epc_V_LS_mean_W216_6, epc_V_PC_mean_W216_6, epc_V_SC_mean_W216_6], 
-	'LINCS+TARGET' :  [epc_V_LS_mean_W216_5, epc_V_PC_mean_W216_5, epc_V_SC_mean_W216_5], 
-	'BASAL+TARGET' :  [epc_V_LS_mean_W216_4, epc_V_PC_mean_W216_4, epc_V_SC_mean_W216_4], 
-	'LINCS' :  [epc_V_LS_mean_W216_1, epc_V_PC_mean_W216_1, epc_V_SC_mean_W216_1], 
-	'BASAL' :  [epc_V_LS_mean_W216_2, epc_V_PC_mean_W216_2, epc_V_SC_mean_W216_2], 
-	'TARGET' : [epc_V_LS_mean_W216_3, epc_V_PC_mean_W216_3, epc_V_SC_mean_W216_3]
+epc_D2 = pd.DataFrame({
+	'LINCS+BASAL+TARGET' :  [epc_V_LS_mean_D2F3, epc_V_PC_mean_D2F3, epc_V_SC_mean_D2F3], 
+	'LINCS+BASAL' :  [epc_V_LS_mean_D2F2EB, epc_V_PC_mean_D2F2EB, epc_V_SC_mean_D2F2EB], 
+	'LINCS+TARGET' :  [epc_V_LS_mean_D2F2ET, epc_V_PC_mean_D2F2ET, epc_V_SC_mean_D2F2ET], 
+	'BASAL+TARGET' :  [epc_V_LS_mean_D2F2BT, epc_V_PC_mean_D2F2BT, epc_V_SC_mean_D2F2BT], 
+	'LINCS' :  [epc_V_LS_mean_D2F1E, epc_V_PC_mean_D2F1E, epc_V_SC_mean_D2F1E], 
+	'BASAL' :  [epc_V_LS_mean_D2F1B, epc_V_PC_mean_D2F1B, epc_V_SC_mean_D2F1B], 
+	'TARGET' : [epc_V_LS_mean_D2F1T, epc_V_PC_mean_D2F1T, epc_V_SC_mean_D2F1T]
+	})
+
+all_D2 = pd.DataFrame({
+	'LINCS+BASAL+TARGET' :  [all_V_LS_mean_D2F3, all_V_PC_mean_D2F3, all_V_SC_mean_D2F3], 
+	'LINCS+BASAL' :  [all_V_LS_mean_D2F2EB, all_V_PC_mean_D2F2EB, all_V_SC_mean_D2F2EB], 
+	'LINCS+TARGET' :  [all_V_LS_mean_D2F2ET, all_V_PC_mean_D2F2ET, all_V_SC_mean_D2F2ET], 
+	'BASAL+TARGET' :  [all_V_LS_mean_D2F2BT, all_V_PC_mean_D2F2BT, all_V_SC_mean_D2F2BT], 
+	'LINCS' :  [all_V_LS_mean_D2F1E, all_V_PC_mean_D2F1E, all_V_SC_mean_D2F1E], 
+	'BASAL' :  [all_V_LS_mean_D2F1B, all_V_PC_mean_D2F1B, all_V_SC_mean_D2F1B], 
+	'TARGET' : [all_V_LS_mean_D2F1T, all_V_PC_mean_D2F1T, all_V_SC_mean_D2F1T]
+	})
+
+last_D2 = pd.DataFrame({
+	'LINCS+BASAL+TARGET' :  [last_V_LS_mean_D2F3, last_V_PC_mean_D2F3, last_V_SC_mean_D2F3], 
+	'LINCS+BASAL' :  [last_V_LS_mean_D2F2EB, last_V_PC_mean_D2F2EB, last_V_SC_mean_D2F2EB], 
+	'LINCS+TARGET' :  [last_V_LS_mean_D2F2ET, last_V_PC_mean_D2F2ET, last_V_SC_mean_D2F2ET], 
+	'BASAL+TARGET' :  [last_V_LS_mean_D2F2BT, last_V_PC_mean_D2F2BT, last_V_SC_mean_D2F2BT], 
+	'LINCS' :  [last_V_LS_mean_D2F1E, last_V_PC_mean_D2F1E, last_V_SC_mean_D2F1E], 
+	'BASAL' :  [last_V_LS_mean_D2F1B, last_V_PC_mean_D2F1B, last_V_SC_mean_D2F1B], 
+	'TARGET' : [last_V_LS_mean_D2F1T, last_V_PC_mean_D2F1T, last_V_SC_mean_D2F1T]
 	})
 
 
+ab_2 = last_D2
 
-ab_25_T = ab_25.T
+ab_2_T = ab_2.T
 
-ab_25_re = pd.DataFrame(pd.concat([ab_25_T.iloc[:,0], ab_25_T.iloc[:,1], ab_25_T.iloc[:,2]]))
+ab_2_re = pd.DataFrame(pd.concat([ab_2_T.iloc[:,0], ab_2_T.iloc[:,1], ab_2_T.iloc[:,2]]))
 
-ab_25_re.columns = ['value']
-ab_25_re['ablation'] = list(ab_25_re.index)
-ab_25_re['Data ablation'] = 'LINCS one matched'
-ab_25_re['check'] = ['LOSS']*7 + ['PCOR']*7 + ['SCOR']*7
-
-
-ab_25_std = pd.DataFrame({
-	'LINCS+BASAL+TARGET' :  [epc_V_LS_std_W216_7, epc_V_PC_std_W216_7, epc_V_SC_std_W216_7], 
-	'LINCS+BASAL' :  [epc_V_LS_std_W216_6, epc_V_PC_std_W216_6, epc_V_SC_std_W216_6], 
-	'LINCS+TARGET' :  [epc_V_LS_std_W216_5, epc_V_PC_std_W216_5, epc_V_SC_std_W216_5], 
-	'BASAL+TARGET' :  [epc_V_LS_std_W216_4, epc_V_PC_std_W216_4, epc_V_SC_std_W216_4], 
-	'LINCS' :  [epc_V_LS_std_W216_1, epc_V_PC_std_W216_1, epc_V_SC_std_W216_1], 
-	'BASAL' :  [epc_V_LS_std_W216_2, epc_V_PC_std_W216_2, epc_V_SC_std_W216_2], 
-	'TARGET' : [epc_V_LS_std_W216_3, epc_V_PC_std_W216_3, epc_V_SC_std_W216_3]
-	})
-
-
+ab_2_re.columns = ['value']
+ab_2_re['ablation'] = list(ab_2_re.index)
+ab_2_re['Data ablation'] = 'LINCS one matched'
+ab_2_re['check'] = ['LOSS']*7 + ['PCOR']*7 + ['SCOR']*7
 
 
 # AXBX
-ab_3 = pd.DataFrame({
-	'LINCS+BASAL+TARGET' :  [epc_V_LS_mean_W203_3, epc_V_PC_mean_W203_3, epc_V_SC_mean_W203_3], 
-	'LINCS+BASAL' :  [epc_V_LS_mean_W210_3, epc_V_PC_mean_W210_3, epc_V_SC_mean_W210_3], 
-	'LINCS+TARGET' :  [epc_V_LS_mean_W209_3, epc_V_PC_mean_W209_3, epc_V_SC_mean_W209_3], 
-	'BASAL+TARGET' :  [epc_V_LS_mean_W208_3, epc_V_PC_mean_W208_3, epc_V_SC_mean_W208_3], 
-	'LINCS' :  [epc_V_LS_mean_W206_3, epc_V_PC_mean_W206_3, epc_V_SC_mean_W206_3], 
-	'BASAL' :  [epc_V_LS_mean_W207_3, epc_V_PC_mean_W207_3, epc_V_SC_mean_W207_3], 
-	'TARGET' : [epc_V_LS_mean_W207_2, epc_V_PC_mean_W207_2, epc_V_SC_mean_W207_2]
+epc_D3 = pd.DataFrame({
+	'LINCS+BASAL+TARGET' :  [epc_V_LS_mean_D3F3, epc_V_PC_mean_D3F3, epc_V_SC_mean_D3F3], 
+	'LINCS+BASAL' :  [epc_V_LS_mean_D3F2EB, epc_V_PC_mean_D3F2EB, epc_V_SC_mean_D3F2EB], 
+	'LINCS+TARGET' :  [epc_V_LS_mean_D3F2ET, epc_V_PC_mean_D3F2ET, epc_V_SC_mean_D3F2ET], 
+	'BASAL+TARGET' :  [epc_V_LS_mean_D3F2BT, epc_V_PC_mean_D3F2BT, epc_V_SC_mean_D3F2BT], 
+	'LINCS' :  [epc_V_LS_mean_D3F1E, epc_V_PC_mean_D3F1E, epc_V_SC_mean_D3F1E], 
+	'BASAL' :  [epc_V_LS_mean_D3F1B, epc_V_PC_mean_D3F1B, epc_V_SC_mean_D3F1B], 
+	'TARGET' : [epc_V_LS_mean_D3F1T, epc_V_PC_mean_D3F1T, epc_V_SC_mean_D3F1T]
+	})
+
+all_D3 = pd.DataFrame({
+	'LINCS+BASAL+TARGET' :  [all_V_LS_mean_D3F3, all_V_PC_mean_D3F3, all_V_SC_mean_D3F3], 
+	'LINCS+BASAL' :  [all_V_LS_mean_D3F2EB, all_V_PC_mean_D3F2EB, all_V_SC_mean_D3F2EB], 
+	'LINCS+TARGET' :  [all_V_LS_mean_D3F2ET, all_V_PC_mean_D3F2ET, all_V_SC_mean_D3F2ET], 
+	'BASAL+TARGET' :  [all_V_LS_mean_D3F2BT, all_V_PC_mean_D3F2BT, all_V_SC_mean_D3F2BT], 
+	'LINCS' :  [all_V_LS_mean_D3F1E, all_V_PC_mean_D3F1E, all_V_SC_mean_D3F1E], 
+	'BASAL' :  [all_V_LS_mean_D3F1B, all_V_PC_mean_D3F1B, all_V_SC_mean_D3F1B], 
+	'TARGET' : [all_V_LS_mean_D3F1T, all_V_PC_mean_D3F1T, all_V_SC_mean_D3F1T]
+	})
+
+last_D3 = pd.DataFrame({
+	'LINCS+BASAL+TARGET' :  [last_V_LS_mean_D3F3, last_V_PC_mean_D3F3, last_V_SC_mean_D3F3], 
+	'LINCS+BASAL' :  [last_V_LS_mean_D3F2EB, last_V_PC_mean_D3F2EB, last_V_SC_mean_D3F2EB], 
+	'LINCS+TARGET' :  [last_V_LS_mean_D3F2ET, last_V_PC_mean_D3F2ET, last_V_SC_mean_D3F2ET], 
+	'BASAL+TARGET' :  [last_V_LS_mean_D3F2BT, last_V_PC_mean_D3F2BT, last_V_SC_mean_D3F2BT], 
+	'LINCS' :  [last_V_LS_mean_D3F1E, last_V_PC_mean_D3F1E, last_V_SC_mean_D3F1E], 
+	'BASAL' :  [last_V_LS_mean_D3F1B, last_V_PC_mean_D3F1B, last_V_SC_mean_D3F1B], 
+	'TARGET' : [last_V_LS_mean_D3F1T, last_V_PC_mean_D3F1T, last_V_SC_mean_D3F1T]
 	})
 
 
+
+ab_3 = last_D3
 
 ab_3_T = ab_3.T
 
@@ -1300,7 +1371,8 @@ ab_3_re['check'] = ['LOSS']*7 + ['PCOR']*7 + ['SCOR']*7
 
 
 
-ABLATION_DF = pd.concat([ab_1_re, ab_2_re, ab_25_re, ab_3_re])
+
+ABLATION_DF = pd.concat([ab_4_re, ab_1_re, ab_2_re, ab_3_re])
 
 
 ABLATION_DF_loss = ABLATION_DF[ABLATION_DF.check=='LOSS']
@@ -1354,10 +1426,10 @@ plt.close()
 아좀 맘에 안듬 
 
 
-ABLATION_DF = pd.concat([ab_1_re, ab_2_re, ab_25_re, ab_3_re])
+ABLATION_DF = pd.concat([ab_4_re, ab_1_re, ab_2_re, ab_3_re])
 
 ABLATION_DF_data_matched = ABLATION_DF[ABLATION_DF['Data ablation']=='LINCS all matched']
-ABLATION_DF_data_matched = ABLATION_DF[ABLATION_DF['Data ablation']=='LINCS all matched'] # half 써줘야하나 
+ABLATION_DF_data_onematched = ABLATION_DF[ABLATION_DF['Data ablation']=='LINCS one matched'] # half 써줘야하나 
 ABLATION_DF_data_unmatched = ABLATION_DF[ABLATION_DF['Data ablation']=='LINCS none matched']
 ABLATION_DF_data_all = ABLATION_DF[ABLATION_DF['Data ablation']=='Data All']
 
@@ -1365,6 +1437,10 @@ ABLATION_DF_data_all = ABLATION_DF[ABLATION_DF['Data ablation']=='Data All']
 ablation_col = {
 	'LINCS+BASAL+TARGET' : '#E52B50', 'LINCS+BASAL' : '#FFE344', 'LINCS+TARGET' : '#FFA153', 
 	'BASAL+TARGET': '#1ADDFF', 'LINCS': '#FF6987', 'BASAL': '#8AC8FF' , 'TARGET': '#09E07B' }
+
+
+
+
 
 fig, ax = plt.subplots(1,6,figsize=(25, 5))
 sns.barplot(ax = ax[0], data  = ABLATION_DF_data_matched[ABLATION_DF_data_matched.check.isin(['LOSS'])], x = 'check', y = 'value', hue = 'ablation', linewidth=1,  edgecolor="white", palette = ablation_col) # width = 3,
@@ -1530,7 +1606,17 @@ plt.close()
 
 
 
+round(last_D4, 4)
+round(last_D1, 4)
+round(last_D2, 4)
+round(last_D3, 4)
 
+
+
+round(last_std_D4, 4)
+round(last_std_D1, 4)
+round(last_std_D2, 4)
+round(last_std_D3, 4)
 
 
 
