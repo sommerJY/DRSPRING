@@ -16,8 +16,8 @@ cuda 11.6 (in case of using GPU)
 
 
 ## Install required packages
-Use the requirement.txt file in directory
-둘중에 하나 활용 가능할듯 
+Use the environment.yml file in directory
+
 ```
 conda create -y --name py37 python=3.7.16
 conda activate py37
