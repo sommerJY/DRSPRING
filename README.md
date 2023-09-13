@@ -41,7 +41,7 @@ conda activate py37
 ## Training model
 **(1) Module_1 (PDIGEC)**
 ```
-code
+python PDIGEC.py /home/minK/ssse/final/final_data/  
 ```
 
 **(2) Module_2 (PDSS)**
@@ -60,8 +60,18 @@ We support Drugs experiment from CCLE ver? 10xx cell line, check cell line list 
 
 **(1) Module_1 (PDIGEC)**
 
+We also support gene expression prediction for new chemicals, new ccle cell line, new doses, new dosage time.
 ```
-code
+python PDIGEC.py ./final_data/ --mode 'new_data' --saved_model ./final_data/model_tvt.pt \
+--drug_cell 'new_drug_cellline.csv' \
+--smiles 'new_drug_0815.csv'
+```
+
+If you want to get gene expression predicted value of 1393 ccle cell lines that we used, try this code!
+All you need to provide is cid and smiles id in csv file by --smiles.
+```
+python PDIGEC.py ./final_data/ --mode 'new_data_cellline_all' --saved_model ./final_data/model_tvt.pt \
+--smiles 'new_drug_0815.csv'
 ```
 
 **(2) Module_2 (PDSS)**
