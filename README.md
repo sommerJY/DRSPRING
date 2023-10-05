@@ -27,14 +27,6 @@ pip install torch-sparse -f https://data.pyg.org/whl/torch-1.13.0+cu116.html
 pip install torch-geometric==2.0.4
 ```
 
-아니면 
-
-```
-conda create -y --name py37 python=3.7
-conda install --force-reinstall -y -q --name py37 -c conda-forge --file requirements.txt
-conda activate py37
-```
-
 
 
 
