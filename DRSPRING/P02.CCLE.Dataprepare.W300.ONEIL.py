@@ -935,7 +935,7 @@ for IND in range(0, A_B_C_S_SET_UNIQ_3.shape[0]): #  100
 	#
 	cid_cid_cell = A_B_C_S_SET_UNIQ_3.cid_cid_cell[IND]
 	DrugA_CID = A_B_C_S_SET_UNIQ_3['CID_A'][IND]
-	DrugB_CID = A_B_C_S_SET_UNIQ_3['CID_B'][IND]
+	DrugB_CID = A_B_C_S_SET_UNcIQ_3['CID_B'][IND]
 	CELL = A_B_C_S_SET_UNIQ_3['CELL'][IND]
 	dat_type = A_B_C_S_SET_UNIQ_3.type[IND]
 	DrugA_CID_CELL = str(DrugA_CID) + '__' + CELL

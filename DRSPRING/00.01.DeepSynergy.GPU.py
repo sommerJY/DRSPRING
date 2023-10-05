@@ -1225,3 +1225,36 @@ np.round([np.mean(DS_res_2.loc[999]), np.std(DS_res_2.loc[999])], 4)
 np.round([np.mean(DS_res_1.PCOR), np.std(DS_res_1.PCOR)], 4)
 np.round([np.mean(DS_res_1.SCOR), np.std(DS_res_1.SCOR)], 4)
 
+
+
+
+
+
+
+
+
+
+num = 803
+DS_res_1 = pd.read_csv('/home01/k040a01/03.DeepSynergy/02.RES/' + 'RESULT_CORR.W{}'.format(num))
+DS_res_2 = pd.read_csv('/home01/k040a01/03.DeepSynergy/02.RES/' + 'RESULT_LOSS.W{}'.format(num), index_col = 0)
+
+np.round([np.mean(DS_res_2.loc[999]), np.std(DS_res_2.loc[999])], 4)
+
+
+				mse = np.mean((np.array(ans_list) - np.array(pred_results)) ** 2)
+				se_mse = np.sqrt(2 * mse * mse / len(pred_results))
+
+				CfI = stats.t.interval(alpha=0.90, df=len(pred_results)-1,
+								loc=mse,
+								scale=se_mse)
+
+				np.round(CfI, 4)
+
+np.round([np.mean(DS_res_1.PCOR), np.std(DS_res_1.PCOR)], 4)
+np.round([np.mean(DS_res_1.SCOR), np.std(DS_res_1.SCOR)], 4)
+
+
+
+
+
+

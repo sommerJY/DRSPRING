@@ -5,7 +5,6 @@
 
 
 
-import rdkit
 import os
 import os.path as osp
 from math import ceil
@@ -44,10 +43,13 @@ import torch_geometric.nn.conv
 from sklearn import metrics
 import seaborn as sns
 import matplotlib.pyplot as plt
+
 from rdkit import Chem
 from rdkit.Chem import AllChem
 from rdkit import DataStructs
-
+import rdkit
+from rdkit import Chem
+from rdkit.Chem.QED import qed
 
 import networkx as nx
 import copy
@@ -70,8 +72,7 @@ from ray.tune.suggest.optuna import OptunaSearch
 from ray.tune import ExperimentAnalysis
 
 import numpy as np
-from rdkit import Chem
-from rdkit.Chem.QED import qed
+
 import sys
 import os
 import pandas as pd
@@ -140,7 +141,7 @@ for a in ID_G.nodes():
 mapping = {list(ID_G.nodes())[a]:new_node_names[a] for a in range(len(new_node_names))}
 
 ID_G_RE = nx.relabel_nodes(ID_G, mapping)
-
+ 
 MY_G = ID_G_RE 
 MY_WEIGHT_SCORE = ID_WEIGHT_SCORE # SCORE
 
@@ -222,6 +223,7 @@ CCLE_PATH = '/home01/k040a01/01.Data/CCLE/'
 # CCLE_PATH = '/st06/jiyeonH/13.DD_SESS/CCLE.22Q1/'
 ccle_exp = pd.read_csv(CCLE_PATH+'CCLE_expression.csv', low_memory=False)
 ccle_info= pd.read_csv(CCLE_PATH+'sample_info.csv', low_memory=False)
+# ccle_mut = pd.read_csv(CCLE_PATH+'CCLE_mutations.csv', low_memory=False)
 
 ccle_cell_info = ccle_info[['DepMap_ID','CCLE_Name']]
 ccle_cell_info.columns = ['DepMap_ID','DrugCombCCLE']
@@ -1961,67 +1963,49 @@ MY_g_EXP_A_RE2, MY_g_EXP_B_RE2, MY_Target_A2, MY_Target_B2, MY_CellBase_RE2,
 MY_syn_RE2, norm ) : 
 	# 
 	# CV_num = 0
-	train_key = 'CV{}_train'.format(CV_num)
 	test_key = 'CV{}_test'.format(CV_num)
 	# 
 	#
-	ABCS_tv = A_B_C_S_SET_SM[A_B_C_S_SET_SM.SM_C_CHECK.isin(CV_ND_INDS[train_key])]
 	ABCS_test = A_B_C_S_SET_SM[A_B_C_S_SET_SM.SM_C_CHECK.isin(CV_ND_INDS[test_key])]
 	#
-	#train_ind = list(ABCS_train.index)
-	#val_ind = list(ABCS_val.index)
-	tv_ind = list(ABCS_tv.index)
-	random.shuffle(tv_ind)
 	test_ind = list(ABCS_test.index)
 	# 
-	chem_feat_A_tv = MY_chem_A_feat_RE2[tv_ind]; chem_feat_A_test = MY_chem_A_feat_RE2[test_ind]
-	chem_feat_B_tv = MY_chem_B_feat_RE2[tv_ind]; chem_feat_B_test = MY_chem_B_feat_RE2[test_ind]
-	chem_adj_A_tv = MY_chem_A_adj_RE2[tv_ind]; chem_adj_A_test = MY_chem_A_adj_RE2[test_ind]
-	chem_adj_B_tv = MY_chem_B_adj_RE2[tv_ind]; chem_adj_B_test = MY_chem_B_adj_RE2[test_ind]
-	gene_A_tv = MY_g_EXP_A_RE2[tv_ind];  gene_A_test = MY_g_EXP_A_RE2[test_ind]
-	gene_B_tv = MY_g_EXP_B_RE2[tv_ind];  gene_B_test = MY_g_EXP_B_RE2[test_ind]
-	target_A_tv = MY_Target_A2[tv_ind];  target_A_test = MY_Target_A2[test_ind]
-	target_B_tv = MY_Target_B2[tv_ind];  target_B_test = MY_Target_B2[test_ind]
-	cell_basal_tv = MY_CellBase_RE2[tv_ind];  cell_basal_test = MY_CellBase_RE2[test_ind]
-	syn_tv = MY_syn_RE2[tv_ind];  syn_test = MY_syn_RE2[test_ind]
+	chem_feat_A_test = MY_chem_A_feat_RE2[test_ind]
+	chem_feat_B_test = MY_chem_B_feat_RE2[test_ind]
+	chem_adj_A_test = MY_chem_A_adj_RE2[test_ind]
+	chem_adj_B_test = MY_chem_B_adj_RE2[test_ind]
+	gene_A_test = MY_g_EXP_A_RE2[test_ind]
+	gene_B_test = MY_g_EXP_B_RE2[test_ind]
+	target_A_test = MY_Target_A2[test_ind]
+	target_B_test = MY_Target_B2[test_ind]
+	cell_basal_test = MY_CellBase_RE2[test_ind]
+	syn_test = MY_syn_RE2[test_ind]
 	#
-	tv_data = {}
 	test_data = {}
 	#
-	tv_data['drug1_feat'] = torch.concat([chem_feat_A_tv, chem_feat_B_tv], axis = 0)
 	test_data['drug1_feat'] = chem_feat_A_test
 	#
-	tv_data['drug2_feat'] = torch.concat([chem_feat_B_tv, chem_feat_A_tv], axis = 0)
 	test_data['drug2_feat'] = chem_feat_B_test
 	#
-	tv_data['drug1_adj'] = torch.concat([chem_adj_A_tv, chem_adj_B_tv], axis = 0)
 	test_data['drug1_adj'] = chem_adj_A_test
 	#
-	tv_data['drug2_adj'] = torch.concat([chem_adj_B_tv, chem_adj_A_tv], axis = 0)
 	test_data['drug2_adj'] = chem_adj_B_test
 	#
-	tv_data['GENE_A'] = torch.concat([gene_A_tv, gene_B_tv], axis = 0)
 	test_data['GENE_A'] = gene_A_test
 	#
-	tv_data['GENE_B'] = torch.concat([gene_B_tv, gene_A_tv], axis = 0)
 	test_data['GENE_B'] = gene_B_test
 	#
-	tv_data['TARGET_A'] = torch.concat([target_A_tv, target_B_tv], axis = 0)
 	test_data['TARGET_A'] = target_A_test
 	#
-	tv_data['TARGET_B'] = torch.concat([target_B_tv, target_A_tv], axis = 0)
 	test_data['TARGET_B'] = target_B_test
 	#
-	tv_data['cell_BASAL'] = torch.concat((cell_basal_tv, cell_basal_tv), axis=0)
 	test_data['cell_BASAL'] = cell_basal_test
 	##
 	#            
-	tv_data['y'] = torch.concat((syn_tv, syn_tv), axis=0)
 	test_data['y'] = syn_test
 	#
-	print(tv_data['drug1_feat'].shape, flush=True)
 	print(test_data['drug1_feat'].shape, flush=True)
-	return tv_data, test_data
+	return test_data
 
 
 
@@ -2153,46 +2137,30 @@ np.random.seed(seed)
 norm = 'tanh_norm'
 
 # CV_0
-train_data_0, test_data_0 = prepare_data_GCN(0, A_B_C_S_SET_SM, MY_chem_A_feat_RE2, MY_chem_B_feat_RE2, MY_chem_A_adj_RE2, MY_chem_B_adj_RE2, 
+test_data_0 = prepare_data_GCN(0, A_B_C_S_SET_SM, MY_chem_A_feat_RE2, MY_chem_B_feat_RE2, MY_chem_A_adj_RE2, MY_chem_B_adj_RE2, 
 MY_g_EXP_A_RE2, MY_g_EXP_B_RE2, MY_Target_A2, MY_Target_B2, MY_CellBase_RE2, 
  MY_syn_RE2, norm)
 
 # CV_1
-train_data_1, test_data_1 = prepare_data_GCN(1, A_B_C_S_SET_SM, MY_chem_A_feat_RE2, MY_chem_B_feat_RE2, MY_chem_A_adj_RE2, MY_chem_B_adj_RE2, 
+test_data_1 = prepare_data_GCN(1, A_B_C_S_SET_SM, MY_chem_A_feat_RE2, MY_chem_B_feat_RE2, MY_chem_A_adj_RE2, MY_chem_B_adj_RE2, 
 MY_g_EXP_A_RE2, MY_g_EXP_B_RE2, MY_Target_A2, MY_Target_B2, MY_CellBase_RE2, 
  MY_syn_RE2, norm)
 
 # CV_2
-train_data_2, test_data_2 = prepare_data_GCN(2, A_B_C_S_SET_SM, MY_chem_A_feat_RE2, MY_chem_B_feat_RE2, MY_chem_A_adj_RE2, MY_chem_B_adj_RE2, 
+test_data_2 = prepare_data_GCN(2, A_B_C_S_SET_SM, MY_chem_A_feat_RE2, MY_chem_B_feat_RE2, MY_chem_A_adj_RE2, MY_chem_B_adj_RE2, 
 MY_g_EXP_A_RE2, MY_g_EXP_B_RE2, MY_Target_A2, MY_Target_B2, MY_CellBase_RE2, 
  MY_syn_RE2, norm)
 
 # CV_3
-train_data_3, test_data_3 = prepare_data_GCN(3, A_B_C_S_SET_SM, MY_chem_A_feat_RE2, MY_chem_B_feat_RE2, MY_chem_A_adj_RE2, MY_chem_B_adj_RE2, 
+test_data_3 = prepare_data_GCN(3, A_B_C_S_SET_SM, MY_chem_A_feat_RE2, MY_chem_B_feat_RE2, MY_chem_A_adj_RE2, MY_chem_B_adj_RE2, 
 MY_g_EXP_A_RE2, MY_g_EXP_B_RE2, MY_Target_A2, MY_Target_B2, MY_CellBase_RE2, 
  MY_syn_RE2, norm)
 
 # CV_4
-train_data_4, test_data_4 = prepare_data_GCN(4, A_B_C_S_SET_SM, MY_chem_A_feat_RE2, MY_chem_B_feat_RE2, MY_chem_A_adj_RE2, MY_chem_B_adj_RE2, 
+test_data_4 = prepare_data_GCN(4, A_B_C_S_SET_SM, MY_chem_A_feat_RE2, MY_chem_B_feat_RE2, MY_chem_A_adj_RE2, MY_chem_B_adj_RE2, 
 MY_g_EXP_A_RE2, MY_g_EXP_B_RE2, MY_Target_A2, MY_Target_B2, MY_CellBase_RE2, 
  MY_syn_RE2, norm)
 
-
-
-# WEIGHT 
-def get_loss_weight(CV) :
-	train_data = globals()['train_data_'+str(CV)]
-	ys = train_data['y'].squeeze().tolist()
-	min_s = np.amin(ys)
-	loss_weight = np.log(train_data['y'] - min_s + np.e)
-	return loss_weight
-
-
-LOSS_WEIGHT_0 = get_loss_weight(0)
-LOSS_WEIGHT_1 = get_loss_weight(1)
-LOSS_WEIGHT_2 = get_loss_weight(2)
-LOSS_WEIGHT_3 = get_loss_weight(3)
-LOSS_WEIGHT_4 = get_loss_weight(4)
 
 JY_IDX_WEIGHT_T = torch.Tensor(JY_IDX_WEIGHT).view(1,-1)
 
@@ -2202,17 +2170,7 @@ JY_IDX_WEIGHT_T = torch.Tensor(JY_IDX_WEIGHT).view(1,-1)
 
 # DATA check  
 def make_merged_data(CV) :
-	train_data = globals()['train_data_'+str(CV)]
 	test_data = globals()['test_data_'+str(CV)]
-	#
-	T_train = DATASET_GCN_W_FT(
-		torch.Tensor(train_data['drug1_feat']), torch.Tensor(train_data['drug2_feat']), 
-		torch.Tensor(train_data['drug1_adj']), torch.Tensor(train_data['drug2_adj']),
-		torch.Tensor(train_data['GENE_A']), torch.Tensor(train_data['GENE_B']), 
-		torch.Tensor(train_data['TARGET_A']), torch.Tensor(train_data['TARGET_B']), torch.Tensor(train_data['cell_BASAL']), 
-		JY_ADJ_IDX, JY_IDX_WEIGHT_T, 
-		torch.Tensor(train_data['y'])
-		)
 	#
 	#	
 	T_test = DATASET_GCN_W_FT(
@@ -2224,34 +2182,34 @@ def make_merged_data(CV) :
 		torch.Tensor(test_data['y'])
 		)
 	#
-	return T_train, T_test
+	return T_test
 
 
 
 
 
 # CV 0 
-T_train_0, T_test_0 = make_merged_data(0)
+T_test_0 = make_merged_data(0)
 RAY_test_0 = ray.put(T_test_0)
 
 
 # CV 1
-T_train_1, T_test_1 = make_merged_data(1)
+T_test_1 = make_merged_data(1)
 RAY_test_1 = ray.put(T_test_1)
 
 
 # CV 2 
-T_train_2, T_test_2 = make_merged_data(2)
+T_test_2 = make_merged_data(2)
 RAY_test_2 = ray.put(T_test_2)
 
 
 # CV 3
-T_train_3, T_test_3 = make_merged_data(3)
+T_test_3 = make_merged_data(3)
 RAY_test_3 = ray.put(T_test_3)
 
 
 # CV 4
-T_train_4, T_test_4 = make_merged_data(4)
+T_test_4 = make_merged_data(4)
 RAY_test_4 = ray.put(T_test_4)
 
 
@@ -2539,6 +2497,8 @@ def inner_test( TEST_DATA, THIS_MODEL , use_cuda = False) :
 
 
 
+
+
 def TEST_CPU (PRJ_PATH, CV_num, my_config, model_path, model_name, model_num) :
 	use_cuda = False
 	#
@@ -2596,9 +2556,6 @@ def TEST_CPU (PRJ_PATH, CV_num, my_config, model_path, model_name, model_num) :
 
 PRJ_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/{}_{}_{}_{}/'.format(PRJ_NAME, W_NAME, PPI_NAME, MISS_NAME)
 ANA_DF = pd.read_csv(PRJ_PATH+'RAY_ANA_DF.{}_{}_{}_{}.csv'.format(PRJ_NAME, W_NAME, PPI_NAME, MISS_NAME))
-with open(PRJ_PATH+'RAY_ANA_DF.{}_{}_{}_{}.pickle'.format(PRJ_NAME, W_NAME, PPI_NAME, MISS_NAME), 'rb') as f:
-	ANA_ALL_DF = pickle.load(f)
-
 
 TOPVAL_PATH = PRJ_PATH
 
@@ -2609,36 +2566,59 @@ my_config = ANA_DF.loc[0]
 
 
 # 1) full 
-
-R_1_T_CV0, R_1_1_CV0, R_1_2_CV0, pred_1_CV0, ans_1_CV0 = TEST_CPU(PRJ_PATH, 'CV_0', my_config, PRJ_PATH, 'full_CV_0_model.pth', 'FULL')
-R_1_T_CV1, R_1_1_CV1, R_1_2_CV1, pred_1_CV1, ans_1_CV1 = TEST_CPU(PRJ_PATH, 'CV_1', my_config, PRJ_PATH, 'full_CV_1_model.pth', 'FULL')
-R_1_T_CV2, R_1_1_CV2, R_1_2_CV2, pred_1_CV2, ans_1_CV2 = TEST_CPU(PRJ_PATH, 'CV_2', my_config, PRJ_PATH, 'full_CV_2_model.pth', 'FULL')
-R_1_T_CV3, R_1_1_CV3, R_1_2_CV3, pred_1_CV3, ans_1_CV3 = TEST_CPU(PRJ_PATH, 'CV_3', my_config, PRJ_PATH, 'full_CV_3_model.pth', 'FULL')
-R_1_T_CV4, R_1_1_CV4, R_1_2_CV4, pred_1_CV4, ans_1_CV4 = TEST_CPU(PRJ_PATH, 'CV_4', my_config, PRJ_PATH, 'full_CV_4_model.pth', 'FULL')
-
-
-# 2) min loss 
-
-R_2_T_CV0, R_2_1_CV0, R_2_2_CV0, pred_2_CV0, ans_2_CV0 = TEST_CPU(PRJ_PATH, 'CV_0', my_config, PRJ_PATH, 'VLS_CV_0_model.pth', 'VLS')
-R_2_T_CV1, R_2_1_CV1, R_2_2_CV1, pred_2_CV1, ans_2_CV1 = TEST_CPU(PRJ_PATH, 'CV_1', my_config, PRJ_PATH, 'VLS_CV_1_model.pth', 'VLS')
-R_2_T_CV2, R_2_1_CV2, R_2_2_CV2, pred_2_CV2, ans_2_CV2 = TEST_CPU(PRJ_PATH, 'CV_2', my_config, PRJ_PATH, 'VLS_CV_2_model.pth', 'VLS')
-R_2_T_CV3, R_2_1_CV3, R_2_2_CV3, pred_2_CV3, ans_2_CV3 = TEST_CPU(PRJ_PATH, 'CV_3', my_config, PRJ_PATH, 'VLS_CV_3_model.pth', 'VLS')
-R_2_T_CV4, R_2_1_CV4, R_2_2_CV4, pred_2_CV4, ans_2_CV4 = TEST_CPU(PRJ_PATH, 'CV_4', my_config, PRJ_PATH, 'VLS_CV_4_model.pth', 'VLS')
-
-# 3) PC 
-R_3_T_CV0, R_3_1_CV0, R_3_2_CV0, pred_3_CV0, ans_3_CV0 = TEST_CPU(PRJ_PATH, 'CV_0', my_config, PRJ_PATH, 'VPC_CV_0_model.pth', 'VPC')
-R_3_T_CV1, R_3_1_CV1, R_3_2_CV1, pred_3_CV1, ans_3_CV1 = TEST_CPU(PRJ_PATH, 'CV_1', my_config, PRJ_PATH, 'VPC_CV_1_model.pth', 'VPC')
-R_3_T_CV2, R_3_1_CV2, R_3_2_CV2, pred_3_CV2, ans_3_CV2 = TEST_CPU(PRJ_PATH, 'CV_2', my_config, PRJ_PATH, 'VPC_CV_2_model.pth', 'VPC')
-R_3_T_CV3, R_3_1_CV3, R_3_2_CV3, pred_3_CV3, ans_3_CV3 = TEST_CPU(PRJ_PATH, 'CV_3', my_config, PRJ_PATH, 'VPC_CV_3_model.pth', 'VPC')
-R_3_T_CV4, R_3_1_CV4, R_3_2_CV4, pred_3_CV4, ans_3_CV4 = TEST_CPU(PRJ_PATH, 'CV_4', my_config, PRJ_PATH, 'VPC_CV_4_model.pth', 'VPC')
+			# old 
+			R_1_T_CV0, R_1_1_CV0, R_1_2_CV0, pred_1_CV0, ans_1_CV0 = TEST_CPU(PRJ_PATH, 'CV_0', my_config, PRJ_PATH, 'full_CV_0_model.pth', 'FULL')
+			R_1_T_CV1, R_1_1_CV1, R_1_2_CV1, pred_1_CV1, ans_1_CV1 = TEST_CPU(PRJ_PATH, 'CV_1', my_config, PRJ_PATH, 'full_CV_1_model.pth', 'FULL')
+			R_1_T_CV2, R_1_1_CV2, R_1_2_CV2, pred_1_CV2, ans_1_CV2 = TEST_CPU(PRJ_PATH, 'CV_2', my_config, PRJ_PATH, 'full_CV_2_model.pth', 'FULL')
+			R_1_T_CV3, R_1_1_CV3, R_1_2_CV3, pred_1_CV3, ans_1_CV3 = TEST_CPU(PRJ_PATH, 'CV_3', my_config, PRJ_PATH, 'full_CV_3_model.pth', 'FULL')
+			R_1_T_CV4, R_1_1_CV4, R_1_2_CV4, pred_1_CV4, ans_1_CV4 = TEST_CPU(PRJ_PATH, 'CV_4', my_config, PRJ_PATH, 'full_CV_4_model.pth', 'FULL')
 
 
-# 4) SC
-R_4_T_CV0, R_4_1_CV0, R_4_2_CV0, pred_4_CV0, ans_4_CV0 = TEST_CPU(PRJ_PATH, 'CV_0', my_config, PRJ_PATH, 'VSC_CV_0_model.pth', 'VSC')
-R_4_T_CV1, R_4_1_CV1, R_4_2_CV1, pred_4_CV1, ans_4_CV1 = TEST_CPU(PRJ_PATH, 'CV_1', my_config, PRJ_PATH, 'VSC_CV_1_model.pth', 'VSC')
-R_4_T_CV2, R_4_1_CV2, R_4_2_CV2, pred_4_CV2, ans_4_CV2 = TEST_CPU(PRJ_PATH, 'CV_2', my_config, PRJ_PATH, 'VSC_CV_2_model.pth', 'VSC')
-R_4_T_CV3, R_4_1_CV3, R_4_2_CV3, pred_4_CV3, ans_4_CV3 = TEST_CPU(PRJ_PATH, 'CV_3', my_config, PRJ_PATH, 'VSC_CV_3_model.pth', 'VSC')
-R_4_T_CV4, R_4_1_CV4, R_4_2_CV4, pred_4_CV4, ans_4_CV4 = TEST_CPU(PRJ_PATH, 'CV_4', my_config, PRJ_PATH, 'VSC_CV_4_model.pth', 'VSC')
+# 09 버전 
+PRJ_PATH, CV_num, my_config, model_path, model_name, model_num
+
+R_1_T_CV0, R_1_1_CV0, R_1_2_CV0, pred_1_CV0, ans_1_CV0 = TEST_CPU(PRJ_PATH, 'CV_0', my_config, PRJ_PATH, 'FINAL_0', 'FULL')
+R_1_T_CV1, R_1_1_CV1, R_1_2_CV1, pred_1_CV1, ans_1_CV1 = TEST_CPU(PRJ_PATH, 'CV_1', my_config, PRJ_PATH, 'FINAL_1', 'FULL')
+R_1_T_CV2, R_1_1_CV2, R_1_2_CV2, pred_1_CV2, ans_1_CV2 = TEST_CPU(PRJ_PATH, 'CV_2', my_config, PRJ_PATH, 'FINAL_2', 'FULL')
+R_1_T_CV3, R_1_1_CV3, R_1_2_CV3, pred_1_CV3, ans_1_CV3 = TEST_CPU(PRJ_PATH, 'CV_3', my_config, PRJ_PATH, 'FINAL_3', 'FULL')
+R_1_T_CV4, R_1_1_CV4, R_1_2_CV4, pred_1_CV4, ans_1_CV4 = TEST_CPU(PRJ_PATH, 'CV_4', my_config, PRJ_PATH, 'FINAL_4', 'FULL')
+
+ABCS_test_CV0 = A_B_C_S_SET_SM[A_B_C_S_SET_SM.SM_C_CHECK.isin(CV_ND_INDS['CV0_test'])]
+ABCS_test_CV1 = A_B_C_S_SET_SM[A_B_C_S_SET_SM.SM_C_CHECK.isin(CV_ND_INDS['CV1_test'])]
+ABCS_test_CV2 = A_B_C_S_SET_SM[A_B_C_S_SET_SM.SM_C_CHECK.isin(CV_ND_INDS['CV2_test'])]
+ABCS_test_CV3 = A_B_C_S_SET_SM[A_B_C_S_SET_SM.SM_C_CHECK.isin(CV_ND_INDS['CV3_test'])]
+ABCS_test_CV4 = A_B_C_S_SET_SM[A_B_C_S_SET_SM.SM_C_CHECK.isin(CV_ND_INDS['CV4_test'])]
+
+ABCS_test_CV0['ANS'] = ans_1_CV0; ABCS_test_CV0['FULL'] = pred_1_CV0; 
+ABCS_test_CV1['ANS'] = ans_1_CV1; ABCS_test_CV1['FULL'] = pred_1_CV1; 
+ABCS_test_CV2['ANS'] = ans_1_CV2; ABCS_test_CV2['FULL'] = pred_1_CV2; 
+ABCS_test_CV3['ANS'] = ans_1_CV3; ABCS_test_CV3['FULL'] = pred_1_CV3; 
+ABCS_test_CV4['ANS'] = ans_1_CV4; ABCS_test_CV4['FULL'] = pred_1_CV4; 
+
+
+
+													# 2) min loss 
+
+													R_2_T_CV0, R_2_1_CV0, R_2_2_CV0, pred_2_CV0, ans_2_CV0 = TEST_CPU(PRJ_PATH, 'CV_0', my_config, PRJ_PATH, 'VLS_CV_0_model.pth', 'VLS')
+													R_2_T_CV1, R_2_1_CV1, R_2_2_CV1, pred_2_CV1, ans_2_CV1 = TEST_CPU(PRJ_PATH, 'CV_1', my_config, PRJ_PATH, 'VLS_CV_1_model.pth', 'VLS')
+													R_2_T_CV2, R_2_1_CV2, R_2_2_CV2, pred_2_CV2, ans_2_CV2 = TEST_CPU(PRJ_PATH, 'CV_2', my_config, PRJ_PATH, 'VLS_CV_2_model.pth', 'VLS')
+													R_2_T_CV3, R_2_1_CV3, R_2_2_CV3, pred_2_CV3, ans_2_CV3 = TEST_CPU(PRJ_PATH, 'CV_3', my_config, PRJ_PATH, 'VLS_CV_3_model.pth', 'VLS')
+													R_2_T_CV4, R_2_1_CV4, R_2_2_CV4, pred_2_CV4, ans_2_CV4 = TEST_CPU(PRJ_PATH, 'CV_4', my_config, PRJ_PATH, 'VLS_CV_4_model.pth', 'VLS')
+
+													# 3) PC 
+													R_3_T_CV0, R_3_1_CV0, R_3_2_CV0, pred_3_CV0, ans_3_CV0 = TEST_CPU(PRJ_PATH, 'CV_0', my_config, PRJ_PATH, 'VPC_CV_0_model.pth', 'VPC')
+													R_3_T_CV1, R_3_1_CV1, R_3_2_CV1, pred_3_CV1, ans_3_CV1 = TEST_CPU(PRJ_PATH, 'CV_1', my_config, PRJ_PATH, 'VPC_CV_1_model.pth', 'VPC')
+													R_3_T_CV2, R_3_1_CV2, R_3_2_CV2, pred_3_CV2, ans_3_CV2 = TEST_CPU(PRJ_PATH, 'CV_2', my_config, PRJ_PATH, 'VPC_CV_2_model.pth', 'VPC')
+													R_3_T_CV3, R_3_1_CV3, R_3_2_CV3, pred_3_CV3, ans_3_CV3 = TEST_CPU(PRJ_PATH, 'CV_3', my_config, PRJ_PATH, 'VPC_CV_3_model.pth', 'VPC')
+													R_3_T_CV4, R_3_1_CV4, R_3_2_CV4, pred_3_CV4, ans_3_CV4 = TEST_CPU(PRJ_PATH, 'CV_4', my_config, PRJ_PATH, 'VPC_CV_4_model.pth', 'VPC')
+
+
+													# 4) SC
+													R_4_T_CV0, R_4_1_CV0, R_4_2_CV0, pred_4_CV0, ans_4_CV0 = TEST_CPU(PRJ_PATH, 'CV_0', my_config, PRJ_PATH, 'VSC_CV_0_model.pth', 'VSC')
+													R_4_T_CV1, R_4_1_CV1, R_4_2_CV1, pred_4_CV1, ans_4_CV1 = TEST_CPU(PRJ_PATH, 'CV_1', my_config, PRJ_PATH, 'VSC_CV_1_model.pth', 'VSC')
+													R_4_T_CV2, R_4_1_CV2, R_4_2_CV2, pred_4_CV2, ans_4_CV2 = TEST_CPU(PRJ_PATH, 'CV_2', my_config, PRJ_PATH, 'VSC_CV_2_model.pth', 'VSC')
+													R_4_T_CV3, R_4_1_CV3, R_4_2_CV3, pred_4_CV3, ans_4_CV3 = TEST_CPU(PRJ_PATH, 'CV_3', my_config, PRJ_PATH, 'VSC_CV_3_model.pth', 'VSC')
+													R_4_T_CV4, R_4_1_CV4, R_4_2_CV4, pred_4_CV4, ans_4_CV4 = TEST_CPU(PRJ_PATH, 'CV_4', my_config, PRJ_PATH, 'VSC_CV_4_model.pth', 'VSC')
 
 
 # 같은 코드인데 왜 GPU 와 CPU 에서의 성능이 다른건지 모르겠음 
@@ -2839,6 +2819,18 @@ round(stats.pearsonr(ABCS_test_result['ANS'] , ABCS_test_result['VSC'])[0] , 4) 
 
 
 
+# 0909 결론 test 파일 
+ABCS_test_result = pd.concat([ABCS_test_CV0, ABCS_test_CV1, ABCS_test_CV2, ABCS_test_CV3, ABCS_test_CV4])
+
+ABCS_test_result['tissue'] = ABCS_test_result.CELL.apply(lambda x : '_'.join(x.split('_')[1:] ) )
+
+ABCS_test_result.to_csv(PRJ_PATH+'ABCS_test_result.csv', index = False)
+round(stats.pearsonr(ABCS_test_result['ANS'] , ABCS_test_result['FULL'])[0] , 4) # 0.7164
+
+
+
+
+
 
 ########################################
 이제 bar plot 이랑 뭐든 좀 그려보자 
@@ -2939,6 +2931,26 @@ plt.close()
 
 
 
+# 이쁜 그림을 위한 func  # 교수님 순서 바꾼거 다시 
+
+# Pearson corr
+test_cell_df = test_cell_df.sort_values('P_COR', ascending = False)
+
+fig = plt.figure(figsize=(30,8))
+x_pos = [a*2 for a in range(test_cell_df.shape[0])]
+
+plt.bar(x_pos, test_cell_df['P_COR'], color=test_cell_df['tissue_oh']) # 
+plt.xticks(x_pos,list(test_cell_df['DC_cellname']), rotation=90, fontsize= 18)
+plt.yticks(np.arange(0, 1, step=0.2),np.round(np.arange(0, 1, step=0.2),2), fontsize= 18)
+#plt.grid(True)
+#plt.axhline(0.7)
+plt.tight_layout()
+fig.savefig('{}/{}.png'.format(PRJ_PATH, 'new_plot_pearson3'), bbox_inches = 'tight')
+fig.savefig('{}/{}.pdf'.format(PRJ_PATH, 'new_plot_pearson3'), format="pdf", bbox_inches = 'tight')
+
+plt.close()
+
+
 
 
 
@@ -2949,9 +2961,9 @@ plt.close()
 # 추가적으로 궁금해져서 
 # AXBX 의 비율을 살펴보기로 함 
 # total 10552
-TEST_ALL_O = ABCS_test_result[ABCS_test_result.type.isin(['AOBO'])] # 1348 -> 659 
-TEST_HALF_O = ABCS_test_result[ABCS_test_result.type.isin(['AXBO','AOBX'])] # 2179 -> 1074
-TEST_NO_O = ABCS_test_result[ABCS_test_result.type.isin(['AXBX'])] # 7025 -> 16854
+TEST_ALL_O = ABCS_test_result[ABCS_test_result.type.isin(['AOBO'])] # 7100
+TEST_HALF_O = ABCS_test_result[ABCS_test_result.type.isin(['AXBO','AOBX'])] # 22046
+TEST_NO_O = ABCS_test_result[ABCS_test_result.type.isin(['AXBX'])] # 265298
 
 
 
@@ -3738,6 +3750,102 @@ plt.close()
 
 
 
+
+
+# 추가로 보게된 Large intestine 
+
+ccle_mut_filt = ccle_mut[ccle_mut.Variant_annotation!='silent']
+ccle_mut_filt2 = ccle_mut_filt[['Hugo_Symbol','Entrez_Gene_Id','DepMap_ID','Variant_annotation']].drop_duplicates()
+ccle_mut_filt3 = ccle_mut_filt2[ccle_mut_filt2.Entrez_Gene_Id.isin(BETA_ENTREZ_ORDER)]
+
+
+test_cell_df_mini = test_cell_df[test_cell_df.tissue == 'LARGE_INTESTINE']
+test_cell_df_mini = pd.merge(test_cell_df_mini, DC_CELL_DF2[['DC_cellname','DrugCombCCLE']], on = 'DC_cellname', how='left')
+
+columns = ['DepMap_ID', 'cell_line_name', 'stripped_cell_line_name', 'CCLE_Name',
+       'alias', 'COSMICID', 'sex', 'source', 'RRID', 'WTSI_Master_Cell_ID',
+       'sample_collection_site', 'primary_or_metastasis', 'primary_disease',
+       'Subtype', 'age', 'Sanger_Model_ID', 'depmap_public_comments',
+       'lineage', 'lineage_subtype', 'lineage_sub_subtype',
+       'lineage_molecular_subtype', 'culture_type']
+
+nn_check = ccle_info[ccle_info.CCLE_Name.isin(test_cell_df_mini.DrugCombCCLE)]
+nn_check[['sex', 'source', 'RRID', 'WTSI_Master_Cell_ID']]
+nn_check[['sample_collection_site', 'primary_or_metastasis', 'primary_disease']]
+nn_check[['Subtype', 'age', 'Sanger_Model_ID', 'depmap_public_comments']]
+nn_check[['lineage', 'lineage_subtype', 'lineage_sub_subtype']]
+nn_check[['lineage_molecular_subtype', 'culture_type']]
+
+columns = ['DepMap_ID', 'cell_line_name', 'stripped_cell_line_name', 'CCLE_Name']
+nn_check2 = nn_check[['DepMap_ID','CCLE_Name', 'sample_collection_site','primary_or_metastasis','culture_type']]
+
+test_cell_df_mini2 = pd.merge(test_cell_df_mini, nn_check2, left_on = 'DrugCombCCLE', right_on = 'CCLE_Name', how = 'left')
+# test_cell_df_mini2['culture_type'] = test_cell_df_mini2.culture_type.apply(lambda x : 'NA' if type(x)!= str else x)
+
+
+AOBO = []
+AXBO = []
+AXBX = []
+
+for cell in list(test_cell_df_mini2.DrugCombCCLE) :
+	cell
+	tmp = ABCS_test_result[ABCS_test_result.CELL == cell].groupby('type').count()['cell_onehot']
+	#
+	if 'AOBO' in tmp.index :
+		AOBO.append(tmp.loc['AOBO'])
+	else : 
+		AOBO.append(0)
+	#
+	if 'AXBO' in tmp.index :
+		AXBO.append(tmp.loc['AXBO'])
+	else : 
+		AXBO.append(0)
+	#
+	if 'AXBX' in tmp.index :
+		AXBX.append(tmp.loc['AXBX'])
+	else : 
+		AXBX.append(0)
+
+test_cell_df_mini2['AOBO'] = AOBO
+test_cell_df_mini2['AXBO'] = AXBO
+test_cell_df_mini2['AXBX'] = AXBX
+
+LOVO = ccle_mut_filt3[ccle_mut_filt3.DepMap_ID == 'ACH-000950']
+LOVO.groupby('Variant_annotation').count()
+
+DLD1 = ccle_mut_filt3[ccle_mut_filt3.DepMap_ID == 'ACH-001061']
+DLD1.groupby('Variant_annotation').count()
+
+HCT15 = ccle_mut_filt3[ccle_mut_filt3.DepMap_ID == 'ACH-000997']
+HCT15.groupby('Variant_annotation').count()
+
+HT29 = ccle_mut_filt3[ccle_mut_filt3.DepMap_ID == 'ACH-000552']
+HT29.groupby('Variant_annotation').count()
+
+SW837 = ccle_mut_filt3[ccle_mut_filt3.DepMap_ID == 'ACH-000421']
+SW837.groupby('Variant_annotation').count()
+
+RKO = ccle_mut_filt3[ccle_mut_filt3.DepMap_ID == 'ACH-000943']
+RKO.groupby('Variant_annotation').count()
+
+KM12 = ccle_mut_filt3[ccle_mut_filt3.DepMap_ID == 'ACH-000969']
+KM12.groupby('Variant_annotation').count()
+
+SW620 = ccle_mut_filt3[ccle_mut_filt3.DepMap_ID == 'ACH-000651']
+SW620.groupby('Variant_annotation').count()
+
+HCT116 = ccle_mut_filt3[ccle_mut_filt3.DepMap_ID == 'ACH-000971']
+HCT116.groupby('Variant_annotation').count()
+
+
+
+
+
+
+
+
+
+
 고통스러우므로 그냥 subplot 으로 해결해보자 
 
 
@@ -4303,12 +4411,6 @@ fig = px.scatter_3d(TSNE_DF, x='comp1', y='comp2', z='comp3',hover_name="cell_li
 path = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V6_W203_349_MIS2'
 plotname = 'tsne_trial2'
 fig.write_html('{}/{}.html'.format(path, plotname))
-
-
-
-
-
-
 
 
 

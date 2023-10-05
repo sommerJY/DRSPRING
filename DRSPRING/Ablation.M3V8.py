@@ -186,6 +186,8 @@ MISS_NAME = 'MIS2'
 W_NAME = 'W403'
 WORK_NAME = 'WORK_403' # 349
 WORK_DATE = '23.08.27' # 349
+WORK_DATE = '23.09.08_G1' # 349
+
 
 anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
 list_dir = os.listdir(anal_dir)
@@ -216,6 +218,7 @@ last_V_LS_mean_D4F3, last_V_LS_std_D4F3, last_V_PC_mean_D4F3, last_V_PC_std_D4F3
 W_NAME = 'W405'
 WORK_NAME = 'WORK_405' # 349
 WORK_DATE = '23.08.27' # 349
+WORK_DATE = '23.09.09' # 349
 
 anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
 list_dir = os.listdir(anal_dir)
@@ -252,6 +255,7 @@ last_V_LS_mean_D4F1E, last_V_LS_std_D4F1E, last_V_PC_mean_D4F1E, last_V_PC_std_D
 W_NAME = 'W406'
 WORK_NAME = 'WORK_406' # 349
 WORK_DATE = '23.08.27' # 349
+WORK_DATE = '23.09.09' # 349
 
 anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
 list_dir = os.listdir(anal_dir)
@@ -282,7 +286,7 @@ last_V_LS_mean_D4F1B, last_V_LS_std_D4F1B, last_V_PC_mean_D4F1B, last_V_PC_std_D
 			1-2 ) target only
 W_NAME = 'W407'
 WORK_NAME = 'WORK_407' # 349
-WORK_DATE = '23.08.27' # 349
+WORK_DATE = '23.09.09' # 349
 
 anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
 list_dir = os.listdir(anal_dir)
@@ -319,6 +323,7 @@ last_V_LS_mean_D4F1T, last_V_LS_std_D4F1T, last_V_PC_mean_D4F1T, last_V_PC_std_D
 W_NAME = 'W408'
 WORK_NAME = 'WORK_408' # 349
 WORK_DATE = '23.08.28' # 349
+WORK_DATE = '23.09.09' # 349
 
 anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
 list_dir = os.listdir(anal_dir)
@@ -355,6 +360,7 @@ last_V_LS_mean_D4F2BT, last_V_LS_std_D4F2BT, last_V_PC_mean_D4F2BT, last_V_PC_st
 W_NAME = 'W409'
 WORK_NAME = 'WORK_409' # 349
 WORK_DATE = '23.08.28' # 349
+WORK_DATE = '23.09.09' # 349
 
 anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
 #     anal_dir = '/home01/k040a01/ray_results/PRJ02.23.06.13.M3V5.WORK_37.349.MIS22/'
@@ -395,6 +401,7 @@ last_V_LS_mean_D4F2ET, last_V_LS_std_D4F2ET, last_V_PC_mean_D4F2ET, last_V_PC_st
 W_NAME = 'W410'
 WORK_NAME = 'WORK_410' # 349
 WORK_DATE = '23.08.28' # 349
+WORK_DATE = '23.09.09' # 349
 
 anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
 #     anal_dir = '/home01/k040a01/ray_results/PRJ02.23.06.13.M3V5.WORK_37.349.MIS22/'
@@ -689,8 +696,10 @@ AXBO 시리즈
 W_NAME = 'W403_2'
 WORK_NAME = 'WORK_403_2' # 349
 WORK_DATE = '23.08.29' # 349
+WORK_DATE = '23.09.19' # 349
 
-anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
+
+anal_dir = "/home01/k040a02/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
 list_dir = os.listdir(anal_dir)
 exp_json = [a for a in list_dir if 'experiment_state' in a]
 exp_json
@@ -722,8 +731,9 @@ last_V_LS_mean_D2F3, last_V_LS_std_D2F3, last_V_PC_mean_D2F3, last_V_PC_std_D2F3
 W_NAME = 'W405_2'
 WORK_NAME = 'WORK_405_2' # 349
 WORK_DATE = '23.08.29' # 349
+WORK_DATE = '23.09.09' # 349
 
-anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
+anal_dir = "/home01/k040a02/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
 #     anal_dir = '/home01/k040a01/ray_results/PRJ02.23.06.13.M3V5.WORK_37.349.MIS22/'
 list_dir = os.listdir(anal_dir)
 exp_json = [a for a in list_dir if 'experiment_state' in a]
@@ -757,8 +767,9 @@ last_V_LS_mean_D2F1E, last_V_LS_std_D2F1E, last_V_PC_mean_D2F1E, last_V_PC_std_D
 W_NAME = 'W406_2'
 WORK_NAME = 'WORK_406_2' # 349
 WORK_DATE = '23.08.29' # 349
+WORK_DATE = '23.09.09' # 349
 
-anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
+anal_dir = "/home01/k040a02/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
 #     anal_dir = '/home01/k040a01/ray_results/PRJ02.23.06.13.M3V5.WORK_37.349.MIS22/'
 list_dir = os.listdir(anal_dir)
 exp_json = [a for a in list_dir if 'experiment_state' in a]
@@ -790,8 +801,9 @@ last_V_LS_mean_D2F1B, last_V_LS_std_D2F1B, last_V_PC_mean_D2F1B, last_V_PC_std_D
 W_NAME = 'W407_2'
 WORK_NAME = 'WORK_407_2' # 349
 WORK_DATE = '23.08.29' # 349
+WORK_DATE = '23.09.09' # 349
 
-anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
+anal_dir = "/home01/k040a02/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
 #     anal_dir = '/home01/k040a01/ray_results/PRJ02.23.06.13.M3V5.WORK_37.349.MIS22/'
 list_dir = os.listdir(anal_dir)
 exp_json = [a for a in list_dir if 'experiment_state' in a]
@@ -825,8 +837,9 @@ last_V_LS_mean_D2F1T, last_V_LS_std_D2F1T, last_V_PC_mean_D2F1T, last_V_PC_std_D
 W_NAME = 'W408_2'
 WORK_NAME = 'WORK_408_2' # 349
 WORK_DATE = '23.08.29' # 349
+WORK_DATE = '23.09.09' # 349
 
-anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
+anal_dir = "/home01/k040a02/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
 #     anal_dir = '/home01/k040a01/ray_results/PRJ02.23.06.13.M3V5.WORK_37.349.MIS22/'
 list_dir = os.listdir(anal_dir)
 exp_json = [a for a in list_dir if 'experiment_state' in a]
@@ -863,8 +876,9 @@ last_V_LS_mean_D2F2BT, last_V_LS_std_D2F2BT, last_V_PC_mean_D2F2BT, last_V_PC_st
 W_NAME = 'W409_2'
 WORK_NAME = 'WORK_409_2' # 349
 WORK_DATE = '23.08.29' # 349
+WORK_DATE = '23.09.09' # 349
 
-anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
+anal_dir = "/home01/k040a02/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
 #     anal_dir = '/home01/k040a01/ray_results/PRJ02.23.06.13.M3V5.WORK_37.349.MIS22/'
 list_dir = os.listdir(anal_dir)
 exp_json = [a for a in list_dir if 'experiment_state' in a]
@@ -896,8 +910,9 @@ last_V_LS_mean_D2F2ET, last_V_LS_std_D2F2ET, last_V_PC_mean_D2F2ET, last_V_PC_st
 W_NAME = 'W410_2'
 WORK_NAME = 'WORK_410_2' # 349
 WORK_DATE = '23.08.29' # 349
+WORK_DATE = '23.09.09' # 349
 
-anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
+anal_dir = "/home01/k040a02/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
 #     anal_dir = '/home01/k040a01/ray_results/PRJ02.23.06.13.M3V5.WORK_37.349.MIS22/'
 list_dir = os.listdir(anal_dir)
 exp_json = [a for a in list_dir if 'experiment_state' in a]
@@ -936,8 +951,9 @@ AXBO 시리즈
 W_NAME = 'W403_3'
 WORK_NAME = 'WORK_403_3' # 349
 WORK_DATE = '23.08.30' # 349
+WORK_DATE = '23.09.09' # 349
 
-anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
+anal_dir = "/home01/k040a02/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
 list_dir = os.listdir(anal_dir)
 exp_json = [a for a in list_dir if 'experiment_state' in a]
 exp_json
@@ -968,8 +984,9 @@ last_V_LS_mean_D3F3, last_V_LS_std_D3F3, last_V_PC_mean_D3F3, last_V_PC_std_D3F3
 W_NAME = 'W405_3'
 WORK_NAME = 'WORK_405_3' # 349
 WORK_DATE = '23.08.30' # 349
+WORK_DATE = '23.09.09' # 349
 
-anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
+anal_dir = "/home01/k040a02/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
 #     anal_dir = '/home01/k040a01/ray_results/PRJ02.23.06.13.M3V5.WORK_37.349.MIS22/'
 list_dir = os.listdir(anal_dir)
 exp_json = [a for a in list_dir if 'experiment_state' in a]
@@ -1005,8 +1022,9 @@ last_V_LS_mean_D3F1E, last_V_LS_std_D3F1E, last_V_PC_mean_D3F1E, last_V_PC_std_D
 W_NAME = 'W406_3'
 WORK_NAME = 'WORK_406_3' # 349
 WORK_DATE = '23.08.30' # 349
+WORK_DATE = '23.09.09' # 349
 
-anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
+anal_dir = "/home01/k040a02/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
 #     anal_dir = '/home01/k040a01/ray_results/PRJ02.23.06.13.M3V5.WORK_37.349.MIS22/'
 list_dir = os.listdir(anal_dir)
 exp_json = [a for a in list_dir if 'experiment_state' in a]
@@ -1040,9 +1058,9 @@ last_V_LS_mean_D3F1B, last_V_LS_std_D3F1B, last_V_PC_mean_D3F1B, last_V_PC_std_D
 
 W_NAME = 'W407_3'
 WORK_NAME = 'WORK_407_3' # 349
-WORK_DATE = '23.08.30' # 349
+WORK_DATE = '23.09.09' # 349
 
-anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
+anal_dir = "/home01/k040a02/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
 #     anal_dir = '/home01/k040a01/ray_results/PRJ02.23.06.13.M3V5.WORK_37.349.MIS22/'
 list_dir = os.listdir(anal_dir)
 exp_json = [a for a in list_dir if 'experiment_state' in a]
@@ -1115,8 +1133,9 @@ last_V_LS_mean_D3F2BT, last_V_LS_std_D3F2BT, last_V_PC_mean_D3F2BT, last_V_PC_st
 W_NAME = 'W409_3'
 WORK_NAME = 'WORK_409_3' # 349
 WORK_DATE = '23.08.30' # 349
+WORK_DATE = '23.09.09' # 349
 
-anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
+anal_dir = "/home01/k040a02/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
 #     anal_dir = '/home01/k040a01/ray_results/PRJ02.23.06.13.M3V5.WORK_37.349.MIS22/'
 list_dir = os.listdir(anal_dir)
 exp_json = [a for a in list_dir if 'experiment_state' in a]
@@ -1148,8 +1167,9 @@ last_V_LS_mean_D3F2ET, last_V_LS_std_D3F2ET, last_V_PC_mean_D3F2ET, last_V_PC_st
 W_NAME = 'W410_3'
 WORK_NAME = 'WORK_410_3' # 349
 WORK_DATE = '23.08.30' # 349
+WORK_DATE = '23.09.09' # 349
 
-anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
+anal_dir = "/home01/k040a02/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
 #     anal_dir = '/home01/k040a01/ray_results/PRJ02.23.06.13.M3V5.WORK_37.349.MIS22/'
 list_dir = os.listdir(anal_dir)
 exp_json = [a for a in list_dir if 'experiment_state' in a]
@@ -1182,6 +1202,56 @@ last_V_LS_mean_D3F2EB, last_V_LS_std_D3F2EB, last_V_PC_mean_D3F2EB, last_V_PC_st
 #################################
 
 ablation 
+
+0921 result check 
+
+last_V_LS_mean_D4F3, last_V_PC_mean_D4F3, last_V_SC_mean_D4F3 = 109.1905, 0.7138, 0.6524
+last_V_LS_mean_D4F1E,  last_V_PC_mean_D4F1E,  last_V_SC_mean_D4F1E  = 138.2044, 0.6117, 0.5489
+last_V_LS_mean_D4F1B,  last_V_PC_mean_D4F1B,  last_V_SC_mean_D4F1B  = 111.5472, 0.7030, 0.6378
+last_V_LS_mean_D4F1T,  last_V_PC_mean_D4F1T,  last_V_SC_mean_D4F1T = 167.2891, 0.4888, 0.4261
+last_V_LS_mean_D4F2BT, last_V_PC_mean_D4F2BT, last_V_SC_mean_D4F2BT = 108.6491, 0.7124, 0.6498
+last_V_LS_mean_D4F2ET, last_V_PC_mean_D4F2ET, last_V_SC_mean_D4F2ET = 134.1778, 0.6261, 0.5596
+last_V_LS_mean_D4F2EB, last_V_PC_mean_D4F2EB, last_V_SC_mean_D4F2EB = 108.7104, 0.7143, 0.6564
+
+last_V_LS_mean_D1F3, last_V_PC_mean_D1F3, last_V_SC_mean_D1F3 = 127.8051, 0.6458, 0.6030
+last_V_LS_mean_D1F1E,  last_V_PC_mean_D1F1E,  last_V_SC_mean_D1F1E  = 137.5744, 0.6088, 0.5768
+last_V_LS_mean_D1F1B,  last_V_PC_mean_D1F1B,  last_V_SC_mean_D1F1B  = 135.2874, 0.6154, 0.5755
+last_V_LS_mean_D1F1T,  last_V_PC_mean_D1F1T,  last_V_SC_mean_D1F1T  = 162.9079, 0.5090, 0.4738
+last_V_LS_mean_D1F2BT, last_V_PC_mean_D1F2BT, last_V_SC_mean_D1F2BT = 135.5048, 0.6244, 0.5882
+last_V_LS_mean_D1F2ET, last_V_PC_mean_D1F2ET, last_V_SC_mean_D1F2ET = 134.3883, 0.6235, 0.5715
+last_V_LS_mean_D1F2EB, last_V_PC_mean_D1F2EB, last_V_SC_mean_D1F2EB = 127.1037, 0.6448, 0.6028
+
+last_V_LS_mean_D2F3, last_V_PC_mean_D2F3, last_V_SC_mean_D2F3 = 126.5047, 0.6419, 0.5921
+last_V_LS_mean_D2F1E,  last_V_PC_mean_D2F1E,  last_V_SC_mean_D2F1E  = 129.8790, 0.6166, 0.5617
+last_V_LS_mean_D2F1B,  last_V_PC_mean_D2F1B,  last_V_SC_mean_D2F1B  = 128.5936, 0.6235, 0.5639
+last_V_LS_mean_D2F1T,  last_V_PC_mean_D2F1T,  last_V_SC_mean_D2F1T  = 148.7010, 0.5284, 0.4690
+last_V_LS_mean_D2F2BT, last_V_PC_mean_D2F2BT, last_V_SC_mean_D2F2BT = 129.2185, 0.6284, 0.5671
+last_V_LS_mean_D2F2ET, last_V_PC_mean_D2F2ET, last_V_SC_mean_D2F2ET = 132.4848, 0.6095, 0.5526
+last_V_LS_mean_D2F2EB, last_V_PC_mean_D2F2EB, last_V_SC_mean_D2F2EB = 127.1403, 0.6328, 0.5837
+
+last_V_LS_mean_D3F3, last_V_PC_mean_D3F3, last_V_SC_mean_D3F3 = 111.1163, 0.7123, 0.6532
+last_V_LS_mean_D3F1E,  last_V_PC_mean_D3F1E,  last_V_SC_mean_D3F1E  = 139.1226, 0.6123, 0.5470
+last_V_LS_mean_D3F1B,  last_V_PC_mean_D3F1B,  last_V_SC_mean_D3F1B  = 111.7072, 0.7072, 0.6473
+last_V_LS_mean_D3F1T,  last_V_PC_mean_D3F1T,  last_V_SC_mean_D3F1T  = 171.9117, 0.4824, 0.4218
+last_V_LS_mean_D3F2BT, last_V_PC_mean_D3F2BT, last_V_SC_mean_D3F2BT = 110.9695, 0.7096, 0.6524
+last_V_LS_mean_D3F2ET, last_V_PC_mean_D3F2ET, last_V_SC_mean_D3F2ET = 137.8803, 0.6177, 0.5530
+last_V_LS_mean_D3F2EB, last_V_PC_mean_D3F2EB, last_V_SC_mean_D3F2EB = 109.7364, 0.7133, 0.6534
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # ALL
 epc_D4 = pd.DataFrame({
@@ -1593,8 +1663,11 @@ sns.despine()
 
 plt.tight_layout()
 plt.grid(False)
-plt.savefig(os.path.join('/home01/k040a01/ablation3.png'), dpi = 300)
-plt.savefig('/home01/k040a01/ablation3.pdf', format="pdf", bbox_inches = 'tight')
+#plt.savefig(os.path.join('/home01/k040a01/ablation3.png'), dpi = 300)
+plt.savefig(os.path.join('/st06/jiyeonH/11.TOX/DR_SPRING/trials/ablation.0921.png'), dpi = 300)
+
+#plt.savefig('/home01/k040a01/ablation3.pdf', format="pdf", bbox_inches = 'tight')
+plt.savefig('/st06/jiyeonH/11.TOX/DR_SPRING/trials/ablation.0921.pdf', format="pdf", bbox_inches = 'tight')
 
 plt.close()
 
@@ -1603,6 +1676,52 @@ plt.close()
 
 
 
+
+
+교수님이 주문한 MSE 최대에서 빼는 버전  
+
+ABLATION_DF_loss['m_value'] = 200-ABLATION_DF_loss.value
+
+fig, ax = plt.subplots(1,3,figsize=(25, 5))
+sns.barplot(ax = ax[0], data  = ABLATION_DF_loss, x = 'Data ablation', y = 'm_value', hue = 'ablation', linewidth=1,  edgecolor="white", palette = ablation_col) # width = 3,
+ax_0 = ax[0]
+ax_0.set_xlabel('', fontsize=10)
+ax_0.set_ylabel('MSE loss', fontsize=10)
+ax_0.set_xticks(ax_0.get_xticks())
+ax_0.set_xticklabels(ax_0.get_xticklabels(), fontsize=15) # , rotation = 90
+ax_0.set_ylim(20, 100)
+ax_0.legend().set_visible(False)
+sns.despine()
+
+sns.barplot(ax = ax[1], data  = ABLATION_DF_PCOR, x = 'Data ablation', y = 'value', hue = 'ablation', linewidth=1,  edgecolor="white", palette = ablation_col) # width = 3,
+ax_1 = ax[1]
+ax_1.set_xlabel('', fontsize=10)
+ax_1.set_ylabel('PCOR', fontsize=10)
+ax_1.set_xticks(ax_1.get_xticks())
+ax_1.set_xticklabels(ax_1.get_xticklabels(), fontsize=15)
+ax_1.set_ylim(0.4, 0.8)
+ax_1.legend().set_visible(False)
+sns.despine()
+
+sns.barplot(ax = ax[2], data  = ABLATION_DF_SCOR, x = 'Data ablation', y = 'value', hue = 'ablation', linewidth=1,  edgecolor="white", palette = ablation_col) # width = 3,
+ax_2 = ax[2]
+ax_2.set_xlabel('', fontsize=10)
+ax_2.set_ylabel('SCOR', fontsize=10)
+ax_2.set_xticks(ax_2.get_xticks())
+ax_2.set_xticklabels(ax_2.get_xticklabels(), fontsize=15)
+ax_2.set_ylim(0.3, 0.7)
+ax_2.legend(bbox_to_anchor=(1.04, 1), loc="upper left")
+sns.despine()
+
+plt.tight_layout()
+plt.grid(False)
+#plt.savefig(os.path.join('/home01/k040a01/ablation3.png'), dpi = 300)
+plt.savefig(os.path.join('/st06/jiyeonH/11.TOX/DR_SPRING/trials/ablation.0927.png'), dpi = 300)
+
+#plt.savefig('/home01/k040a01/ablation3.pdf', format="pdf", bbox_inches = 'tight')
+plt.savefig('/st06/jiyeonH/11.TOX/DR_SPRING/trials/ablation.0927.pdf', format="pdf", bbox_inches = 'tight')
+
+plt.close()
 
 
 

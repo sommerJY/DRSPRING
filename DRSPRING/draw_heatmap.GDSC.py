@@ -1,5 +1,89 @@
 
 
+import os
+import os.path as osp
+from math import ceil
+import pandas as pd
+import numpy as np
+import json
+import torch
+import torch.nn.functional as F
+from torch_geometric.datasets import TUDataset
+import torch_geometric.transforms as T
+from torch_geometric.data import DenseDataLoader
+from torch.utils.data import Dataset
+
+from torch_geometric.nn import DenseGCNConv as GCNConv, dense_diff_pool #DiffPool
+from torch_geometric.nn import SAGEConv, TopKPooling
+from torch_geometric.nn import global_mean_pool as gap, global_max_pool as gmp
+import pickle
+import joblib
+import torch.nn as nn
+import argparse
+from torch.utils.data import DataLoader
+import sklearn
+from sklearn.preprocessing import OneHotEncoder
+onehot_encoder = sklearn.preprocessing.OneHotEncoder
+import datetime
+from datetime import *
+from sklearn.metrics import f1_score, roc_auc_score
+from sklearn.metrics import mean_squared_error
+												
+# Graph convolution model
+import torch_geometric.nn as pyg_nn
+# Graph utility function
+import torch_geometric.utils as pyg_utils
+import torch.optim as optim
+import torch_geometric.nn.conv
+from sklearn import metrics
+import seaborn as sns
+import matplotlib.pyplot as plt
+#from rdkit import Chem
+#from rdkit.Chem import AllChem
+#from rdkit import DataStructs
+#import rdkit
+#from rdkit import Chem
+#from rdkit.Chem.QED import qed
+
+import networkx as nx
+import copy
+from scipy.sparse import coo_matrix
+from scipy import sparse
+from scipy import stats
+import sklearn.model_selection
+
+import sys
+import random
+import shutil
+import math
+
+#import ray
+#from ray import tune
+#from functools import partial
+#from ray.tune.schedulers import ASHAScheduler
+#from ray.tune import CLIReporter
+#from ray.tune.suggest.optuna import OptunaSearch
+#from ray.tune import ExperimentAnalysis
+
+import numpy as np
+
+import sys
+import os
+import pandas as pd
+
+
+
+
+
+NETWORK_PATH = '/st06/jiyeonH/13.DD_SESS/HumanNetV3/'
+LINCS_PATH = '/st06/jiyeonH/11.TOX/MY_TRIAL_5/' 
+DC_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/'
+
+
+
+
+
+
 
 # 유전자 순서는 필요 
 
@@ -116,7 +200,7 @@ gdsc_colon = pd.read_csv(gdsc_c_path + 'colon_anchor_combo.csv') # 75400
 gdsc_pancreas = pd.read_csv(gdsc_c_path + 'pancreas_anchor_combo.csv') # 66300
 
 
-일단 cid - cid - cell 에 대해서 synergy 결과가 갈리지는 않는지? -> 안갈리는것 같음 
+일단 cid - cid - cell 에 대해서 synergy 결과가 갈리지는 않는지? -> 안갈리는것 같음..!!!! 예스 
 근데 앞뒤는 있는듯 
 
 # breast 부터 확인해보기 
@@ -135,7 +219,7 @@ g_colon_cell = list(set(g_colon['Cell Line name']))
 # pancreas
 g_pancreas = gdsc_pancreas[['Cell Line name','Anchor Name','Library Name','Synergy?']].drop_duplicates() # 18650
 g_pancreas[['Cell Line name','Anchor Name','Library Name']].drop_duplicates() # 18650
-g_pancreas_names = list(set(list(g_pancreas['Anchor Name']) + list(g_pancreas['Library Name']))) # 52 
+g_pancreas_names = list(set(list(g_pancreas['Anchor Name']) + list(g_pancreas['Library Name']))) # 26
 g_pancreas_cell = list(set(g_pancreas['Cell Line name']))
 
 
@@ -163,7 +247,11 @@ for nana in dup_names :
 gdsc_chem_list = pd.concat([gdsc_chem_list_nodups, gdsc_chem_list_dups.loc[str_inds]])
 
 
-# 이름 확인 
+
+
+
+
+# 이름붙이기  
 set(g_breast_names) - set(gdsc_chem_list.Name) # None 
 set(g_colon_names) - set(gdsc_chem_list.Name) # {'Afatinib | Trametinib'} -> 진짜 이렇게 생겼음. 제외해도 될듯 
 set(g_pancreas_names) - set(gdsc_chem_list.Name) # {'Galunisertib'} -> 10090485 나 131708758 면 될것 같음. canonical smiles 동일 
@@ -175,14 +263,6 @@ gdsc_chem_list_re = gdsc_chem_list[gdsc_chem_list.Name.isin(g_breast_names + g_c
 gdsc_chem_list_re['CID'] = gdsc_chem_list_re.PubCHEM.apply(lambda x : int(x))
 
 gdsc_chem_list_re = gdsc_chem_list_re[['Name','CID']]
-
-# breast 
-gdsc_chem_list_re.columns = ['Anchor Name','Anchor CID']
-g_breast2 = pd.merge(g_breast, gdsc_chem_list_re, on ='Anchor Name', how ='left')
-
-gdsc_chem_list_re.columns = ['Library Name','Library CID']
-g_breast3 = pd.merge(g_breast2, gdsc_chem_list_re, on ='Library Name', how ='left')
-
 
 
 # breast 
@@ -209,12 +289,11 @@ gdsc_chem_list_re.columns = ['Library Name','Library CID']
 g_pancreas3 = pd.merge(g_pancreas2, gdsc_chem_list_re, on ='Library Name', how ='left')
 
 
-# cell lines 
-생각해보니 모델 잘 돌리려면 ADD 에 있는 내용으로 해야하나 
-그렇게 생각하면 cell vector 없는게 좋은건가 
-차라리 차이가 많이 안나면 없애고 걍 가는건데
-일단 hyperparameter 가 같았으면 좋겠다 
 
+
+
+
+# cell line 이름 붙이기 
 
 CCLE_PATH = '/st06/jiyeonH/13.DD_SESS/CCLE.22Q1/'
 ccle_info= pd.read_csv(CCLE_PATH+'sample_info.csv', low_memory=False)
@@ -236,23 +315,36 @@ gdsc_cell_ccle2 = gdsc_cell_ccle2.drop_duplicates()
 
 gdsc_cell_ccle2.columns = ['Cell Line name','strip_name','ccle_name']
 
-g_breast4 = pd.merge(g_breast3, gdsc_cell_ccle2, on = 'Cell Line name', how = 'left')
-g_colon4 = pd.merge(g_colon3, gdsc_cell_ccle2, on = 'Cell Line name', how = 'left')
-g_pancreas4 = pd.merge(g_pancreas3, gdsc_cell_ccle2, on = 'Cell Line name', how = 'left')
+g_breast4 = pd.merge(g_breast3, gdsc_cell_ccle2, on = 'Cell Line name', how = 'left') # 63800
+g_colon4 = pd.merge(g_colon3, gdsc_cell_ccle2, on = 'Cell Line name', how = 'left') # 29200
+g_pancreas4 = pd.merge(g_pancreas3, gdsc_cell_ccle2, on = 'Cell Line name', how = 'left') # 18650
 
 
 g_breast5 = g_breast4[['Anchor CID', 'Library CID', 'strip_name', 'ccle_name', 'Synergy?']]
+# 63800
+
 g_colon5 = g_colon4[['Anchor CID', 'Library CID', 'strip_name', 'ccle_name', 'Synergy?']]
 # 얘 그 Afatinib | Trametinib 때문에 filter 해줘야함 
 g_colon5 = g_colon5[g_colon5['Anchor CID']>0]
 g_colon5 = g_colon5[g_colon5['Library CID']>0]
+# 26952
+
 g_pancreas5 = g_pancreas4[['Anchor CID', 'Library CID', 'strip_name', 'ccle_name', 'Synergy?']]
+# 18650
+
+
+# g_breast5 = g_breast4
+# g_colon5 = g_colon4
+# g_colon5 = g_colon5[g_colon5['Anchor CID']>0]
+# g_colon5 = g_colon5[g_colon5['Library CID']>0]
+# g_pancreas5 = g_pancreas4
 
 
 
 
-# breast 대상 
 
+
+# BREAST 
 cid_a = list(g_breast5['Anchor CID'])
 cid_b = list(g_breast5['Library CID'])
 cell = list(g_breast5['ccle_name'])
@@ -264,19 +356,46 @@ g_breast5['cid_cid'] = [str(int(cid_a[i])) + '___' + str(int(cid_b[i])) if cid_a
 
 len(g_breast5.cid_cid_cell) # 63800
 len(set(g_breast5.cid_cid_cell)) # 48704
-gg_tmp = g_breast5[['cid_cid_cell','Synergy?']].drop_duplicates() # 49702 갈리는 애가 있네 
-
-dup_ccc = list(gg_tmp[gg_tmp.cid_cid_cell.duplicated()]['cid_cid_cell'])# synergy 갈리는 애들은 빼버림 
-
-g_breast5 = g_breast5[g_breast5.cid_cid_cell.isin(dup_ccc) == False] # 61804 , ccc: 47706
 
 
 
+# COLON
+cid_a = list(g_colon5['Anchor CID'])
+cid_b = list(g_colon5['Library CID'])
+cell = list(g_colon5['ccle_name'])
 
-#total_cids = list(set(list(g_breast5['Anchor CID']) + list(g_breast5['Library CID']) + list(g_colon5['Anchor CID']) + list(g_colon5['Library CID']) + list(g_pancreas5['Anchor CID']) + list(g_pancreas5['Library CID'])))
-#pre_cids = all_chem_cids+pc_sm
-#[a for a in total_cids if a not in pre_cids]
-#44450571, 44224160, 10096043
+g_colon5['cid_cid_cell'] = [str(int(cid_a[i])) + '___' + str(int(cid_b[i]))+ '___' + cell[i] if cid_a[i] < cid_b[i] else str(int(cid_b[i])) + '___' + str(int(cid_a[i]))+ '___' + cell[i] for i in range(g_colon5.shape[0])]
+g_colon5['CID_A_CELL'] = g_colon5['Anchor CID'].apply(lambda a : str(int(a))) + '__' + g_colon5['ccle_name']
+g_colon5['CID_B_CELL'] = g_colon5['Library CID'].apply(lambda b : str(int(b))) + '__' + g_colon5['ccle_name']
+g_colon5['cid_cid'] = [str(int(cid_a[i])) + '___' + str(int(cid_b[i])) if cid_a[i] < cid_b[i] else str(int(cid_b[i])) + '___' + str(int(cid_a[i])) for i in range(g_colon5.shape[0])]
+
+len(g_colon5.cid_cid_cell) # 26952
+len(set(g_colon5.cid_cid_cell)) # 13499
+
+
+
+# PANCREAS
+cid_a = list(g_pancreas5['Anchor CID'])
+cid_b = list(g_pancreas5['Library CID'])
+cell = list(g_pancreas5['ccle_name'])
+
+g_pancreas5['cid_cid_cell'] = [str(int(cid_a[i])) + '___' + str(int(cid_b[i]))+ '___' + cell[i] if cid_a[i] < cid_b[i] else str(int(cid_b[i])) + '___' + str(int(cid_a[i]))+ '___' + cell[i] for i in range(g_pancreas5.shape[0])]
+g_pancreas5['CID_A_CELL'] = g_pancreas5['Anchor CID'].apply(lambda a : str(a)) + '__' + g_pancreas5['ccle_name']
+g_pancreas5['CID_B_CELL'] = g_pancreas5['Library CID'].apply(lambda b : str(b)) + '__' + g_pancreas5['ccle_name']
+g_pancreas5['cid_cid'] = [str(int(cid_a[i])) + '___' + str(int(cid_b[i])) if cid_a[i] < cid_b[i] else str(int(cid_b[i])) + '___' + str(int(cid_a[i])) for i in range(g_pancreas5.shape[0])]
+
+
+len(g_pancreas5.cid_cid_cell) # 18650
+len(set(g_pancreas5.cid_cid_cell)) # 9397
+
+
+
+
+
+
+
+
+
 
 
 # lincs 10um 24h
@@ -288,8 +407,6 @@ filter3 = filter2[['pert_id','sig_id','cell_iname']]
 filter4 = pd.merge(filter3, LINCS_PERT_MATCH[['pert_id','CID']] , on = 'pert_id', how = 'left')
 filter5 = pd.merge(filter4, ccle_info[['stripped_cell_line_name','CCLE_Name']].drop_duplicates(), left_on = 'cell_iname', right_on = 'stripped_cell_line_name', how = 'left' )
 
-
-
 #not_in_lincs = list(set(filter5.ccle_name) - set(filter5.CCLE_Name))
 #[a for a in not_in_lincs if a in list(BETA_CEL_info.ccle_name)] # 0
 
@@ -299,7 +416,6 @@ filter5 = pd.merge(filter4, ccle_info[['stripped_cell_line_name','CCLE_Name']].d
 #not_in_lincs = list(set(g_pancreas5.ccle_name) - set(filter5.CCLE_Name))
 #[a for a in not_in_lincs if a in list(BETA_CEL_info.ccle_name)] # 0 
 
-
 filter6 = filter5[filter5.CID>0]
 filter7 = filter6[filter6.CCLE_Name.apply(lambda x : type(x) == str)]
 filter7['CID_CELL'] = filter7.CID.apply(lambda x : str(int(x))) + '__' +filter7.CCLE_Name
@@ -307,40 +423,33 @@ filter7['long_id'] = filter7.CID.apply(lambda x : str(int(x))) + '___' +filter7.
 
 filter8 = filter7[['long_id','CID_CELL']].drop_duplicates() # 물론 CID 여러개 붙어서 문제는 있음. 만약에 붙는거 보고 sig dup 일어나면 평균 취해줘야함 
 
-filter8.columns = ['long_id_A' , 'CID_A_CELL']
-g_breast6 = pd.merge(g_breast5, filter8, on = 'CID_A_CELL', how = 'left') # row 61804, ccc : 47706
+#total_cids = list(set(list(g_breast5['Anchor CID']) + list(g_breast5['Library CID']) + list(g_colon5['Anchor CID']) + list(g_colon5['Library CID']) + list(g_pancreas5['Anchor CID']) + list(g_pancreas5['Library CID'])))
+#pre_cids = all_chem_cids+pc_sm
+#[a for a in total_cids if a not in pre_cids]
+#44450571, 44224160, 10096043
 
-filter8.columns = ['long_id_B' , 'CID_B_CELL']
-g_breast7 = pd.merge(g_breast6, filter8, on = 'CID_B_CELL', how = 'left') # 63800, ccc : 47706
-
-g_long_A = list(g_breast7.long_id_A)
-g_long_B = list(g_breast7.long_id_B)
-
-ttype = [] 
-for a in range(g_breast7.shape[0]) :
-	type_a = type(g_long_A[a])
-	type_b = type(g_long_B[a])
-	if (type_a == str) & (type_b == str) : 
-		ttype.append('AOBO')
-	elif (type_a != str) & (type_b != str) : 
-		ttype.append('AXBX')
-	else : 
-		ttype.append('AXBO')
-
-
-
-g_breast7['type'] = ttype
-
-g_breast7[g_breast7['type'] =='AOBO'] # 1908
-g_breast7[g_breast7['type'] =='AXBO'] # 4348
-g_breast7[g_breast7['type'] =='AXBX'] # 55548
 
 
 
 그래서 민지가 새로 만들어서 주면 그거 맞게 input 가공 필요
 
+# 민지 요청할거 
+total_list = list(g_breast5.CID_A_CELL) + list(g_breast5.CID_B_CELL) + list(g_colon5.CID_A_CELL) + list(g_colon5.CID_B_CELL) + list(g_pancreas5.CID_A_CELL) + list(g_pancreas5.CID_B_CELL)
+total_list = list(set(total_list))
+
+with open(file='/st06/jiyeonH/13.DD_SESS/01.PRJ2/gdsc_add.pickle', mode='wb') as f:
+	pickle.dump(total_list, f) # 4507
+
+with open(file='/st06/jiyeonH/13.DD_SESS/01.PRJ2/gdsc_add.pickle', mode='rb') as f:
+	requested = pickle.load(f) # 4507
+
+
 # MJ data # 3604 만들어줌 
-MJ_gdsc = pd.read_csv('/st06/jiyeonH/13.DD_SESS/01.PRJ2/GDSC_EXP_ccle_cellall_fugcn_hhhdt3.csv')
+# MJ_gdsc = pd.read_csv('/st06/jiyeonH/13.DD_SESS/01.PRJ2/GDSC_EXP_ccle_cellall_fugcn_hhhdt3.csv')
+
+# 0909 이후 
+MJ_gdsc = pd.read_csv('/st06/jiyeonH/13.DD_SESS/01.PRJ2/GDSC_EXP_ccle_cellall_fugcn_hhhdttf3.csv')
+
 
 entrez_id = list(MJ_gdsc['entrez_id'])
 MJ_gdsc_re = MJ_gdsc.drop(['entrez_id','Unnamed: 0','CID__CELL'], axis =1)
@@ -494,8 +603,69 @@ def adj_k(adj, k): # 근데 k 가 왜 필요한거지 -> 민지 말에 의하면
 
 
 
+
+
+# breast 대상 
+# breast 대상 
+# breast 대상 
+# breast 대상 
+
+gg_tmp = g_breast5[['cid_cid_cell','Synergy?']].drop_duplicates() # 49702 갈리는 애가 있네 
+
+
+1) # synergy 갈리는 애들은 빼버리는 경우 -> 아예 없애버리는 경우 
+dup_ccc = list(gg_tmp[gg_tmp.cid_cid_cell.duplicated()]['cid_cid_cell'])
+g_breast5 = g_breast5[g_breast5.cid_cid_cell.isin(dup_ccc) == False] 
+# 61804 , ccc: 47706
+
+
+2) 아예 synergy 있는걸로 밀어버리는 경우 -> 더 살릴 수 있을지도 
+dup_ccc = list(gg_tmp[gg_tmp.cid_cid_cell.duplicated()]['cid_cid_cell'])
+tmp_change = g_breast5[g_breast5.cid_cid_cell.isin(dup_ccc)]
+tmp_change['Synergy?'] = 1 
+g_breast_ok = g_breast5[g_breast5.cid_cid_cell.isin(dup_ccc)==False] 
+g_breast5 = pd.concat([g_breast_ok, tmp_change])
+# 63800 , ccc: 47706
+
+
+
+filter8.columns = ['long_id_A' , 'CID_A_CELL']
+g_breast6 = pd.merge(g_breast5, filter8, on = 'CID_A_CELL', how = 'left') # row 61804, ccc : 47706
+
+filter8.columns = ['long_id_B' , 'CID_B_CELL']
+g_breast7 = pd.merge(g_breast6, filter8, on = 'CID_B_CELL', how = 'left') # 63800, ccc : 47706
+
+g_long_A = list(g_breast7.long_id_A)
+g_long_B = list(g_breast7.long_id_B)
+
+ttype = [] 
+for a in range(g_breast7.shape[0]) :
+	type_a = type(g_long_A[a])
+	type_b = type(g_long_B[a])
+	if (type_a == str) & (type_b == str) : 
+		ttype.append('AOBO')
+	elif (type_a != str) & (type_b != str) : 
+		ttype.append('AXBX')
+	else : 
+		ttype.append('AXBO')
+
+
+
+g_breast7['type'] = ttype
+
+g_breast7[g_breast7['type'] =='AOBO'] # 1908
+g_breast7[g_breast7['type'] =='AXBO'] # 4348
+g_breast7[g_breast7['type'] =='AXBX'] # 55548
+
+
+
+
+
 g_breast8 = g_breast7[g_breast7.CID_A_CELL.isin(MJ_gdsc.columns) & g_breast7.CID_B_CELL.isin(MJ_gdsc.columns)]
 g_breast8 = g_breast8.reset_index(drop=True) # row :41682, ccc : 32522
+
+
+
 
 def get_synergy_data(cid_cid_cell):
 	syn_list = list(set(g_breast8[g_breast8.cid_cid_cell==cid_cid_cell]['Synergy?']))
@@ -504,8 +674,6 @@ def get_synergy_data(cid_cid_cell):
 	else :
 		print('a')
 	return syn_res
-
-
 
 max_len = 50
 
@@ -604,20 +772,31 @@ g_breast8[['cid_cid_cell','type']].drop_duplicates() # 32522
 
 
 # colon 대상 
-cid_a = list(g_colon5['Anchor CID'])
-cid_b = list(g_colon5['Library CID'])
-cell = list(g_colon5['ccle_name'])
+# colon 대상 
+# colon 대상 
+# colon 대상 
+# colon 대상 
 
-g_colon5['cid_cid_cell'] = [str(int(cid_a[i])) + '___' + str(int(cid_b[i]))+ '___' + cell[i] if cid_a[i] < cid_b[i] else str(int(cid_b[i])) + '___' + str(int(cid_a[i]))+ '___' + cell[i] for i in range(g_colon5.shape[0])]
-g_colon5['CID_A_CELL'] = g_colon5['Anchor CID'].apply(lambda a : str(int(a))) + '__' + g_colon5['ccle_name']
-g_colon5['CID_B_CELL'] = g_colon5['Library CID'].apply(lambda b : str(int(b))) + '__' + g_colon5['ccle_name']
-g_colon5['cid_cid'] = [str(int(cid_a[i])) + '___' + str(int(cid_b[i])) if cid_a[i] < cid_b[i] else str(int(cid_b[i])) + '___' + str(int(cid_a[i])) for i in range(g_colon5.shape[0])]
 
-len(g_colon5.cid_cid_cell) # 26952
-len(set(g_colon5.cid_cid_cell)) # 13499
-gg_tmp = g_colon5[['cid_cid_cell','Synergy?']].drop_duplicates() # 14530
-dup_ccc = list(gg_tmp[gg_tmp.cid_cid_cell.duplicated()]['cid_cid_cell']) # 1031
-g_colon5 = g_colon5[g_colon5.cid_cid_cell.isin(dup_ccc) == False] # 24890
+gg_tmp = g_colon5[['cid_cid_cell','Synergy?']].drop_duplicates() 
+# 14530
+
+
+1) # synergy 갈리는 애들은 빼버리는 경우 -> 아예 없애버리는 경우 
+dup_ccc = list(gg_tmp[gg_tmp.cid_cid_cell.duplicated()]['cid_cid_cell']) 
+g_colon5 = g_colon5[g_colon5.cid_cid_cell.isin(dup_ccc) == False] 
+# row 24890 # dup_ccc 1031
+
+
+2) 아예 synergy 있는걸로 밀어버리는 경우 -> 더 살릴 수 있을지도 
+dup_ccc = list(gg_tmp[gg_tmp.cid_cid_cell.duplicated()]['cid_cid_cell'])
+tmp_change = g_colon5[g_colon5.cid_cid_cell.isin(dup_ccc)]
+tmp_change['Synergy?'] = 1 
+g_breast_ok = g_colon5[g_colon5.cid_cid_cell.isin(dup_ccc)==False] 
+g_colon5 = pd.concat([g_breast_ok, tmp_change])
+# row 26952 # dup_ccc 1031
+
+
 
 #### 위에 lincs 에서 가져옴 
 filter8.columns = ['long_id_A' , 'CID_A_CELL']
@@ -651,6 +830,11 @@ g_colon7[g_colon7['type'] =='AXBX'] # 24122
 
 g_colon8 = g_colon7[g_colon7.CID_A_CELL.isin(MJ_gdsc.columns) & g_colon7.CID_B_CELL.isin(MJ_gdsc.columns)]
 g_colon8 = g_colon8.reset_index(drop=True) # row :41682, ccc : 32522
+
+
+
+
+
 
 def get_synergy_data(cid_cid_cell):
 	syn_list = list(set(g_colon8[g_colon8.cid_cid_cell==cid_cid_cell]['Synergy?']))
@@ -766,56 +950,42 @@ g_colon8[['cid_cid_cell','type']].drop_duplicates() #
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # pancreas 대상 
-cid_a = list(g_pancreas5['Anchor CID'])
-cid_b = list(g_pancreas5['Library CID'])
-cell = list(g_pancreas5['ccle_name'])
-
-g_pancreas5['cid_cid_cell'] = [str(int(cid_a[i])) + '___' + str(int(cid_b[i]))+ '___' + cell[i] if cid_a[i] < cid_b[i] else str(int(cid_b[i])) + '___' + str(int(cid_a[i]))+ '___' + cell[i] for i in range(g_pancreas5.shape[0])]
-g_pancreas5['CID_A_CELL'] = g_pancreas5['Anchor CID'].apply(lambda a : str(a)) + '__' + g_pancreas5['ccle_name']
-g_pancreas5['CID_B_CELL'] = g_pancreas5['Library CID'].apply(lambda b : str(b)) + '__' + g_pancreas5['ccle_name']
-g_pancreas5['cid_cid'] = [str(int(cid_a[i])) + '___' + str(int(cid_b[i])) if cid_a[i] < cid_b[i] else str(int(cid_b[i])) + '___' + str(int(cid_a[i])) for i in range(g_pancreas5.shape[0])]
-
-					# 민지 요청할거 
-					total_list = list(g_breast5.CID_A_CELL) + list(g_breast5.CID_B_CELL) + list(g_colon5.CID_A_CELL) + list(g_colon5.CID_B_CELL) + list(g_pancreas5.CID_A_CELL) + list(g_pancreas5.CID_B_CELL)
-					total_list = list(set(total_list))
-
-					with open(file='/st06/jiyeonH/13.DD_SESS/01.PRJ2/gdsc_add.pickle', mode='wb') as f:
-						pickle.dump(total_list, f) # 4507
+# pancreas 대상 
+# pancreas 대상 
+# pancreas 대상 
+# pancreas 대상 
 
 
-
-len(g_pancreas5.cid_cid_cell) # 18650
-len(set(g_pancreas5.cid_cid_cell)) # 9397
 gg_tmp = g_pancreas5[['cid_cid_cell','Synergy?']].drop_duplicates() # 10097
-dup_ccc = list(gg_tmp[gg_tmp.cid_cid_cell.duplicated()]['cid_cid_cell']) # 700
-g_pancreas5 = g_pancreas5[g_pancreas5.cid_cid_cell.isin(dup_ccc) == False] # 24890
+
+
+1) # synergy 갈리는 애들은 빼버리는 경우 -> 아예 없애버리는 경우 
+
+dup_ccc = list(gg_tmp[gg_tmp.cid_cid_cell.duplicated()]['cid_cid_cell']) 
+g_pancreas5 = g_pancreas5[g_pancreas5.cid_cid_cell.isin(dup_ccc) == False] 
+#row 17250 #dup_ccc 700
+
+
+2) 아예 synergy 있는걸로 밀어버리는 경우 -> 더 살릴 수 있을지도 
+dup_ccc = list(gg_tmp[gg_tmp.cid_cid_cell.duplicated()]['cid_cid_cell'])
+tmp_change = g_pancreas5[g_pancreas5.cid_cid_cell.isin(dup_ccc)]
+tmp_change['Synergy?'] = 1 
+g_breast_ok = g_pancreas5[g_pancreas5.cid_cid_cell.isin(dup_ccc)==False] 
+g_pancreas5 = pd.concat([g_breast_ok, tmp_change])
+#row 18650 #dup_ccc 700
+
+
+
+
+
 
 #### 위에 lincs 에서 가져옴 
 filter8.columns = ['long_id_A' , 'CID_A_CELL']
-g_pancreas6 = pd.merge(g_pancreas5, filter8, on = 'CID_A_CELL', how = 'left') # row 61804, ccc : 47706
+g_pancreas6 = pd.merge(g_pancreas5, filter8, on = 'CID_A_CELL', how = 'left') # row 17250, ccc : 8697
 
 filter8.columns = ['long_id_B' , 'CID_B_CELL']
-g_pancreas7 = pd.merge(g_pancreas6, filter8, on = 'CID_B_CELL', how = 'left') # 63800, ccc : 47706
+g_pancreas7 = pd.merge(g_pancreas6, filter8, on = 'CID_B_CELL', how = 'left') # row 17250, ccc : 8697
 
 g_long_A = list(g_pancreas7.long_id_A)
 g_long_B = list(g_pancreas7.long_id_B)
@@ -835,13 +1005,16 @@ for a in range(g_pancreas7.shape[0]) :
 
 g_pancreas7['type'] = ttype
 
-g_pancreas7[g_pancreas7['type'] =='AOBO'] # 284
-g_pancreas7[g_pancreas7['type'] =='AXBO'] # 484
-g_pancreas7[g_pancreas7['type'] =='AXBX'] # 24122
+g_pancreas7[g_pancreas7['type'] =='AOBO'] # 290
+g_pancreas7[g_pancreas7['type'] =='AXBO'] # 276
+g_pancreas7[g_pancreas7['type'] =='AXBX'] # 16684
 
 
 g_pancreas8 = g_pancreas7[g_pancreas7.CID_A_CELL.isin(MJ_gdsc.columns) & g_pancreas7.CID_B_CELL.isin(MJ_gdsc.columns)]
 g_pancreas8 = g_pancreas8.reset_index(drop=True) # row :41682, ccc : 32522
+
+
+
 
 def get_synergy_data(cid_cid_cell):
 	syn_list = list(set(g_pancreas8[g_pancreas8.cid_cid_cell==cid_cid_cell]['Synergy?']))
@@ -1105,15 +1278,12 @@ class MY_expGCN_parallel_model(torch.nn.Module):
 
 
 
-OLD_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V6_W204_349_MIS2/'
-ANA_DF_CSV = pd.read_csv(os.path.join(OLD_PATH,'RAY_ANA_DF.{}.csv'.format('M3V6_W204_349_MIS2')))
+OLD_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V8_W403_349_MIS2/'
+ANA_DF_CSV = pd.read_csv(os.path.join(OLD_PATH,'RAY_ANA_DF.{}.csv'.format('M3V8_W403_349_MIS2')))
 
 my_config = ANA_DF_CSV.loc[0]
 
-#KEY_EPC = 963
-#checkpoint = "checkpoint_"+str(KEY_EPC).zfill(6)
-
-CKP_PATH = os.path.join( OLD_PATH, 'checkpoint')
+CKP_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V8_W404_349_MIS2/M_404'
 
 
 G_chem_layer = my_config['config/G_chem_layer'].item()
@@ -1169,6 +1339,8 @@ gdsc_c_path = '/st06/jiyeonH/11.TOX/DR_SPRING/val_data/'
 1) BREAST
 
 PRJ_NAME = 'GDSC_BREAST'
+g_breast8 = pd.read_csv(gdsc_c_path+'{}.A_B_C_S_SET.csv'.format(PRJ_NAME))
+g_breast8[['cid_cid_cell','type']].drop_duplicates() # 32522 
 
 MY_chem_A_feat = torch.load(gdsc_c_path+'{}.MY_chem_A_feat.pt'.format(PRJ_NAME))
 MY_chem_B_feat = torch.load(  gdsc_c_path+'{}.MY_chem_B_feat.pt'.format(PRJ_NAME))
@@ -1186,6 +1358,9 @@ g_breast8_tuple = [(g_breast8['Anchor CID'][a], g_breast8['Library CID'][a], g_b
 
 PRJ_NAME = 'GDSC_COLON'
 
+g_colon8 = pd.read_csv(gdsc_c_path+'{}.A_B_C_S_SET.csv'.format(PRJ_NAME))
+g_colon8[['cid_cid_cell','type']].drop_duplicates() # 32522 
+
 MY_chem_A_feat = torch.load(gdsc_c_path+'{}.MY_chem_A_feat.pt'.format(PRJ_NAME))
 MY_chem_B_feat = torch.load(  gdsc_c_path+'{}.MY_chem_B_feat.pt'.format(PRJ_NAME))
 MY_chem_A_adj = torch.load( gdsc_c_path+'{}.MY_chem_A_adj.pt'.format(PRJ_NAME))
@@ -1201,6 +1376,9 @@ g_colon8_tuple = [(g_colon8['Anchor CID'][a], g_colon8['Library CID'][a], g_colo
 3) pancreas
 
 PRJ_NAME = 'GDSC_PANCRE'
+
+g_pancreas8 = pd.read_csv(gdsc_c_path+'{}.A_B_C_S_SET.csv'.format(PRJ_NAME))
+g_pancreas8[['cid_cid_cell','type']].drop_duplicates() # 32522 
 
 MY_chem_A_feat = torch.load(gdsc_c_path+'{}.MY_chem_A_feat.pt'.format(PRJ_NAME))
 MY_chem_B_feat = torch.load(  gdsc_c_path+'{}.MY_chem_B_feat.pt'.format(PRJ_NAME))
@@ -1279,35 +1457,13 @@ set(g_pancreas8.ccle_name) - set(ccle_cello_names)
 # (11152667, 84691, 'CAL120_BREAST')
 
 
-						# LINCS 값을 우선시 하는 버전 (마치 MISS 2)
-						def check_exp_f_ts(A, CID, CELLO) :
-							if A == 'A' : 
-								indexx = g_breast8[ (g_breast8['Anchor CID'] == CID) & (g_breast8['ccle_name'] == CELLO)].index[0]
-								EXP_vector = MY_g_EXP_A[indexx]
-							else :
-								indexx = g_breast8[ (g_breast8['Library CID'] == CID) & (g_breast8['ccle_name'] == CELLO)].index[0]
-								EXP_vector = MY_g_EXP_B[indexx]
-							#
-							# TARGET 
-							TG_vector = get_targets(CID)
-							#
-							# BASAL EXP 
-							B_vector = get_ccle_data(CELLO)
-							#
-							#
-							FEAT = torch.Tensor(np.array([ EXP_vector.squeeze().tolist() , TG_vector, B_vector]).T)
-							return FEAT.view(-1,3)
-
-
-
-
 					# LINCS 값을 우선시 하는 버전 (마치 MISS 2)
 					def check_exp_f_ts(A, CID, CELLO) :
 						if A == 'A' : 
-							indexx = g_colon8[ (g_colon8['Anchor CID'] == CID) & (g_colon8['ccle_name'] == CELLO)].index[0]
+							indexx = g_breast8[ (g_breast8['Anchor CID'] == CID) & (g_breast8['ccle_name'] == CELLO)].index[0]
 							EXP_vector = MY_g_EXP_A[indexx]
 						else :
-							indexx = g_colon8[ (g_colon8['Library CID'] == CID) & (g_colon8['ccle_name'] == CELLO)].index[0]
+							indexx = g_breast8[ (g_breast8['Library CID'] == CID) & (g_breast8['ccle_name'] == CELLO)].index[0]
 							EXP_vector = MY_g_EXP_B[indexx]
 						#
 						# TARGET 
@@ -1322,24 +1478,46 @@ set(g_pancreas8.ccle_name) - set(ccle_cello_names)
 
 
 
-# LINCS 값을 우선시 하는 버전 (마치 MISS 2)
-def check_exp_f_ts(A, CID, CELLO) :
-	if A == 'A' : 
-		indexx = g_pancreas8[ (g_pancreas8['Anchor CID'] == CID) & (g_pancreas8['ccle_name'] == CELLO)].index[0]
-		EXP_vector = MY_g_EXP_A[indexx]
-	else :
-		indexx = g_pancreas8[ (g_pancreas8['Library CID'] == CID) & (g_pancreas8['ccle_name'] == CELLO)].index[0]
-		EXP_vector = MY_g_EXP_B[indexx]
-	#
-	# TARGET 
-	TG_vector = get_targets(CID)
-	#
-	# BASAL EXP 
-	B_vector = get_ccle_data(CELLO)
-	#
-	#
-	FEAT = torch.Tensor(np.array([ EXP_vector.squeeze().tolist() , TG_vector, B_vector]).T)
-	return FEAT.view(-1,3)
+
+				# LINCS 값을 우선시 하는 버전 (마치 MISS 2)
+				def check_exp_f_ts(A, CID, CELLO) :
+					if A == 'A' : 
+						indexx = g_colon8[ (g_colon8['Anchor CID'] == CID) & (g_colon8['ccle_name'] == CELLO)].index[0]
+						EXP_vector = MY_g_EXP_A[indexx]
+					else :
+						indexx = g_colon8[ (g_colon8['Library CID'] == CID) & (g_colon8['ccle_name'] == CELLO)].index[0]
+						EXP_vector = MY_g_EXP_B[indexx]
+					#
+					# TARGET 
+					TG_vector = get_targets(CID)
+					#
+					# BASAL EXP 
+					B_vector = get_ccle_data(CELLO)
+					#
+					#
+					FEAT = torch.Tensor(np.array([ EXP_vector.squeeze().tolist() , TG_vector, B_vector]).T)
+					return FEAT.view(-1,3)
+
+
+
+					# LINCS 값을 우선시 하는 버전 (마치 MISS 2)
+					def check_exp_f_ts(A, CID, CELLO) :
+						if A == 'A' : 
+							indexx = g_pancreas8[ (g_pancreas8['Anchor CID'] == CID) & (g_pancreas8['ccle_name'] == CELLO)].index[0]
+							EXP_vector = MY_g_EXP_A[indexx]
+						else :
+							indexx = g_pancreas8[ (g_pancreas8['Library CID'] == CID) & (g_pancreas8['ccle_name'] == CELLO)].index[0]
+							EXP_vector = MY_g_EXP_B[indexx]
+						#
+						# TARGET 
+						TG_vector = get_targets(CID)
+						#
+						# BASAL EXP 
+						B_vector = get_ccle_data(CELLO)
+						#
+						#
+						FEAT = torch.Tensor(np.array([ EXP_vector.squeeze().tolist() , TG_vector, B_vector]).T)
+						return FEAT.view(-1,3)
 
 
 
@@ -1412,27 +1590,6 @@ for b,c in b_c_tups :
 	resres = check_exp_f_ts("B", b, c)
 	expB_all.append(resres)
 
-
-
-
-
-
-
-
-
-
-
-하던거 : 
-	1) 그래서 일단 이게 너무 오래걸리는게 이상하고, 난 꼭 내일 pancrea 까지 가져가고 싶으니까, ac, bc 따라서 일단 feat 만들고
-	다시 그걸 줍줍하게 df 짜는게 나을것 같다는 생각이 들었음 
-	2) 그래서 pancreas 까지 해보고, 한번도 안익혀본 결과도 이렇게 잘 맞춘다아아 를 가져가고 싶음 
-	3) 교수님이 말한 cid-cid 결과는 아 모르겠음 사실 tanimoto 랑 aobo 랑 correlation 다 annotate 해야할것 같은데..
-	4) 사실 지금 제일 급한건 gpu tensorflow 임... 살려줘 
-	5) 내일 보여드릴거 위키도 정리해야함... 그림이 일단 개같기 때문에 다시 다 수정해야함 
-	6) 보고서 내일 초안 날짜 정해야함 
-	아니 왜이렇게 시간이 없냐 
-	내 목표는 6월 말이었는데.. ㅠㅠㅠㅠㅠㅠ 아니지 원래는 5월이었지 시발 
-	집가면 일단 tensorflow 방법 생각해보기 
 
 
 
@@ -1540,6 +1697,358 @@ g_colon8.to_csv(gdsc_c_path+'FINAL_{}.csv'.format(PRJ_NAME))
 
 g_pancreas8['PRED'] = list(CELL_PRED_DF['PRED'])
 g_pancreas8.to_csv(gdsc_c_path+'FINAL_{}.csv'.format(PRJ_NAME))
+
+
+
+
+
+
+# 그래서 예측한 결과
+
+1) breast 
+CELL_PRED_DF = pd.read_csv(gdsc_c_path+'PRED_GDSC_BREAST.FINAL_ing2.csv')
+cid_a = list(CELL_PRED_DF['ROW_CID'])
+cid_b = list(CELL_PRED_DF['COL_CID'])
+cell = list(CELL_PRED_DF['CCLE'])
+
+CELL_PRED_DF['cid_cid_cell'] = [str(int(cid_a[i])) + '___' + str(int(cid_b[i]))+ '___' + cell[i] if cid_a[i] < cid_b[i] else str(int(cid_b[i])) + '___' + str(int(cid_a[i]))+ '___' + cell[i] for i in range(CELL_PRED_DF.shape[0])]
+
+
+CELL_PRED_DF_re = pd.DataFrame(CELL_PRED_DF.groupby('cid_cid_cell').mean())[['PRED']]
+CELL_PRED_DF_re['cid_cid_cell'] = CELL_PRED_DF_re.index
+CELL_PRED_DF_re.index = [a for a in range(CELL_PRED_DF_re.shape[0])]
+
+g_breast9 = pd.merge(g_breast8, CELL_PRED_DF_re, on = 'cid_cid_cell', how ='left') # 42778
+
+
+1) colon 
+CELL_PRED_DF = pd.read_csv(gdsc_c_path+'PRED_GDSC_COLON.FINAL_ing2.csv')
+cid_a = list(CELL_PRED_DF['ROW_CID'])
+cid_b = list(CELL_PRED_DF['COL_CID'])
+cell = list(CELL_PRED_DF['CCLE'])
+
+CELL_PRED_DF['cid_cid_cell'] = [str(int(cid_a[i])) + '___' + str(int(cid_b[i]))+ '___' + cell[i] if cid_a[i] < cid_b[i] else str(int(cid_b[i])) + '___' + str(int(cid_a[i]))+ '___' + cell[i] for i in range(CELL_PRED_DF.shape[0])]
+
+
+CELL_PRED_DF_re = pd.DataFrame(CELL_PRED_DF.groupby('cid_cid_cell').mean())[['PRED']]
+CELL_PRED_DF_re['cid_cid_cell'] = CELL_PRED_DF_re.index
+CELL_PRED_DF_re.index = [a for a in range(CELL_PRED_DF_re.shape[0])]
+
+g_colon9 = pd.merge(g_colon8, CELL_PRED_DF_re, on = 'cid_cid_cell', how ='left') # 19690
+
+
+
+1) pancreas  
+CELL_PRED_DF = pd.read_csv(gdsc_c_path+'PRED_GDSC_PANCRE.FINAL_ing2.csv')
+cid_a = list(CELL_PRED_DF['ROW_CID'])
+cid_b = list(CELL_PRED_DF['COL_CID'])
+cell = list(CELL_PRED_DF['CCLE'])
+
+CELL_PRED_DF['cid_cid_cell'] = [str(int(cid_a[i])) + '___' + str(int(cid_b[i]))+ '___' + cell[i] if cid_a[i] < cid_b[i] else str(int(cid_b[i])) + '___' + str(int(cid_a[i]))+ '___' + cell[i] for i in range(CELL_PRED_DF.shape[0])]
+
+
+CELL_PRED_DF_re = pd.DataFrame(CELL_PRED_DF.groupby('cid_cid_cell').mean())[['PRED']]
+CELL_PRED_DF_re['cid_cid_cell'] = CELL_PRED_DF_re.index
+CELL_PRED_DF_re.index = [a for a in range(CELL_PRED_DF_re.shape[0])]
+
+g_pancreas9 = pd.merge(g_pancreas8, CELL_PRED_DF_re, on = 'cid_cid_cell', how ='left')
+
+
+#####################
+####################
+그림그리기 
+
+
+
+PRJ_NAME= 'GDSC_BREAST' # #025669
+#g_breast_result = pd.read_csv(gdsc_c_path+'FINAL_{}.csv'.format(PRJ_NAME))
+
+
+PRJ_NAME= 'GDSC_COLON' # #ffcd36
+#g_colon_result = pd.read_csv(gdsc_c_path+'FINAL_{}.csv'.format(PRJ_NAME))
+
+
+PRJ_NAME= 'GDSC_PANCRE' # #ffcd36
+#g_pancreas_result = pd.read_csv(gdsc_c_path+'FINAL_{}.csv'.format(PRJ_NAME))
+
+
+
+# training 에 들어간 애들은 제거해야지 
+from matplotlib import colors as mcolors
+
+
+SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V8_349_FULL/'
+
+file_name = 'M3V8_349_MISS2_FULL' # 0608
+A_B_C_S_SET_ADD = pd.read_csv(SAVE_PATH+'{}.A_B_C_S_SET_ADD.csv'.format(file_name), low_memory=False)
+A_B_C_S_SET_ADD2 = copy.deepcopy(A_B_C_S_SET_ADD)
+
+cid_a = list(A_B_C_S_SET_ADD2['CID_A'])
+cid_b = list(A_B_C_S_SET_ADD2['CID_B'])
+sm_a = list(A_B_C_S_SET_ADD2['ROW_CAN_SMILES'])
+sm_b = list(A_B_C_S_SET_ADD2['COL_CAN_SMILES'])
+ccle = list(A_B_C_S_SET_ADD2['CELL'])
+
+A_B_C_S_SET_ADD2['CID_CID'] = [str(int(cid_a[i])) + '___' + str(int(cid_b[i])) if cid_a[i] < cid_b[i] else str(int(cid_b[i])) + '___' + str(int(cid_a[i])) for i in range(A_B_C_S_SET_ADD2.shape[0])]
+A_B_C_S_SET_ADD2['SM_C_CHECK'] = [sm_a[i] + '___' + sm_b[i]+ '___' + ccle[i] if sm_a[i] < sm_b[i] else sm_b[i] + '___' + sm_a[i]+ '___' + ccle[i] for i in range(A_B_C_S_SET_ADD2.shape[0])]
+A_B_C_S_SET_ADD2['ori_index'] = list(A_B_C_S_SET_ADD2.index)
+
+MISS_filter = ['AOBO','AXBX','AXBO','AOBX'] # 
+A_B_C_S_SET = A_B_C_S_SET_ADD2[A_B_C_S_SET_ADD2.Basal_Exp == 'O']
+A_B_C_S_SET = A_B_C_S_SET[A_B_C_S_SET.SYN_OX == 'O']
+A_B_C_S_SET = A_B_C_S_SET[A_B_C_S_SET.type.isin(MISS_filter)]
+
+CELL_92 = ['VCAP_PROSTATE', 'NIHOVCAR3_OVARY', 'SW620_LARGE_INTESTINE', 'OVCAR4_OVARY', 'BT549_BREAST', 'A549_LUNG', 'SKMEL5_SKIN', 'A427_LUNG', 'BT474_BREAST', 'HOP92_LUNG', 'T98G_CENTRAL_NERVOUS_SYSTEM', 'NCIH23_LUNG', 'HT144_SKIN', 'RVH421_SKIN', 'MDAMB361_BREAST', 'LOVO_LARGE_INTESTINE', 'MDAMB231_BREAST', 'SKMEL28_SKIN', 'NCIH1650_LUNG', 'RKO_LARGE_INTESTINE', 'OVCAR5_OVARY', 'UACC812_BREAST', 'KPL1_BREAST', 'MSTO211H_PLEURA', 'KM12_LARGE_INTESTINE', 'IGROV1_OVARY', 'UHO1_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE', 'NCIH520_LUNG', 'OVCAR8_OVARY', 'HCT15_LARGE_INTESTINE', 'A375_SKIN', 'CAKI1_KIDNEY', 'MDAMB468_BREAST', 'K562_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE', 'A101D_SKIN', 'PA1_OVARY', 'UO31_KIDNEY', 'HOP62_LUNG', 'SF539_CENTRAL_NERVOUS_SYSTEM', 'MDAMB175VII_BREAST', 'U251MG_CENTRAL_NERVOUS_SYSTEM', 'HCC1500_BREAST', 'L1236_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE', 'HCC1419_BREAST', 'NCIH460_LUNG', 'NCIH2122_LUNG', 'COLO792_SKIN', 'SR786_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE', 'UACC257_SKIN', 'SNB75_CENTRAL_NERVOUS_SYSTEM', 'HCT116_LARGE_INTESTINE', 'PC3_PROSTATE', 'NCIH226_LUNG', 'RPMI8226_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE', 'EKVX_LUNG', 'COLO800_SKIN', 'HT29_LARGE_INTESTINE', 'UWB1289_OVARY', 'MDAMB436_BREAST', 'SKOV3_OVARY', 'ZR751_BREAST', 'MEWO_SKIN', 'MELHO_SKIN', 'A2058_SKIN', 'RPMI7951_SKIN', 'SF268_CENTRAL_NERVOUS_SYSTEM', 'ACHN_KIDNEY', 'IPC298_SKIN', 'MALME3M_SKIN', 'A673_BONE', 'SF295_CENTRAL_NERVOUS_SYSTEM', 'CAOV3_OVARY', 'A498_KIDNEY', 'SKMEL2_SKIN', 'UACC62_SKIN', 'ES2_OVARY', 'LOXIMVI_SKIN', '786O_KIDNEY', 'MCF7_BREAST', 'WM115_SKIN', 'A2780_OVARY', 'DLD1_LARGE_INTESTINE', 'HS578T_BREAST', 'SKMES1_LUNG', 'T47D_BREAST', 'OV90_OVARY', 'G361_SKIN', 'SKMEL30_SKIN', 'COLO829_SKIN', 'SW837_LARGE_INTESTINE', 'NCIH522_LUNG', 'CAMA1_BREAST']
+A_B_C_S_SET = A_B_C_S_SET[A_B_C_S_SET.CELL.isin(CELL_92)]
+
+
+DC_CELL_DF2 = pd.read_csv(DC_PATH+'DC_CELL_INFO.csv', sep = '\t')
+DC_CELL_DF2 = pd.concat([
+	DC_CELL_DF2, 
+	pd.DataFrame({'cell_line_id' : [1],'DC_cellname' : ['786O'],'DrugCombCello' : ['CVCL_1051'],'DrugCombCCLE':['786O_KIDNEY']})])
+
+DC_CELL_info_filt = DC_CELL_DF2[DC_CELL_DF2.DrugCombCCLE.isin(A_B_C_S_SET.CELL)] # 38
+
+DC_CELL_info_filt = DC_CELL_info_filt.drop(['Unnamed: 0'], axis = 1)
+DC_CELL_info_filt.columns = ['cell_line_id', 'DC_cellname', 'DrugCombCello', 'CELL']
+DC_CELL_info_filt = DC_CELL_info_filt[['CELL','DC_cellname']]
+
+A_B_C_S_SET_COH = pd.merge(A_B_C_S_SET, DC_CELL_info_filt, on = 'CELL', how = 'left'  )
+
+
+
+
+
+
+known = list(A_B_C_S_SET_COH.cid_cid_cell) # 294444
+
+
+g_colon_result = g_colon9
+g_breast_result = g_breast9
+g_pancreas_result = g_pancreas9
+
+# _1 의 경우 
+g_colon_result_filt = g_colon_result[g_colon_result.cid_cid_cell.isin(known)==False] # 18416
+g_colon_result_filt = g_colon_result_filt[['PRED','Synergy?']]
+g_colon_result_filt['Tissue'] = 'LARGE_INTESTINE'
+g_colon_result_filt['CLASS'] = g_colon_result_filt['Synergy?'].apply(lambda x : 'O' if x==1 else 'X')
+g_colon_result_filt['CT'] = g_colon_result_filt['Tissue'] + '_' + g_colon_result_filt['CLASS']
+
+g_breast_result_filt = g_breast_result[g_breast_result.cid_cid_cell.isin(known)==False] # 40947
+g_breast_result_filt = g_breast_result_filt[['PRED','Synergy?']]
+g_breast_result_filt['Tissue'] = 'BREAST'
+g_breast_result_filt['CLASS'] = g_breast_result_filt['Synergy?'].apply(lambda x : 'O' if x==1 else 'X')
+g_breast_result_filt['CT'] = g_breast_result_filt['Tissue'] + '_' + g_breast_result_filt['CLASS']
+
+g_pancreas_result_filt = g_pancreas_result[g_pancreas_result.cid_cid_cell.isin(known)==False] # 12278
+g_pancreas_result_filt = g_pancreas_result_filt[['PRED','Synergy?']]
+g_pancreas_result_filt['Tissue'] = 'PANCREAS'
+g_pancreas_result_filt['CLASS'] = g_pancreas_result_filt['Synergy?'].apply(lambda x : 'O' if x==1 else 'X')
+g_pancreas_result_filt['CT'] = g_pancreas_result_filt['Tissue'] + '_' + g_pancreas_result_filt['CLASS']
+
+
+# 이건 _2 의 경우 
+g_colon_result2 = g_colon_result.groupby('cid_cid_cell').mean()
+g_breast_result2 = g_breast_result.groupby('cid_cid_cell').mean()
+g_pancreas_result2 = g_pancreas_result.groupby('cid_cid_cell').mean()
+
+g_colon_result_filt = g_colon_result2[['PRED','Synergy?']]
+g_colon_result_filt['Tissue'] = 'LARGE_INTESTINE'
+g_colon_result_filt['CLASS'] = g_colon_result_filt['Synergy?'].apply(lambda x : 'O' if x==1 else 'X')
+g_colon_result_filt['CT'] = g_colon_result_filt['Tissue'] + '_' + g_colon_result_filt['CLASS']
+
+g_breast_result_filt = g_breast_result2[['PRED','Synergy?']]
+g_breast_result_filt['Tissue'] = 'BREAST'
+g_breast_result_filt['CLASS'] = g_breast_result_filt['Synergy?'].apply(lambda x : 'O' if x==1 else 'X')
+g_breast_result_filt['CT'] = g_breast_result_filt['Tissue'] + '_' + g_breast_result_filt['CLASS']
+
+g_pancreas_result_filt = g_pancreas_result2[['PRED','Synergy?']]
+g_pancreas_result_filt['Tissue'] = 'PANCREAS'
+g_pancreas_result_filt['CLASS'] = g_pancreas_result_filt['Synergy?'].apply(lambda x : 'O' if x==1 else 'X')
+g_pancreas_result_filt['CT'] = g_pancreas_result_filt['Tissue'] + '_' + g_pancreas_result_filt['CLASS']
+
+
+
+1_1 : 18438 / 41682 / 12278
+1_2 : 9240 / 32522 / 6139
+
+
+2_1 : 19664 / 42021 / 13156
+2_2 : 9866 / 33070 / 6578
+
+
+
+
+
+test_num = '2_2'
+
+
+
+gdsc_all = pd.concat([g_colon_result_filt, g_breast_result_filt, g_pancreas_result_filt])
+from statannot import add_stat_annotation
+
+
+# order=my_order,
+fig, ax = plt.subplots(figsize=(13, 10)) 
+sns.boxplot(ax = ax , data = gdsc_all, x = 'CT', y = 'PRED', width = 0.3, linewidth=1, hue = 'Tissue', palette = {'LARGE_INTESTINE' : '#ffcd36' , 'BREAST' : '#025669', 'PANCREAS' : '#ff009bff'} ) # width = 3,
+ax, test_results = add_stat_annotation(ax = ax, data=gdsc_all, x='CT', y='PRED',
+                                   box_pairs=[("LARGE_INTESTINE_O", "LARGE_INTESTINE_X"),  ("BREAST_O", "BREAST_X"), ("PANCREAS_O", "PANCREAS_X")],
+                                   test='t-test_ind', text_format='star', loc='outside', verbose=2)
+
+# test='Mann-Whitney'
+# t-test_ind, t-test_welch, t-test_paired, 
+# Mann-Whitney, Mann-Whitney-gt, Mann-Whitney-ls, 
+# Levene, Wilcoxon, Kruskal
+
+sns.despine()
+ax.set_xlabel('tissue, OX', fontsize=10)
+ax.set_ylabel('Predicted value', fontsize=10)
+ax.set_xticks(ax.get_xticks())
+ax.set_xticklabels(ax.get_xticklabels(), rotation = 90)
+ax.tick_params(axis='both', which='major', labelsize=10 )
+plt.legend(bbox_to_anchor=(1.02, 0.15), loc='upper left', borderaxespad=0)
+#plt.grid(True)
+plt.tight_layout()
+plt.savefig(os.path.join('/st06/jiyeonH/11.TOX/DR_SPRING/trials/heatmap/gdsc.0922.box{}.png'.format(test_num)), dpi = 300)
+plt.savefig('/st06/jiyeonH/11.TOX/DR_SPRING/trials/heatmap/gdsc.0922.box{}.pdf'.format(test_num), format="pdf", bbox_inches = 'tight')
+
+plt.close()
+
+
+
+
+# order=my_order,
+fig, ax = plt.subplots(figsize=(13, 10)) 
+sns.boxplot(ax = ax , data = gdsc_all, x = 'CT', y = 'PRED', width = 0.3, linewidth=1, hue = 'Tissue', palette = {'LARGE_INTESTINE' : '#ffcd36' , 'BREAST' : '#025669', 'PANCREAS' : '#ff009bff'} ) # width = 3,
+ax, test_results = add_stat_annotation(ax = ax, data=gdsc_all, x='CT', y='PRED',
+                                   box_pairs=[("LARGE_INTESTINE_O", "LARGE_INTESTINE_X"),  ("BREAST_O", "BREAST_X"), ("PANCREAS_O", "PANCREAS_X")],
+                                   test='Mann-Whitney', text_format='star', loc='outside', verbose=2)
+
+# test=''
+# t-test_ind, t-test_welch, t-test_paired, 
+# Mann-Whitney, Mann-Whitney-gt, Mann-Whitney-ls, 
+# Levene, Wilcoxon, Kruskal
+
+sns.despine()
+ax.set_xlabel('tissue, OX', fontsize=10)
+ax.set_ylabel('Predicted value', fontsize=10)
+ax.set_xticks(ax.get_xticks())
+ax.set_xticklabels(ax.get_xticklabels(), rotation = 90)
+ax.tick_params(axis='both', which='major', labelsize=10 )
+plt.legend(bbox_to_anchor=(1.02, 0.15), loc='upper left', borderaxespad=0)
+#plt.grid(True)
+plt.tight_layout()
+plt.savefig(os.path.join('/st06/jiyeonH/11.TOX/DR_SPRING/trials/heatmap/gdsc.0922.MWbox{}.png'.format(test_num)), dpi = 300)
+plt.savefig('/st06/jiyeonH/11.TOX/DR_SPRING/trials/heatmap/gdsc.0922.MWbox{}.pdf'.format(test_num), format="pdf", bbox_inches = 'tight')
+
+plt.close()
+
+
+
+
+# order=my_order,
+fig, ax = plt.subplots(figsize=(13, 10)) 
+sns.boxplot(ax = ax , data = gdsc_all, x = 'CT', y = 'PRED', width = 0.3, linewidth=1, hue = 'Tissue', palette = {'LARGE_INTESTINE' : '#ffcd36' , 'BREAST' : '#025669', 'PANCREAS' : '#ff009bff'} ) # width = 3,
+ax, test_results = add_stat_annotation(ax = ax, data=gdsc_all, x='CT', y='PRED',
+                                   box_pairs=[("LARGE_INTESTINE_O", "LARGE_INTESTINE_X"),  ("BREAST_O", "BREAST_X"), ("PANCREAS_O", "PANCREAS_X")],
+                                   test='t-test_welch', text_format='star', loc='outside', verbose=2)
+
+# test=''
+# t-test_ind, t-test_welch, t-test_paired, 
+# Mann-Whitney, Mann-Whitney-gt, Mann-Whitney-ls, 
+# Levene, Wilcoxon, Kruskal
+
+sns.despine()
+ax.set_xlabel('tissue, OX', fontsize=10)
+ax.set_ylabel('Predicted value', fontsize=10)
+ax.set_xticks(ax.get_xticks())
+ax.set_xticklabels(ax.get_xticklabels(), rotation = 90)
+ax.tick_params(axis='both', which='major', labelsize=10 )
+plt.legend(bbox_to_anchor=(1.02, 0.15), loc='upper left', borderaxespad=0)
+#plt.grid(True)
+plt.tight_layout()
+plt.savefig(os.path.join('/st06/jiyeonH/11.TOX/DR_SPRING/trials/heatmap/gdsc.0922.TWbox{}.png'.format(test_num)), dpi = 300)
+plt.savefig('/st06/jiyeonH/11.TOX/DR_SPRING/trials/heatmap/gdsc.0922.TWbox{}.pdf'.format(test_num), format="pdf", bbox_inches = 'tight')
+
+plt.close()
+
+
+
+
+
+
+# order=my_order,
+fig, ax = plt.subplots(figsize=(13, 10)) 
+sns.boxplot(ax = ax , data = gdsc_all, x = 'CT', y = 'PRED', width = 0.3, linewidth=1, hue = 'Tissue', palette = {'LARGE_INTESTINE' : '#ffcd36' , 'BREAST' : '#025669', 'PANCREAS' : '#ff009bff'} ) # width = 3,
+ax, test_results = add_stat_annotation(ax = ax, data=gdsc_all, x='CT', y='PRED',
+                                   box_pairs=[("LARGE_INTESTINE_O", "LARGE_INTESTINE_X"),  ("BREAST_O", "BREAST_X"), ("PANCREAS_O", "PANCREAS_X")],
+                                   test='Kruskal', text_format='star', loc='outside', verbose=2)
+
+# test=''
+# t-test_ind, t-test_welch, t-test_paired, 
+# Mann-Whitney, Mann-Whitney-gt, Mann-Whitney-ls, 
+# Levene, Wilcoxon, Kruskal
+
+sns.despine()
+ax.set_xlabel('tissue, OX', fontsize=10)
+ax.set_ylabel('Predicted value', fontsize=10)
+ax.set_xticks(ax.get_xticks())
+ax.set_xticklabels(ax.get_xticklabels(), rotation = 90)
+ax.tick_params(axis='both', which='major', labelsize=10 )
+plt.legend(bbox_to_anchor=(1.02, 0.15), loc='upper left', borderaxespad=0)
+#plt.grid(True)
+plt.tight_layout()
+plt.savefig(os.path.join('/st06/jiyeonH/11.TOX/DR_SPRING/trials/heatmap/gdsc.0922.Krubox{}.png'.format(test_num)), dpi = 300)
+plt.savefig('/st06/jiyeonH/11.TOX/DR_SPRING/trials/heatmap/gdsc.0922.Krubox{}.pdf'.format(test_num), format="pdf", bbox_inches = 'tight')
+
+plt.close()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2090,22 +2599,73 @@ g_colon_result
 g_breast_result
 
 
-known = list(A_B_C_S_SET_COH2.cid_cid_cell)
 
 
-g_colon_result_filt = g_colon_result[g_colon_result.cid_cid_cell.isin(known)==False]
+
+SAVE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V8_349_FULL/'
+
+file_name = 'M3V8_349_MISS2_FULL' # 0608
+A_B_C_S_SET_ADD = pd.read_csv(SAVE_PATH+'{}.A_B_C_S_SET_ADD.csv'.format(file_name), low_memory=False)
+A_B_C_S_SET_ADD2 = copy.deepcopy(A_B_C_S_SET_ADD)
+
+cid_a = list(A_B_C_S_SET_ADD2['CID_A'])
+cid_b = list(A_B_C_S_SET_ADD2['CID_B'])
+sm_a = list(A_B_C_S_SET_ADD2['ROW_CAN_SMILES'])
+sm_b = list(A_B_C_S_SET_ADD2['COL_CAN_SMILES'])
+ccle = list(A_B_C_S_SET_ADD2['CELL'])
+
+A_B_C_S_SET_ADD2['CID_CID'] = [str(int(cid_a[i])) + '___' + str(int(cid_b[i])) if cid_a[i] < cid_b[i] else str(int(cid_b[i])) + '___' + str(int(cid_a[i])) for i in range(A_B_C_S_SET_ADD2.shape[0])]
+A_B_C_S_SET_ADD2['SM_C_CHECK'] = [sm_a[i] + '___' + sm_b[i]+ '___' + ccle[i] if sm_a[i] < sm_b[i] else sm_b[i] + '___' + sm_a[i]+ '___' + ccle[i] for i in range(A_B_C_S_SET_ADD2.shape[0])]
+A_B_C_S_SET_ADD2['ori_index'] = list(A_B_C_S_SET_ADD2.index)
+
+MISS_filter = ['AOBO','AXBX','AXBO','AOBX'] # 
+A_B_C_S_SET = A_B_C_S_SET_ADD2[A_B_C_S_SET_ADD2.Basal_Exp == 'O']
+A_B_C_S_SET = A_B_C_S_SET[A_B_C_S_SET.SYN_OX == 'O']
+A_B_C_S_SET = A_B_C_S_SET[A_B_C_S_SET.type.isin(MISS_filter)]
+
+CELL_92 = ['VCAP_PROSTATE', 'NIHOVCAR3_OVARY', 'SW620_LARGE_INTESTINE', 'OVCAR4_OVARY', 'BT549_BREAST', 'A549_LUNG', 'SKMEL5_SKIN', 'A427_LUNG', 'BT474_BREAST', 'HOP92_LUNG', 'T98G_CENTRAL_NERVOUS_SYSTEM', 'NCIH23_LUNG', 'HT144_SKIN', 'RVH421_SKIN', 'MDAMB361_BREAST', 'LOVO_LARGE_INTESTINE', 'MDAMB231_BREAST', 'SKMEL28_SKIN', 'NCIH1650_LUNG', 'RKO_LARGE_INTESTINE', 'OVCAR5_OVARY', 'UACC812_BREAST', 'KPL1_BREAST', 'MSTO211H_PLEURA', 'KM12_LARGE_INTESTINE', 'IGROV1_OVARY', 'UHO1_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE', 'NCIH520_LUNG', 'OVCAR8_OVARY', 'HCT15_LARGE_INTESTINE', 'A375_SKIN', 'CAKI1_KIDNEY', 'MDAMB468_BREAST', 'K562_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE', 'A101D_SKIN', 'PA1_OVARY', 'UO31_KIDNEY', 'HOP62_LUNG', 'SF539_CENTRAL_NERVOUS_SYSTEM', 'MDAMB175VII_BREAST', 'U251MG_CENTRAL_NERVOUS_SYSTEM', 'HCC1500_BREAST', 'L1236_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE', 'HCC1419_BREAST', 'NCIH460_LUNG', 'NCIH2122_LUNG', 'COLO792_SKIN', 'SR786_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE', 'UACC257_SKIN', 'SNB75_CENTRAL_NERVOUS_SYSTEM', 'HCT116_LARGE_INTESTINE', 'PC3_PROSTATE', 'NCIH226_LUNG', 'RPMI8226_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE', 'EKVX_LUNG', 'COLO800_SKIN', 'HT29_LARGE_INTESTINE', 'UWB1289_OVARY', 'MDAMB436_BREAST', 'SKOV3_OVARY', 'ZR751_BREAST', 'MEWO_SKIN', 'MELHO_SKIN', 'A2058_SKIN', 'RPMI7951_SKIN', 'SF268_CENTRAL_NERVOUS_SYSTEM', 'ACHN_KIDNEY', 'IPC298_SKIN', 'MALME3M_SKIN', 'A673_BONE', 'SF295_CENTRAL_NERVOUS_SYSTEM', 'CAOV3_OVARY', 'A498_KIDNEY', 'SKMEL2_SKIN', 'UACC62_SKIN', 'ES2_OVARY', 'LOXIMVI_SKIN', '786O_KIDNEY', 'MCF7_BREAST', 'WM115_SKIN', 'A2780_OVARY', 'DLD1_LARGE_INTESTINE', 'HS578T_BREAST', 'SKMES1_LUNG', 'T47D_BREAST', 'OV90_OVARY', 'G361_SKIN', 'SKMEL30_SKIN', 'COLO829_SKIN', 'SW837_LARGE_INTESTINE', 'NCIH522_LUNG', 'CAMA1_BREAST']
+A_B_C_S_SET = A_B_C_S_SET[A_B_C_S_SET.CELL.isin(CELL_92)]
+
+
+DC_CELL_DF2 = pd.read_csv(DC_PATH+'DC_CELL_INFO.csv', sep = '\t')
+DC_CELL_DF2 = pd.concat([
+	DC_CELL_DF2, 
+	pd.DataFrame({'cell_line_id' : [1],'DC_cellname' : ['786O'],'DrugCombCello' : ['CVCL_1051'],'DrugCombCCLE':['786O_KIDNEY']})])
+
+DC_CELL_info_filt = DC_CELL_DF2[DC_CELL_DF2.DrugCombCCLE.isin(A_B_C_S_SET.CELL)] # 38
+
+DC_CELL_info_filt = DC_CELL_info_filt.drop(['Unnamed: 0'], axis = 1)
+DC_CELL_info_filt.columns = ['cell_line_id', 'DC_cellname', 'DrugCombCello', 'CELL']
+DC_CELL_info_filt = DC_CELL_info_filt[['CELL','DC_cellname']]
+
+A_B_C_S_SET_COH = pd.merge(A_B_C_S_SET, DC_CELL_info_filt, on = 'CELL', how = 'left'  )
+
+
+
+
+
+known = list(A_B_C_S_SET_COH.cid_cid_cell)
+
+
+g_colon_result = g_colon9
+g_breast_result = g_breast9
+g_pancreas_result = g_pancreas9
+
+
+
+g_colon_result_filt = g_colon_result[g_colon_result.cid_cid_cell.isin(known)==False] # 18416
 g_colon_result_filt = g_colon_result_filt[['PRED','Synergy?']]
 g_colon_result_filt['Tissue'] = 'LARGE_INTESTINE'
 g_colon_result_filt['CLASS'] = g_colon_result_filt['Synergy?'].apply(lambda x : 'O' if x==1 else 'X')
 g_colon_result_filt['CT'] = g_colon_result_filt['Tissue'] + '_' + g_colon_result_filt['CLASS']
 
-g_breast_result_filt = g_breast_result[g_breast_result.cid_cid_cell.isin(known)==False]
+g_breast_result_filt = g_breast_result[g_breast_result.cid_cid_cell.isin(known)==False] # 40947
 g_breast_result_filt = g_breast_result_filt[['PRED','Synergy?']]
 g_breast_result_filt['Tissue'] = 'BREAST'
 g_breast_result_filt['CLASS'] = g_breast_result_filt['Synergy?'].apply(lambda x : 'O' if x==1 else 'X')
 g_breast_result_filt['CT'] = g_breast_result_filt['Tissue'] + '_' + g_breast_result_filt['CLASS']
 
-g_pancreas_result_filt = g_pancreas_result[g_pancreas_result.cid_cid_cell.isin(known)==False]
+g_pancreas_result_filt = g_pancreas_result[g_pancreas_result.cid_cid_cell.isin(known)==False] # 12278
 g_pancreas_result_filt = g_pancreas_result_filt[['PRED','Synergy?']]
 g_pancreas_result_filt['Tissue'] = 'PANCREAS'
 g_pancreas_result_filt['CLASS'] = g_pancreas_result_filt['Synergy?'].apply(lambda x : 'O' if x==1 else 'X')
@@ -2113,7 +2673,25 @@ g_pancreas_result_filt['CT'] = g_pancreas_result_filt['Tissue'] + '_' + g_pancre
 
 
 
+g_colon_result2 = g_colon_result.groupby('cid_cid_cell').mean()
+g_breast_result2 = g_breast_result.groupby('cid_cid_cell').mean()
+g_pancreas_result2 = g_pancreas_result.groupby('cid_cid_cell').mean()
 
+g_colon_result_filt = g_colon_result2[['PRED','Synergy?']]
+g_colon_result_filt['Tissue'] = 'LARGE_INTESTINE'
+g_colon_result_filt['CLASS'] = g_colon_result_filt['Synergy?'].apply(lambda x : 'O' if x==1 else 'X')
+g_colon_result_filt['CT'] = g_colon_result_filt['Tissue'] + '_' + g_colon_result_filt['CLASS']
+
+
+g_breast_result_filt = g_breast_result2[['PRED','Synergy?']]
+g_breast_result_filt['Tissue'] = 'BREAST'
+g_breast_result_filt['CLASS'] = g_breast_result_filt['Synergy?'].apply(lambda x : 'O' if x==1 else 'X')
+g_breast_result_filt['CT'] = g_breast_result_filt['Tissue'] + '_' + g_breast_result_filt['CLASS']
+
+g_pancreas_result_filt = g_pancreas_result2[['PRED','Synergy?']]
+g_pancreas_result_filt['Tissue'] = 'PANCREAS'
+g_pancreas_result_filt['CLASS'] = g_pancreas_result_filt['Synergy?'].apply(lambda x : 'O' if x==1 else 'X')
+g_pancreas_result_filt['CT'] = g_pancreas_result_filt['Tissue'] + '_' + g_pancreas_result_filt['CLASS']
 
 
 
@@ -2170,8 +2748,8 @@ ax.tick_params(axis='both', which='major', labelsize=10 )
 plt.legend(bbox_to_anchor=(1.02, 0.15), loc='upper left', borderaxespad=0)
 #plt.grid(True)
 plt.tight_layout()
-plt.savefig(os.path.join('/st06/jiyeonH/11.TOX/DR_SPRING/trials/heatmap/gdsc.box.png'), dpi = 300)
-plt.savefig('/st06/jiyeonH/11.TOX/DR_SPRING/trials/heatmap/gdsc.box.pdf', format="pdf", bbox_inches = 'tight')
+plt.savefig(os.path.join('/st06/jiyeonH/11.TOX/DR_SPRING/trials/heatmap/gdsc.0921.box3.png'), dpi = 300)
+plt.savefig('/st06/jiyeonH/11.TOX/DR_SPRING/trials/heatmap/gdsc.0921.box3.pdf', format="pdf", bbox_inches = 'tight')
 
 plt.close()
 
@@ -2358,4 +2936,175 @@ breast 가 그래도 먼저 끝날 것 같음
 
 
 
+##################
 
+다시.
+그래서 
+
+NS_raw = pd.read_csv('/st06/jiyeonH/13.DD_SESS/GDSC^2/Original_screen_All_tissues_fitted_data.csv', low_memory=False)
+
+tmp1 = NS_raw[NS_raw.COMBI_ID=='1190:1022']
+tmp2 = NS_raw[NS_raw.COMBI_ID=='1022:1190']
+
+tmp11 = tmp1[tmp1.CELL_LINE_NAME == 'UACC-893']
+tmp22 = tmp2[tmp2.CELL_LINE_NAME == 'UACC-893']
+
+tmptmp = gdsc_breast[gdsc_breast['Cell Line name']=='UACC-893']
+tmptmp1 = tmptmp[tmptmp['Anchor Name']=='Gemcitabine'] # Gemcitabine
+tmptmp11 = tmptmp1[tmptmp1['Library Name']=='AZD7762']
+
+'Delta Xmid'
+'Delta Emax'
+
+
+tmptmp = gdsc_breast[gdsc_breast['Cell Line name']=='UACC-893']
+tmptmp2 = tmptmp[tmptmp['Anchor Name']=='AZD7762'] # Gemcitabine
+tmptmp22 = tmptmp2[tmptmp2['Library Name']=='Gemcitabine']
+
+
+
+A_L_C = NS_raw[['ANCHOR_NAME','LIBRARY_NAME', 'CELL_LINE_NAME']].drop_duplicates()
+A_L_C = A_L_C.reset_index(drop = True)
+
+
+
+####################
+re_re 
+
+
+gdsc_breast = pd.read_csv(gdsc_c_path + 'breast_anchor_combo.csv') # 163470
+gdsc_chem_list_re.columns = ['Anchor Name','Anchor CID']
+gdsc_breast2 = pd.merge(gdsc_breast, gdsc_chem_list_re, on ='Anchor Name', how ='left')
+
+gdsc_chem_list_re.columns = ['Library Name','Library CID']
+gdsc_breast3 = pd.merge(gdsc_breast2, gdsc_chem_list_re, on ='Library Name', how ='left')
+gdsc_breast4 = pd.merge(gdsc_breast3, gdsc_cell_ccle2, on = 'Cell Line name', how = 'left')
+
+cid_a = list(gdsc_breast4['Anchor CID'])
+cid_b = list(gdsc_breast4['Library CID'])
+cell = list(gdsc_breast4['ccle_name'])
+
+gdsc_breast4['cid_cid_cell'] = [str(int(cid_a[i])) + '___' + str(int(cid_b[i]))+ '___' + cell[i] if cid_a[i] < cid_b[i] else str(int(cid_b[i])) + '___' + str(int(cid_a[i]))+ '___' + cell[i] for i in range(gdsc_breast4.shape[0])]
+gdsc_breast4['CID_A_CELL'] = gdsc_breast4['Anchor CID'].apply(lambda a : str(a)) + '__' + gdsc_breast4['ccle_name']
+gdsc_breast4['CID_B_CELL'] = gdsc_breast4['Library CID'].apply(lambda b : str(b)) + '__' + gdsc_breast4['ccle_name']
+gdsc_breast4['cid_cid'] = [str(int(cid_a[i])) + '___' + str(int(cid_b[i])) if cid_a[i] < cid_b[i] else str(int(cid_b[i])) + '___' + str(int(cid_a[i])) for i in range(gdsc_breast4.shape[0])]
+
+len(gdsc_breast4.cid_cid_cell) # 63800
+len(set(gdsc_breast4.cid_cid_cell)) # 48704
+gg_tmp = gdsc_breast4[['cid_cid_cell','Synergy?']].drop_duplicates() # 49702 갈리는 애가 있네 
+
+dup_ccc = list(gg_tmp[gg_tmp.cid_cid_cell.duplicated()]['cid_cid_cell'])# synergy 갈리는 애들은 빼버림 
+
+g_breast5 = g_breast5[g_breast5.cid_cid_cell.isin(dup_ccc) == False] # 61804 , ccc: 47706
+
+
+
+g_breast_result = pd.read_csv(gdsc_c_path+'FINAL_{}.csv'.format(PRJ_NAME))
+g_breast8 = 
+
+
+
+
+
+
+
+
+tmp1 = NS_raw[NS_raw.COMBI_ID=='1017:1594']
+tmp2 = NS_raw[NS_raw.COMBI_ID=='1594:1017']
+
+tmp11 = tmp1[tmp1.CELL_LINE_NAME == 'CAL-85-1']
+tmp22 = tmp2[tmp2.CELL_LINE_NAME == 'CAL-85-1']
+
+
+
+
+
+
+###################################
+
+
+synergy_rank = pd.read_excel('/st06/jiyeonH/11.TOX/DR_SPRING/val_data/41586_2022_4437_MOESM7_ESM.xlsx')
+
+synergy_rank_breast = synergy_rank[synergy_rank.Tissue == 'Breast']
+synergy_rank_colon = synergy_rank[synergy_rank.Tissue == 'Colon']
+synergy_rank_pancreas = synergy_rank[synergy_rank.Tissue == 'Pancreas']
+
+
+rank_breast = synergy_rank_breast[['ANCHOR NAME', 'LIBRARY NAME','Synergy Rank', 'Synergy (%)']].drop_duplicates()
+rank_breast.columns = ['Anchor Name','Library Name','Synergy Rank','Synergy (%)']
+
+g_breast9_filt = pd.merge(g_breast9, rank_breast, on = ['Anchor Name', 'Library Name'], how ='left')
+g_breast9_filt2 = g_breast9_filt[g_breast9_filt.PRED.apply(lambda x : np.isnan(x) ==False)]
+
+fig, ax = plt.subplots(1 , 1 ,figsize=(12, 12))
+
+g = sns.scatterplot(ax = ax, data=g_breast9_filt2, x="PRED", y="Synergy (%)", hue="strip_name", size = 'type', alpha = 0.5) # , palette=color_dict
+
+plt.tight_layout()
+plt.savefig("/st06/jiyeonH/11.TOX/DR_SPRING/val_data/breast_rank.pdf", bbox_inches='tight')
+
+
+
+
+g_colon9 
+
+
+rank_colon = synergy_rank_colon[['ANCHOR NAME', 'LIBRARY NAME','Synergy Rank', 'Synergy (%)']].drop_duplicates()
+rank_colon.columns = ['Anchor Name','Library Name','Synergy Rank','Synergy (%)']
+
+g_colon9_filt = pd.merge(g_colon9, rank_colon, on = ['Anchor Name', 'Library Name'], how ='left')
+g_colon9_filt2 = g_colon9_filt[g_colon9_filt.PRED.apply(lambda x : np.isnan(x) ==False)]
+
+fig, ax = plt.subplots(1 , 1 ,figsize=(12, 12))
+
+g = sns.scatterplot(ax = ax, data=g_colon9_filt2, x="PRED", y="Synergy (%)", hue="strip_name", size = 'type', alpha = 0.5) # , palette=color_dict
+
+plt.tight_layout()
+plt.savefig("/st06/jiyeonH/11.TOX/DR_SPRING/val_data/colon_rank.pdf", bbox_inches='tight')
+
+
+
+
+
+
+g_pancreas9
+
+
+
+rank_panc = synergy_rank_pancreas[['ANCHOR NAME', 'LIBRARY NAME','Synergy Rank', 'Synergy (%)']].drop_duplicates()
+rank_panc.columns = ['Anchor Name','Library Name','Synergy Rank','Synergy (%)']
+
+g_pancreas9_filt = pd.merge(g_pancreas9, rank_panc, on = ['Anchor Name', 'Library Name'], how ='left')
+g_pancreas9_filt2 = g_pancreas9_filt[g_pancreas9_filt.PRED.apply(lambda x : np.isnan(x) ==False)]
+
+fig, ax = plt.subplots(1 , 1 ,figsize=(12, 12))
+
+g = sns.scatterplot(ax = ax, data=g_pancreas9_filt2, x="PRED", y="Synergy (%)", hue="strip_name", size = 'type', alpha = 0.5) # , palette=color_dict
+
+plt.tight_layout()
+plt.savefig("/st06/jiyeonH/11.TOX/DR_SPRING/val_data/pancreas_rank.pdf", bbox_inches='tight')
+
+
+
+
+#######################
+#######################
+check new pred
+
+new_pred_b_BT549 = g_breast3[g_breast3['Cell Line name'] == 'BT-549']
+
+
+new_pred_b_BT549[new_pred_b_BT549['Anchor CID']==11707110]
+new_pred_b_BT549[new_pred_b_BT549['Library CID']==11707110]
+
+new_pred_b_BT549[new_pred_b_BT549['Anchor CID']==135449332]
+new_pred_b_BT549[new_pred_b_BT549['Library CID']==135449332]
+
+
+
+new_pred_b_BT549[(new_pred_b_BT549['Anchor CID']==11707110) & (new_pred_b_BT549['Library CID']==5330286)]
+new_pred_b_BT549[(new_pred_b_BT549['Anchor CID']==5330286) & (new_pred_b_BT549['Library CID']==11707110)]
+
+
+new_pred_b_BT549[(new_pred_b_BT549['Anchor CID']==11707110) & (new_pred_b_BT549['Library CID']==5330286)]
+new_pred_b_BT549[(new_pred_b_BT549['Anchor CID']==5330286) & (new_pred_b_BT549['Library CID']==11707110)]

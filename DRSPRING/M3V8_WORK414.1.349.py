@@ -537,34 +537,34 @@ def Cell_Json(CELL, TISSUE) :
 
 
 avail_cell_dict = {
-	414_0 - 'PROSTATE': ['VCAP', 'PC3']
-	414_1 - 'BONE': ['A673']
-	414_B - 'BREAST': ['BT549', 'BT474', 'MDAMB361', 'MDAMB231', 'UACC812', 'KPL1', 'MDAMB468', 'MDAMB175VII', ]
-	414_B2 - BREAST 'HCC1500', 'HCC1419', 'MDAMB436', 'ZR751', 'MCF7', 'HS578T', 'T47D', 'CAMA1'], 
+	
+	(1)414_1 - 'BONE': ['A673']
+	(1)414_2 - 'KIDNEY': ['CAKI1', 'UO31', 'ACHN', 'A498', '786O'], 
+	(1)414_10 'LUNG': ['A549', 'A427', 'HOP92', 'NCIH23', 'NCIH1650', 'NCIH520', 'HOP62', 'NCIH460', 
+	'NCIH2122', 'NCIH226', 'EKVX', 'SKMES1', 'NCIH522'],
+	(1)414_12 - 'OVARY': ['NIHOVCAR3', 'OVCAR4', 'OVCAR5', 'IGROV1', 'OVCAR8','PA1']
+	(8)414_L1 LARGE_INTESTINE 'SW620', 'LOVO', 'RKO', 'KM12', 'HCT15', 'HCT116', 'HT29', 'DLD1', 
+	(1)414_5 - 'LARGE_INTESTINE': ['SW837'],  
+	(1)414_13 - 'OVARY': ['UWB1289', 'SKOV3', 'CAOV3', 'ES2', 'A2780', 'OV90'], 
+	(1)414_6 - 'CENTRAL_NERVOUS_SYSTEM': ['T98G', 'SF539', 'U251MG', 'SNB75', 'SF268', 'SF295'], 
+	
+	(1)414_0 - 'PROSTATE': ['VCAP', 'PC3']
+		'PLEURA': ['MSTO211H']
+
+	414_BL: : 'HAEMATOPOIETIC_AND_LYMPHOID_TISSUE': ['UHO1', 'K562', 'L1236', 'SR786', 'RPMI8226'], 
+	(1)414_3 - 'BREAST1': ['BT549', 'BT474', 'MDAMB361', 'MDAMB231', 'UACC812', 'KPL1', 'MDAMB468', 'MDAMB175VII', ]
+	(1)414_4 - BREAST2 'HCC1500', 'HCC1419', 'MDAMB436', 'ZR751', 'MCF7', 'HS578T', 'T47D', 'CAMA1'], 
+	
+	(1)414_7 - SKIN - 'SKMEL5', 'HT144', 'RVH421', 'SKMEL28', 'A375', 'A101D', 'COLO792', 'UACC257', 
+	(1)414_9 - 'SKIN': ['UACC62', 'LOXIMVI', 'WM115', 'G361', 'SKMEL30', 'COLO829'], 
+	(8)414S - SKIN - 'COLO800', 'MEWO', 'MELHO', 'A2058', 'RPMI7951', 'IPC298', 'MALME3M', 'SKMEL2', 
+	
+
+		 
 
 
-
-
-
-
-
-	'PROSTATE': ['VCAP', 'PC3'], 'BONE': ['A673'], 'KIDNEY': ['CAKI1', 'UO31', 'ACHN', 'A498', '786O'], 
-	'BREAST': ['BT549', 'BT474', 'MDAMB361', 'MDAMB231', 'UACC812', 'KPL1', 'MDAMB468', 'MDAMB175VII', 
-	'HCC1500', 'HCC1419', 'MDAMB436', 'ZR751', 'MCF7', 'HS578T', 'T47D', 'CAMA1'], 
-	'LARGE_INTESTINE': [
-		'SW620', 'LOVO', 'RKO', 'KM12', 'HCT15', 'HCT116', 'HT29', 'DLD1', 
-		'SW837'],  'CENTRAL_NERVOUS_SYSTEM': ['T98G', 'SF539', 'U251MG', 'SNB75', 'SF268', 'SF295'], 
-
-	'SKIN': [
-			'SKMEL5', 'HT144', 'RVH421', 'SKMEL28', 'A375', 'A101D', 'COLO792', 'UACC257', 
-			'COLO800', 'MEWO', 'MELHO', 'A2058', 'RPMI7951', 'IPC298', 'MALME3M', 'SKMEL2', 
-			'UACC62', 'LOXIMVI', 'WM115', 'G361', 'SKMEL30', 'COLO829'], 'LUNG': ['A549', 'A427', 
-		'HOP92', 'NCIH23', 'NCIH1650', 'NCIH520', 'HOP62', 'NCIH460', 'NCIH2122', 'NCIH226',
-		'EKVX', 'SKMES1', 'NCIH522'], 'OVARY': ['NIHOVCAR3', 'OVCAR4', 'OVCAR5', 'IGROV1', 'OVCAR8',
- 'PA1', 'UWB1289', 'SKOV3', 'CAOV3', 'ES2', 'A2780', 'OV90'], 'PLEURA': ['MSTO211H']
-	'HAEMATOPOIETIC_AND_LYMPHOID_TISSUE': ['UHO1', 'K562', 'L1236', 'SR786', 'RPMI8226'], 
-	}
-
+TB01, worker 16, 8192 -> lav 20, 100/2000 30분 : PROSTATE - 2023-09-17 17:31:13 ~ 20:40:57 : 643/2000
+TB02, worker 8, 4096 -> lav 10, 200/4000 30분 : BLOOD - 2023-09-17 17:23:37 ~ 20:41:02 : 879 / 4000
 
 
 CELL_1 = Cell_Json('VCAP', 'PROSTATE')
@@ -722,4 +722,646 @@ gpu4 쓰게 결국은 바꿔야할것 같긴 함..
 
 
 
+
+#######################################
+################################################
+
+뭐가 맞는지 봐가면서 해야함... 
+
+# 그놈의 색깔 
+PRJ_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V6_W213_349_MIS2/CELL_VAL/'
+
+cell_path = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V6_W213_349_MIS2/CELL_VAL/'
+cell_path2 = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V6_W213_349_MIS2/'
+
+cell_path = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V8_W414_349_MIS2/CELL_VAL/DONE'
+cell_path2 = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V8_W414_349_MIS2/'
+
+# kisti 
+cell_path = '/home01/k040a01/02.M3V6/M3V6_W213_349_MIS2/CELL_VAL' 
+
+
+
+# 다시 진행해주기 
+import glob
+from matplotlib import colors as mcolors
+
+CVCL_files_raw = glob.glob(cell_path+'/PRED_*.FINAL.csv')
+tissues = ['_'.join(a.split('/')[-1].split('.')[0].split('PRED_CELL_')[1].split('_')[1:]) for a in CVCL_files_raw]
+strips = [a.split('/')[-1].split('.')[0].split('PRED_CELL_')[1].split('_')[0] for a in CVCL_files_raw]
+
+pred_df = pd.DataFrame(columns = ['PRED', 'ROW_CID','COL_CID','CCLE', 'Y','tissue','strip'])
+#pred_df_pos = pd.DataFrame(columns = ['PRED', 'ROW_CID','COL_CID','CCLE', 'Y','tissue','strip'])
+#pred_df_neg = pd.DataFrame(columns = ['PRED', 'ROW_CID','COL_CID','CCLE', 'Y','tissue','strip'])
+
+for indd in range(len(CVCL_files_raw)) :
+	fifi = CVCL_files_raw[indd]
+	tiss = tissues[indd]
+	stripname = strips[indd]
+	print(stripname)
+	tmp_df = pd.read_csv(fifi,  low_memory=False, index_col = False)
+	tmp_df2 = tmp_df[['ROW_CID','COL_CID','CCLE', 'PRED', 'Y']]
+	tmp_df2['tissue'] = tiss
+	tmp_df2['strip'] = stripname
+	#tmp_df_pos = tmp_df2[tmp_df2.PRED>0]
+	#tmp_df_neg = tmp_df2[tmp_df2.PRED<0]
+	#pred_df_pos = pd.concat([pred_df_pos, tmp_df_pos])
+	#pred_df_neg = pd.concat([pred_df_neg, tmp_df_neg])
+	pred_df = pd.concat([pred_df, tmp_df2])
+	
+	#tmp_df3.to_csv(cell_path + 'TOP.{}.csv'.format(fifi.split('/')[8].split('.')[0]))
+
+
+
+tissue_set = ['CENTRAL_NERVOUS_SYSTEM', 'LUNG', 'BREAST', 'BONE', 'OVARY', 'PROSTATE', 'HAEMATOPOIETIC_AND_LYMPHOID_TISSUE', 'LARGE_INTESTINE', 'SKIN', 'PLEURA', 'KIDNEY' ] # list(set(test_cell_df['tissue']))
+color_set = ['#CF3476','#FF7514','#025669','#308446','#84C3BE','#D53032','#4ddcfd','#ffcd36','#ac8cff',"#0000ffff","#7bff68ff"] # "#1E1E1E"
+color_dict = {a : color_set[tissue_set.index(a)] for a in tissue_set}
+
+
+my_order = pred_df.groupby(by=["CCLE"])["PRED"].median().iloc[::-1].index
+my_order2 = my_order[::-1].index
+
+order_tissue = ['_'.join(a.split('_')[1:]) for a in my_order]
+order_tissue_col = [color_dict[a] for a in order_tissue]
+
+fig, ax = plt.subplots(figsize=(40, 8))
+sns.violinplot(ax = ax, data  = pred_df, x = 'CCLE', y = 'PRED', linewidth=1,  edgecolor="dimgrey", order=my_order)
+violins = [c for i,c in enumerate(ax.collections) if i%2 == 0] # pollycollection 가져오기 위함 
+for tiss_num in range(len(my_order)) : 
+	violins[tiss_num].set_facecolor(mcolors.to_rgba(order_tissue_col[tiss_num]))
+
+ax.set_xlabel('cell names', fontsize=20)
+ax.set_ylabel('pred_synergy', fontsize=20)
+ax.set_xticks(ax.get_xticks())
+ax.set_xticklabels(ax.get_xticklabels(), rotation = 90)
+#ax.set_xticklabels('', rotation = 90)
+ax.tick_params(axis='both', which='major', labelsize=20 )
+plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)
+plt.grid(False)
+
+PRJ_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V8_W414_349_MIS2/'
+
+plt.savefig(os.path.join(PRJ_PATH,'cell_pred2.png'), dpi = 300)
+plt.savefig(os.path.join(PRJ_PATH,'cell_pred0925.pdf'), format="pdf", bbox_inches = 'tight')
+
+
+
+
+
+
+# BOX plot -> 너무 퍼져서 violin plot 이 의미가 없었음 
+PRJ_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V6_W213_349_MIS2/for_png/'
+PRJ_PATH = '/home01/k040a01/02.M3V6/M3V6_W213_349_MIS2/CELL_VAL'
+
+
+#cell_list = list(set(merged_CVCL_RE.DrugCombCCLE)) # 
+my_order = pred_df.groupby(by=["CCLE"])["PRED"].median().iloc[::-1].index
+my_order2 = my_order.iloc[::-1].index
+
+# 이게 무슨 순서더라 
+# 안돼 그래도 median 순서로 가고싶음 
+#order = ['A-673', 'MDA-MB-361', 'CAMA-1', 'MDA-MB-175-VII', 'L-1236', 'UACC-812', 'HCC1500', 'HCC1419', 'U-HO1', 'T98G', 'BT-474', 'LOX IMVI', 'ZR751', 'NCIH2122', 'MDAMB436', 'COLO 829', 'KPL1', 'EKVX', 'A498', 'MDA-MB-231', 'HT144', 'T-47D', 'A375', 'RPMI7951', 'A2058', 'G-361', 'KM12', 'MCF7', 'CAOV3', 'COLO 800', 'Mel Ho', 'NCI-H226', 'UACC-257', 'OVCAR3', 'SF-539', 'PC-3', 'CAKI-1', 'UACC62', 'SR', 'UO-31', 'NCI-H522', 'SK-MEL-5', 'HOP-92', 'ACHN', '786O', 'HS 578T', 'RVH-421', 'K-562', 'HOP-62', 'OVCAR-5', 'MSTO', 'U251', 'COLO 792', 'NCIH23', 'OV90', 'LOVO', 'RPMI-8226', 'A101D', 'NCIH520', 'SK-MEL-2', 'MALME-3M', 'IPC-298', 'HT29', 'SF-295', 'UWB1289', 'SW-620', 'OVCAR-4', 'SKMES1', 'SW837', 'MDA-MB-468', 'HCT-15', 'OVCAR-8', 'SNB-75', 'SF-268', 'HCT116', 'BT-549', 'A549', 'IGROV1', 'A427', 'SK-MEL-28', 'SK-OV-3', 'NCIH1650', 'WM115', 'NCI-H460', 'MeWo', 'ES2', 'SKMEL30', 'A2780', 'RKO', 'VCAP', 'PA1', 'DLD1']
+#order2= ['A673_BONE', 'MDAMB361_BREAST', 'CAMA1_BREAST', 'MDAMB175VII_BREAST', 'L1236_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE', 'UACC812_BREAST', 'HCC1500_BREAST', 'HCC1419_BREAST', 'UHO1_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE', 'T98G_CENTRAL_NERVOUS_SYSTEM', 'BT474_BREAST', 'LOXIMVI_SKIN', 'ZR751_BREAST', 'NCIH2122_LUNG', 'MDAMB436_BREAST', 'COLO829_SKIN', 'KPL1_BREAST', 'EKVX_LUNG', 'A498_KIDNEY', 'MDAMB231_BREAST', 'HT144_SKIN', 'T47D_BREAST', 'A375_SKIN', 'RPMI7951_SKIN', 'A2058_SKIN', 'G361_SKIN', 'KM12_LARGE_INTESTINE', 'MCF7_BREAST', 'CAOV3_OVARY', 'COLO800_SKIN', 'MELHO_SKIN', 'NCIH226_LUNG', 'UACC257_SKIN', 'NIHOVCAR3_OVARY', 'SF539_CENTRAL_NERVOUS_SYSTEM', 'PC3_PROSTATE', 'CAKI1_KIDNEY', 'UACC62_SKIN', 'SR786_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE', 'UO31_KIDNEY', 'NCIH522_LUNG', 'SKMEL5_SKIN', 'HOP92_LUNG', 'ACHN_KIDNEY', '786O_KIDNEY', 'HS578T_BREAST', 'RVH421_SKIN', 'K562_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE', 'HOP62_LUNG', 'OVCAR5_OVARY', 'MSTO211H_PLEURA', 'U251MG_CENTRAL_NERVOUS_SYSTEM', 'COLO792_SKIN', 'NCIH23_LUNG', 'OV90_OVARY', 'LOVO_LARGE_INTESTINE', 'RPMI8226_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE', 'A101D_SKIN', 'NCIH520_LUNG', 'SKMEL2_SKIN', 'MALME3M_SKIN', 'IPC298_SKIN', 'HT29_LARGE_INTESTINE', 'SF295_CENTRAL_NERVOUS_SYSTEM', 'UWB1289_OVARY', 'SW620_LARGE_INTESTINE', 'OVCAR4_OVARY', 'SKMES1_LUNG', 'SW837_LARGE_INTESTINE', 'MDAMB468_BREAST', 'HCT15_LARGE_INTESTINE', 'OVCAR8_OVARY', 'SNB75_CENTRAL_NERVOUS_SYSTEM', 'SF268_CENTRAL_NERVOUS_SYSTEM', 'HCT116_LARGE_INTESTINE', 'BT549_BREAST', 'A549_LUNG', 'IGROV1_OVARY', 'A427_LUNG', 'SKMEL28_SKIN', 'SKOV3_OVARY', 'NCIH1650_LUNG', 'WM115_SKIN', 'NCIH460_LUNG', 'MEWO_SKIN', 'ES2_OVARY', 'SKMEL30_SKIN', 'A2780_OVARY', 'RKO_LARGE_INTESTINE', 'VCAP_PROSTATE', 'PA1_OVARY', 'DLD1_LARGE_INTESTINE']
+
+
+
+order_tissue = ['_'.join(a.split('_')[1:]) for a in my_order]
+order_tissue_col = [color_dict[a] for a in order_tissue]
+
+
+fig, ax = plt.subplots(figsize=(40, 8))
+sns.violinplot(ax = ax, data  = pred_df, x = 'CCLE', y = 'PRED', linewidth=1,  
+edgecolor="dimgrey", order=my_order)
+violins = [c for i,c in enumerate(ax.collections) if i%2 == 0] # pollycollection 가져오기 위함 
+for tiss_num in range(len(my_order)) : 
+	violins[tiss_num].set_facecolor(mcolors.to_rgba(order_tissue_col[tiss_num]))
+
+ax.set_xlabel('cell names', fontsize=20)
+ax.set_ylabel('pred_synergy', fontsize=20)
+ax.set_xticks(ax.get_xticks())
+ax.set_xticklabels(ax.get_xticklabels(), rotation = 90, fontsize=20)
+ax.tick_params(axis='both', which='major', labelsize=20 )
+plt.tight_layout(pad=0.4, w_pad=0.5, h_pad=1.0)
+plt.grid(False)
+# plt.savefig(os.path.join(PRJ_PATH,'cell_pred.png'), dpi = 300)
+fig.savefig('{}/{}.pdf'.format(PRJ_PATH, 'cell_pred'), format="pdf", bbox_inches = 'tight')
+fig.savefig('{}/{}.pdf'.format(PRJ_PATH, 'cell_pred1'), format="pdf", bbox_inches = 'tight')
+
+plt.close()
+
+# row num : 84,153,008
+
+
+
+
+
+#######################################
+각기 살펴보는 경우 
+
+
+DC_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/'
+
+DC_DRUG_DF_FULL = pd.read_csv('/st06/jiyeonH/11.TOX/MY_TRIAL_6/DC_DRUG_DF_PC.csv', sep ='\t')
+
+def top_bot_30 (CELL) : 
+	#CELL = 'A427_LUNG'
+	DONE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V8_W414_349_MIS2/CELL_VAL/DONE/'
+	mini_csv = pd.read_csv(DONE_PATH+'PRED_CELL_{}.FINAL.csv'.format(CELL))
+	#
+	drug_name = DC_DRUG_DF_FULL[['dname','CID']]
+	#
+	drug_name.columns = ['ROW_NAME','ROW_CID']
+	mini_csv_1 = pd.merge(mini_csv,drug_name, on = 'ROW_CID', how='left' )
+	drug_name.columns = ['COL_NAME','COL_CID']
+	mini_csv_2 = pd.merge(mini_csv_1, drug_name, on = 'COL_CID', how='left' )
+	#
+	mini_csv_3 = mini_csv_2.sort_values('PRED', ascending = False)
+	#
+	top_30 = mini_csv_3.iloc[:30,]
+	bot_30 = mini_csv_3.iloc[-30:,]
+	#
+	top_30.to_csv(DONE_PATH+'top30_{}.csv'.format(CELL), sep = '\t', index= False)
+	bot_30.to_csv(DONE_PATH+'bot30_{}.csv'.format(CELL), sep = '\t', index= False)
+	return (mini_csv_3)
+
+
+
+
+DONE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V8_W414_349_MIS2/CELL_VAL/DONE/'
+
+CVCL_files_raw = glob.glob(DONE_PATH+'/PRED_*SKIN*.FINAL.csv')
+tissues = ['_'.join(a.split('/')[-1].split('.')[0].split('PRED_')[1].split('_')[2:]) for a in CVCL_files_raw]
+strips = [a.split('/')[-1].split('.')[0].split('PRED_')[1].split('_')[1] for a in CVCL_files_raw]
+ccle = [a.split('/')[-1].split('.')[0].split('PRED_CELL_')[1] for a in CVCL_files_raw]
+
+for cell in ccle :
+	top_bot_30(cell)
+
+
+NCIH520 = top_bot_30('NCIH520_LUNG')
+
+NCIH520[(NCIH520.ROW_NAME!='dioxybenzone') & (NCIH520.COL_NAME!='dioxybenzone')]
+
+A549_LUNG = top_bot_30('A549_LUNG')
+
+DLD1_LARGE_INTESTINE = top_bot_30('DLD1_LARGE_INTESTINE')
+row = list(DLD1_LARGE_INTESTINE.ROW_CID)
+col = list(DLD1_LARGE_INTESTINE.COL_CID)
+
+row2 = [5282049 if a == 443593 else a for a in row ]
+col2 = [5282049 if a == 443593 else a for a in col ]
+
+DLD1_LARGE_INTESTINE['row2'] = row2
+DLD1_LARGE_INTESTINE['col2'] = col2
+
+DLD1_LARGE_INTESTINE['CID_CID'] = [str(int(row2[i])) + '___' + str(int(col2[i])) if row2[i] < col2[i] else str(int(col2[i])) + '___' + str(int(row2[i])) for i in range(DLD1_LARGE_INTESTINE.shape[0])]
+DLD1_LARGE_INTESTINE_tmp = DLD1_LARGE_INTESTINE[['CID_CID']].drop_duplicates()
+DLD1_LARGE_INTESTINE_tmp.iloc[:30]
+
+11178236
+
+LOVO = top_bot_30('LOVO_LARGE_INTESTINE')
+row = list(LOVO.ROW_CID)
+col = list(LOVO.COL_CID)
+
+row2 = [10126189 if a == 11178236 else a for a in row ]
+col2 = [10126189 if a == 11178236 else a for a in col ]
+
+LOVO['row2'] = row2
+LOVO['col2'] = col2
+
+LOVO['CID_CID'] = [str(int(row2[i])) + '___' + str(int(col2[i])) if row2[i] < col2[i] else str(int(col2[i])) + '___' + str(int(row2[i])) for i in range(LOVO.shape[0])]
+LOVO_tmp = LOVO[['CID_CID']].drop_duplicates()
+LOVO_tmp.iloc[:30]
+
+
+#########################
+
+
+
+
+DONE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V8_W414_349_MIS2/CELL_VAL/DONE/'
+CVCL_files_raw = glob.glob(DONE_PATH+'/PRED_*LUNG*.FINAL.csv')
+tissues = ['_'.join(a.split('/')[-1].split('.')[0].split('PRED_')[1].split('_')[2:]) for a in CVCL_files_raw]
+strips = [a.split('/')[-1].split('.')[0].split('PRED_')[1].split('_')[1] for a in CVCL_files_raw]
+ccle = [a.split('/')[-1].split('.')[0].split('PRED_CELL_')[1] for a in CVCL_files_raw]
+
+LUNG_ALL = pd.DataFrame(columns = ['PRED', 'ROW_CID','COL_CID','CCLE', 'Y','tissue','strip'])
+
+for indd in range(len(CVCL_files_raw)) :
+	fifi = CVCL_files_raw[indd]
+	tiss = tissues[indd]
+	stripname = strips[indd]
+	print(stripname)
+	tmp_df = pd.read_csv(fifi,  low_memory=False, index_col = False)
+	tmp_df2 = tmp_df[['ROW_CID','COL_CID','CCLE', 'PRED', 'Y']]
+	tmp_df2['tissue'] = tiss
+	tmp_df2['strip'] = stripname
+	LUNG_ALL = pd.concat([LUNG_ALL, tmp_df2])
+
+
+def get_pair(cid1, cid2) :
+	tmp = LUNG_ALL[(LUNG_ALL.ROW_CID==cid1 ) & (LUNG_ALL.COL_CID==cid2)]
+	tmp1 = tmp.sort_values('PRED')
+	#
+	tmp = LUNG_ALL[(LUNG_ALL.ROW_CID==cid2 ) & (LUNG_ALL.COL_CID==cid1)]
+	tmp2 = tmp.sort_values('PRED')
+	return tmp1, tmp2
+
+
+# lung 
+res1, res2 = get_pair(2907, 31703)
+res01, res02 = get_pair(2907, 5978)
+res03, res04 = get_pair(31703, 5978)
+res05, res06 = get_pair(5702198, 135410875)
+res07, res08 = get_pair(5702198, 60750)
+res09, res10 = get_pair(5702198, 148124)
+res11, res12 = get_pair(426756, 135410875)
+res13, res14 = get_pair(426756, 60750)
+res15, res16 = get_pair(426756, 148124)
+
+	
+	
+	
+
+
+DONE_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V8_W414_349_MIS2/CELL_VAL/DONE/'
+CVCL_files_raw = glob.glob(DONE_PATH+'/PRED_*LARGE_INTESTINE*.FINAL.csv')
+tissues = ['_'.join(a.split('/')[-1].split('.')[0].split('PRED_')[1].split('_')[2:]) for a in CVCL_files_raw]
+strips = [a.split('/')[-1].split('.')[0].split('PRED_')[1].split('_')[1] for a in CVCL_files_raw]
+ccle = [a.split('/')[-1].split('.')[0].split('PRED_CELL_')[1] for a in CVCL_files_raw]
+
+COLON_ALL = pd.DataFrame(columns = ['PRED', 'ROW_CID','COL_CID','CCLE', 'Y','tissue','strip'])
+
+for indd in range(len(CVCL_files_raw)) :
+	fifi = CVCL_files_raw[indd]
+	tiss = tissues[indd]
+	stripname = strips[indd]
+	print(stripname)
+	tmp_df = pd.read_csv(fifi,  low_memory=False, index_col = False)
+	tmp_df2 = tmp_df[['ROW_CID','COL_CID','CCLE', 'PRED', 'Y']]
+	tmp_df2['tissue'] = tiss
+	tmp_df2['strip'] = stripname
+	COLON_ALL = pd.concat([COLON_ALL, tmp_df2])
+
+
+def get_pair(cid1, cid2) :
+	tmp = COLON_ALL[(COLON_ALL.ROW_CID==cid1 ) & (COLON_ALL.COL_CID==cid2)]
+	tmp1 = tmp.sort_values('PRED')
+	#
+	tmp = COLON_ALL[(COLON_ALL.ROW_CID==cid2 ) & (COLON_ALL.COL_CID==cid1)]
+	tmp2 = tmp.sort_values('PRED')
+	return tmp1, tmp2
+
+
+# colon
+res01, res02 = get_pair(60953, 9887053)
+res03, res04 = get_pair(3385 ,135403648 )
+res05, res06 = get_pair(3385 , 60838)
+res07, res08 = get_pair( 135403648,60838 )
+res09, res10 = get_pair(3385 ,135403648 )
+res11, res12 = get_pair( 3385, 9887053)
+res13, res14 = get_pair( 135403648,9887053 )
+res15, res16 = get_pair( 41867, 5702198)
+res17, res18 = get_pair( 41867,3385 )
+res19, res20 = get_pair( 41867,60953 )
+res21, res22 = get_pair( 5702198 ,3385 )
+res23, res24 = get_pair( 5702198 ,60953  )
+res25, res26 = get_pair(  3385, 60953)
+
+
+
+
+
+
+
+
+
+def get_pair(cid1, cid2) :
+	tmp = pred_df[(pred_df.ROW_CID==cid1 ) & (pred_df.COL_CID==cid2)]
+	tmp1 = tmp.sort_values('PRED')
+	#
+	tmp = pred_df[(pred_df.ROW_CID==cid2 ) & (pred_df.COL_CID==cid1)]
+	tmp2 = tmp.sort_values('PRED')
+	#
+	if (tmp1.shape[0] >0) & (tmp2.shape[0] >0) :
+		res = tmp1, tmp2
+	elif tmp1.shape[0] >0 :
+		res = tmp1
+	else :
+		res = tmp2 
+	return res
+
+
+# hogkin
+res0 = get_pair(31703, 5360373) X
+res1 = get_pair(31703, 13342) X
+res2 = get_pair(31703, 135398738) 
+res3 = get_pair(5360373, 13342) x
+res4 = get_pair(5360373, 135398738) x
+res5 = get_pair(13342,	135398738) x
+res6 = get_pair(5360373,36462) x
+res7 = get_pair(5360373,31703) x 
+res8 = get_pair(5360373,2907) x 
+res9 = get_pair(5360373,5978) x 
+res10 = get_pair(5360373,4915) x 
+res11 = get_pair(5360373,5865) x 
+res12 = get_pair(36462,31703)
+res13 = get_pair(36462,2907)
+res14 = get_pair(36462,5978) x 
+res15 = get_pair(36462,4915)
+res16 = get_pair(36462,	5865)
+res17 = get_pair(31703,	2907)
+res18 = get_pair(31703,	5978) x 
+res19 = get_pair(31703,	4915)
+res20 = get_pair(31703,	5865)
+res21 = get_pair(2907	,5978) x 
+res22 = get_pair(2907	,4915)
+res23 = get_pair(2907,	5865)
+res24 = get_pair(5978,	4915) x 
+res25 = get_pair(5978,	5865) x 
+res26 = get_pair(4915,	5865)
+
+
+
+
+# non hodgkin 
+res30 = get_pair(2907,	5978) x 
+res31 = get_pair(2907,	5865)
+res32 = get_pair(31703,	5978) x 
+res33 = get_pair(31703,	5865)
+res34 = get_pair(5978,	5865) x 
+res35 = get_pair(36462,	5865)
+res36 = get_pair(36462,	5978) x 
+res37 = get_pair(36462,	2907)
+res38 = get_pair(36462,	31703)
+res39 = get_pair(5865,	5978) x 
+
+res40 = get_pair(5865,	2907)
+res41 = get_pair(5865,	31703)
+res42 = get_pair(5978,	2907) x 
+res43 = get_pair(5978,	31703) x 
+res44 = get_pair(29072907,	31703) x 
+
+
+res0 = get_pair()
+res1 = get_pair()
+res2 = get_pair()
+res3 = get_pair()
+res4 = get_pair()
+res5 = get_pair()
+res6 = get_pair()
+res7 = get_pair()
+res8 = get_pair()
+res9 = get_pair()
+
+
+
+
+
+
+
+# leukemia
+
+res50 = get_pair(5743,	2907)
+res51 = get_pair(5743,	5978) x 
+res52 = get_pair(5743,	31703)
+res53 = get_pair(6253,	30323)
+
+
+
+
+
+
+# myeloma 
+
+res60 = get_pair(216326,	5743)
+res61 = get_pair(387447,	5426)
+res62 = get_pair(387447,	5743) # 적음 
+res63 = get_pair(5426,	5743)
+
+
+
+# breast 
+
+res70 = get_pair(2907,	126941) # 적음 
+res71 = get_pair(2907,	3385) # 적음 
+res72 = get_pair(126941,	3385) # 적음 
+
+
+
+tmp1 = pred_df[ (pred_df.ROW_CID== 5702198) ]
+tmp11 = tmp1.sort_values('PRED')
+tmp2 = pred_df[ (pred_df.COL_CID== 5702198) ]
+tmp22 = tmp2.sort_values('PRED')
+
+# gemcitabine, MK2206
+res80 = get_pair(60750, 24964624) 
+
+# cisplatin, MK2206 
+res81 = get_pair(5702198  , 24964624) 
+
+# gefitinib, antimycin A 
+res82 = get_pair(123631, 14957)
+...             ...      ...       ...                            ...  ...                     ...          ...
+3721098    8.242529  14957.0  123631.0                MDAMB468_BREAST  1.0                  BREAST     MDAMB468
+562385     8.940926  14957.0  123631.0                    T47D_BREAST  1.0                  BREAST         T47D
+1874894    9.713179  14957.0  123631.0                   OVCAR8_OVARY  1.0                   OVARY       OVCAR8
+7910001   10.106432  14957.0  123631.0                   ZR751_BREAST  1.0                  BREAST        ZR751
+13569963  11.383194  14957.0  123631.0           DLD1_LARGE_INTESTINE  1.0         LARGE_INTESTINE         DLD1
+
+
+# cardamonin, cisplatin 
+res83 = get_pair(641785, 5702198)
+517254     8.581692  5702198.0  641785.0           NCIH520_LUNG  1.0             LUNG    NCIH520
+8424841    9.345329  5702198.0  641785.0  SW620_LARGE_INTESTINE  1.0  LARGE_INTESTINE      SW620
+12760039  10.109173  5702198.0  641785.0           BT549_BREAST  1.0           BREAST      BT549
+12236433  10.421917  5702198.0  641785.0           NCIH460_LUNG  1.0             LUNG    NCIH460
+7143583   19.277130  5702198.0  641785.0         HCC1419_BREAST  1.0           BREAST    HCC1419
+
+
+31703 doxorubicin 
+4477 Niclosamide
+
+res84 = get_pair(31703, 4477)
+
++ ciaplatin 
+res85 = get_pair(31703, 5702198)
+
+6256 L triflu 
+mk 2206 
+res86 = get_pair(6256, 24964624)
+
+# ciprofloxacin / 5-FU
+res86 = get_pair(2764, 3385)
+
+# ciprofloxacin / olaparib 
+res86 = get_pair(2764, 23725625)
+
+# Antimycin A 
+
+
+tmp1 = pred_df[ (pred_df.ROW_CID==  14957 ) ]
+tmp11 = tmp1.sort_values('PRED')
+tmp2 = pred_df[ (pred_df.COL_CID== 5702198) ]
+tmp22 = tmp2.sort_values('PRED')
+
+
+
+
+
+
+import json
+
+with open("/st06/jiyeonH/11.TOX/DR_SPRING/PC_cancerdrug_NCI.json", "r") as json_file:
+	nci_cancer = json.load(json_file)
+
+
+tmptmp = nci_cancer['Annotations']['Annotation']
+
+NCI_ver = pd.DataFrame(columns = ['NAME','CID'])
+
+for i in tmptmp :
+	NAME = i['Name']
+	if 'LinkedRecords' in i.keys():
+		if 'CID' in i['LinkedRecords'].keys() :
+			CID = i['LinkedRecords']['CID']
+			tmp_df = pd.DataFrame({
+			'CID' : CID, 'NAME' : NAME
+				})
+			NCI_ver = pd.concat([NCI_ver, tmp_df])
+
+
+NCI_ver = NCI_ver.drop_duplicates() # 404 
+
+NCI_ver_cids = list(set(NCI_ver.CID))
+
+
+
+pred_df.shape # 1,617,857,317
+
+
+pred_df_nci = pred_df[pred_df.COL_CID.isin(NCI_ver_cids)]
+# 47,270,683
+
+pred_df_nci2 = pred_df_nci[pred_df_nci.ROW_CID.isin(NCI_ver_cids)]
+# 1,175,649
+
+
+
+def top_bot_30 (CELL) : 
+	mini_csv  = pred_df_nci2[pred_df_nci2.CCLE == CELL]
+	drug_name = DC_DRUG_DF_FULL[['dname','CID']]
+	#
+	drug_name.columns = ['ROW_NAME','ROW_CID']
+	mini_csv_1 = pd.merge(mini_csv,drug_name, on = 'ROW_CID', how='left' )
+	drug_name.columns = ['COL_NAME','COL_CID']
+	mini_csv_2 = pd.merge(mini_csv_1, drug_name, on = 'COL_CID', how='left' )
+	#
+	mini_csv_3 = mini_csv_2.sort_values('PRED', ascending = False)
+	#
+	top_30 = mini_csv_3.iloc[:30,]
+	print(top_30[top_30.PRED>=10])
+	#
+	top_30.to_csv(DONE_PATH+'NCI_top30_{}.csv'.format(CELL), sep = '\t', index= False)
+	
+
+
+
+CVCL_files_raw = glob.glob(DONE_PATH+'/PRED_*.FINAL.csv')
+tissues = ['_'.join(a.split('/')[-1].split('.')[0].split('PRED_')[1].split('_')[2:]) for a in CVCL_files_raw]
+strips = [a.split('/')[-1].split('.')[0].split('PRED_')[1].split('_')[1] for a in CVCL_files_raw]
+ccle = [a.split('/')[-1].split('.')[0].split('PRED_CELL_')[1] for a in CVCL_files_raw]
+
+for cell in ccle :
+	top_bot_30(cell)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import json
+
+tmp_all = []
+for num in range(8) :
+	nn = num+1 
+	with open("/st06/jiyeonH/11.TOX/DR_SPRING/FDA.{}.json".format(nn), "r") as json_file:
+		fda = json.load(json_file)
+	#
+	tmptmp = fda1['Annotations']['Annotation']
+	tmp_all = tmp_all + tmptmp
+
+
+
+
+
+FDA_ver = pd.DataFrame(columns = ['NAME','CID'])
+
+for i in tmp_all :
+	NAME = i['Name']
+	if 'LinkedRecords' in i.keys():
+		if 'CID' in i['LinkedRecords'].keys() :
+			CID = i['LinkedRecords']['CID']
+			tmp_df = pd.DataFrame({
+			'CID' : CID, 'NAME' : NAME
+				})
+			FDA_ver = pd.concat([FDA_ver, tmp_df])
+
+
+FDA_ver = FDA_ver.drop_duplicates() # 808
+
+FDA_ver_cids = list(set(FDA_ver.CID))
+
+
+
+pred_df.shape # 1,617,857,317
+
+
+pred_df_fda = pred_df[pred_df.COL_CID.isin(FDA_ver_cids)]
+# 68,747,916
+
+
+pred_df_fda2 = pred_df_fda[pred_df_fda.ROW_CID.isin(FDA_ver_cids)]
+# 3,654,044
+
+
+
+
+def top_bot_30 (CELL) : 
+	mini_csv  = pred_df_fda2[pred_df_fda2.CCLE == CELL]
+	drug_name = DC_DRUG_DF_FULL[['dname','CID']]
+	#
+	drug_name.columns = ['ROW_NAME','ROW_CID']
+	mini_csv_1 = pd.merge(mini_csv,drug_name, on = 'ROW_CID', how='left' )
+	drug_name.columns = ['COL_NAME','COL_CID']
+	mini_csv_2 = pd.merge(mini_csv_1, drug_name, on = 'COL_CID', how='left' )
+	#
+	mini_csv_3 = mini_csv_2.sort_values('PRED', ascending = False)
+	#
+	top_30 = mini_csv_3.iloc[:30,]
+	print(top_30[top_30.PRED>=10])
+	#
+	#top_30.to_csv(DONE_PATH+'FDA_top30_{}.csv'.format(CELL), sep = '\t', index= False)
+	#return (mini_csv_3)
+
+
+
+CVCL_files_raw = glob.glob(DONE_PATH+'/PRED_*.FINAL.csv')
+tissues = ['_'.join(a.split('/')[-1].split('.')[0].split('PRED_')[1].split('_')[2:]) for a in CVCL_files_raw]
+strips = [a.split('/')[-1].split('.')[0].split('PRED_')[1].split('_')[1] for a in CVCL_files_raw]
+ccle = [a.split('/')[-1].split('.')[0].split('PRED_CELL_')[1] for a in CVCL_files_raw]
+
+for cell in ccle :
+	top_bot_30(cell)
 

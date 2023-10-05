@@ -410,6 +410,23 @@ len(set( CV_1_setset + CV_2_setset + CV_3_setset + CV_4_setset + CV_5_setset ))
 
 
 
+WORK_NAME = 'WORK_415' # 349
+W_NAME = 'W415'
+PRJ_NAME = 'M3V8'
+MJ_NAME = 'M3V8'
+MISS_NAME = 'MIS2'
+PPI_NAME = '349'
+
+PRJ_PATH = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/{}_{}_{}_{}/'.format(PRJ_NAME, W_NAME, PPI_NAME, MISS_NAME)
+
+# 저장해둔거랑 같은지 확인 
+with open('{}/CV_SM_list.{}.pickle'.format(PRJ_PATH, WORK_NAME), 'rb') as f:
+	CV_ND_INDS_ray = pickle.load(f)
+ 
+for kk in ['CV0_train', 'CV0_test', 'CV1_train', 'CV1_test', 'CV2_train', 'CV2_test', 'CV3_train', 'CV3_test', 'CV4_train', 'CV4_test'] :
+	CV_ND_INDS[kk] == CV_ND_INDS_ray[kk]
+
+
 
 
 # 주어진 환경 맞춰서 5CV만 돌릴거라서 수정버전 
@@ -1152,15 +1169,21 @@ WORK_NAME = 'WORK_417' # 349
 WORK_DATE = '23.09.01' # 349
 
 
+W_NAME = 'W418'
+WORK_NAME = 'WORK_418' # 349
+WORK_DATE = '23.09.01' # 349
+
 
 
 
 anal_dir = "/home01/k040a01/ray_results/PRJ02.{}.{}.{}.{}.{}".format(WORK_DATE, MJ_NAME,  WORK_NAME, PPI_NAME, MISS_NAME)
 #     anal_dir = '/home01/k040a01/ray_results/PRJ02.23.06.13.M3V5.WORK_37.349.MIS22/'
+# 
 list_dir = os.listdir(anal_dir)
 exp_json = [a for a in list_dir if 'experiment_state' in a]
 exp_json
 anal_df = ExperimentAnalysis(os.path.join(anal_dir, exp_json[0]))
+
 
 ANA_DF_1 = anal_df.dataframe()
 ANA_ALL_DF_1 = anal_df.trial_dataframes
@@ -1178,8 +1201,8 @@ import pickle
 with open("/home01/k040a01/02.M3V8/{}_{}_{}_{}/RAY_ANA_DF.{}_{}_{}_{}.pickle".format(MJ_NAME, W_NAME, PPI_NAME, MISS_NAME, MJ_NAME, W_NAME, PPI_NAME, MISS_NAME), "wb") as fp:
 	pickle.dump(ANA_ALL_DF,fp) 
 
-'/home01/k040a01/02.M3V6/{}_{}_{}_{}/RAY_ANA_DF.{}_{}_{}_{}.csv'.format(MJ_NAME, W_NAME, PPI_NAME, MISS_NAME,  MJ_NAME, W_NAME, PPI_NAME, MISS_NAME)
-"/home01/k040a01/02.M3V6/{}_{}_{}_{}/RAY_ANA_DF.{}_{}_{}_{}.pickle".format(MJ_NAME, W_NAME, PPI_NAME, MISS_NAME, MJ_NAME, W_NAME, PPI_NAME, MISS_NAME)
+'/home01/k040a01/02.M3V8/{}_{}_{}_{}/RAY_ANA_DF.{}_{}_{}_{}.csv'.format(MJ_NAME, W_NAME, PPI_NAME, MISS_NAME,  MJ_NAME, W_NAME, PPI_NAME, MISS_NAME)
+"/home01/k040a01/02.M3V8/{}_{}_{}_{}/RAY_ANA_DF.{}_{}_{}_{}.pickle".format(MJ_NAME, W_NAME, PPI_NAME, MISS_NAME, MJ_NAME, W_NAME, PPI_NAME, MISS_NAME)
 
 
 limit = 1000
@@ -1348,6 +1371,1060 @@ def get_max_result(ANA_DF, ANA_ALL_DF, nan_check = 0) :
 get_max_result(ANA_DF, ANA_ALL_DF)
 
 아니 근데 또 엄청난 차이는 아님...  
+
+
+
+
+# 418 
+
+anal_dir = '/home01/k040a02/ray_results/'
+
+prj_name = [
+	'PRJ02.23.09.04.M3V8.WORK_418_1.349.MIS2',
+	'PRJ02.23.09.04.M3V8.WORK_418_2.349.MIS2',
+	'PRJ02.23.09.04.M3V8.WORK_418_3.349.MIS2',
+	'PRJ02.23.09.04.M3V8.WORK_418_4.349.MIS2',
+	'PRJ02.23.09.04.M3V8.WORK_418_5.349.MIS2']
+
+
+ANA_DF_1 = pd.DataFrame()
+ANA_ALL_DF_1 = {}
+
+
+for prj in range(5) :
+	print(prj_name[prj])
+	list_dir = os.listdir(anal_dir+prj_name[prj])
+	exp_json = [a for a in list_dir if 'experiment_state' in a]
+	exp_json
+	anal_df = ExperimentAnalysis(os.path.join(anal_dir, prj_name[prj],  exp_json[0]))
+	ANA_DF = anal_df.dataframe()
+	ANA_ALL_DF = anal_df.trial_dataframes
+	#
+	ANA_DF_1 = pd.concat([ANA_DF_1, ANA_DF])
+	ANA_ALL_DF_1.update(ANA_ALL_DF)
+
+	
+RAY_MY_train_20330_00000 = pd.read_csv('/home01/k040a02/jiyeon/02.M3V8/M3V8_W418_349_MIS2/RAY_MY_train_20330_00000.txt', sep='|', skiprows = 4, header =None)
+	
+RAY_MY_train_20330_00000_ANA_DF_1 = pd.DataFrame({
+	'T_LS' : float(RAY_MY_train_20330_00000.loc[1000][17]), 
+	'T_PC' : float(RAY_MY_train_20330_00000.loc[1000][18]), 
+	'T_SC' : float(RAY_MY_train_20330_00000.loc[1000][19]), 
+	'V_LS' : float(RAY_MY_train_20330_00000.loc[1000][20]), 
+	'V_PC' : float(RAY_MY_train_20330_00000.loc[1000][21]), 
+	'V_SC' : float(RAY_MY_train_20330_00000.loc[1000][22]), 
+	'time_this_iter_s' : float(1),
+    'should_checkpoint' : True, 
+	'done' : False, 
+	'timesteps_total' : np.nan, 
+	'episodes_total' : np.nan,
+    'training_iteration' : int(1000), 
+	'trial_id' : '20330_00000', 
+	'experiment_id' : '', 
+	'date' : '2023-09-13_20-25-46', 
+	'timestamp' : '',
+    'time_total_s' : 100, 
+	'pid' : 0, 
+	'hostname' : '', 
+	'node_ip' : 0, 
+	'time_since_restore' : 0,
+    'timesteps_since_restore' : 0, 
+	'iterations_since_restore' : 0, 
+	'warmup_time' : 0,
+    'config/CV' : 0, 
+	'config/G_chem_hdim' : 32, 
+	'config/G_chem_layer' : 3,
+    'config/G_exp_hdim' : 32, 
+	'config/G_exp_layer' : 3, 
+	'config/batch_size' : 512,
+    'config/dropout_1' : 0.1, 
+	'config/dropout_2' : 0.1, 
+	'config/dsn_layer' : '256-128-64',
+    'config/epoch' : 1000, 
+	'config/lr' : 0.001, 
+	'config/n_workers' : 32, 
+	'config/snp_layer' : '16-8-4',
+    'logdir' : '/home01/k040a02/ray_results/PRJ02.23.09.04.M3V8.WORK_418_1.349.MIS2/RAY_MY_train_20330_00000_0_CV=0,G_chem_hdim=32,G_chem_layer=3,G_exp_hdim=32,G_exp_layer=3,batch_size=512,dropout_1=0.1000,dropout__2023-09-13_16-35-35'
+}, index = [0])
+
+RAY_MY_train_20330_00000_ANA_ALL_DF_1 = pd.DataFrame({
+	'T_LS' : RAY_MY_train_20330_00000.iloc[0:,17], 
+	'T_PC' : RAY_MY_train_20330_00000.iloc[0:,18], 
+	'T_SC' : RAY_MY_train_20330_00000.iloc[0:,19], 
+	'V_LS' : RAY_MY_train_20330_00000.iloc[0:,20], 
+	'V_PC' : RAY_MY_train_20330_00000.iloc[0:,21], 
+	'V_SC' : RAY_MY_train_20330_00000.iloc[0:,22], 
+	'time_this_iter_s' : 0,
+	'should_checkpoint' : True, 
+	'done' : False, 
+	'timesteps_total' : 0, 
+	'episodes_total' : 0,
+    'training_iteration' : 1000, 
+	'trial_id' : 'RAY_MY_train_20330_00000', 
+	'experiment_id' : '', 
+	'date' : '', 
+	'timestamp' : 0,
+    'time_total_s' : 0, 
+	'pid' : 0, 
+	'hostname' : '', 
+	'node_ip' : 0, 
+	'time_since_restore' : 0,
+    'timesteps_since_restore' : 0, 
+	'iterations_since_restore' : RAY_MY_train_20330_00000.iloc[0:,23], 
+	'warmup_time' : 0
+})
+
+RAY_MY_train_20330_00000_ANA_ALL_DF_1 = RAY_MY_train_20330_00000_ANA_ALL_DF_1.drop_duplicates()
+
+RAY_MY_train_20330_00000_ANA_ALL_DF_1.index = list(RAY_MY_train_20330_00000_ANA_ALL_DF_1.training_iteration)
+missing = [a for a in range(1,1000) if a not in list(RAY_MY_train_20330_00000_ANA_ALL_DF_1.iterations_since_restore)]
+
+
+for m in missing : 
+	tmp = pd.DataFrame({
+		'T_LS' : 0, 
+		'T_PC' : 0, 
+		'T_SC' : 0, 
+		'V_LS' : 0, 
+		'V_PC' : 0, 
+		'V_SC' : 0, 
+		'time_this_iter_s' : 0,
+		'should_checkpoint' : True, 
+		'done' : False, 
+		'timesteps_total' : 0, 
+		'episodes_total' : 0,
+		'training_iteration' : 0, 
+		'trial_id' : 'RAY_MY_train_20330_00000', 
+		'experiment_id' : '', 
+		'date' : '', 
+		'timestamp' : 0,
+		'time_total_s' : 0, 
+		'pid' : 0, 
+		'hostname' : '', 
+		'node_ip' : 0, 
+		'time_since_restore' : 0,
+		'timesteps_since_restore' : 0, 
+		'iterations_since_restore' : m, 
+		'warmup_time' : 0
+	}, index = [m])
+	RAY_MY_train_20330_00000_ANA_ALL_DF_1 = pd.concat([RAY_MY_train_20330_00000_ANA_ALL_DF_1, tmp])
+
+RAY_MY_train_20330_00000_ANA_ALL_DF_1 = RAY_MY_train_20330_00000_ANA_ALL_DF_1.sort_values('iterations_since_restore')
+
+
+
+
+
+ANA_DF_1 = pd.concat([ANA_DF_1, RAY_MY_train_20330_00000_ANA_DF_1])
+ANA_ALL_DF_1['/home01/k040a02/ray_results/PRJ02.23.09.04.M3V8.WORK_418_1.349.MIS2/RAY_MY_train_20330_00000_0_CV=0,G_chem_hdim=32,G_chem_layer=3,G_exp_hdim=32,G_exp_layer=3,batch_size=512,dropout_1=0.1000,dropout__2023-09-13_16-35-35'] = RAY_MY_train_20330_00000_ANA_ALL_DF_1
+
+
+
+
+
+
+
+
+ANA_DF = ANA_DF_1
+
+ANA_DF = ANA_DF.sort_values('trial_id')
+ANA_DF.index = [a for a in range(ANA_DF.shape[0])]
+ANA_ALL_DF = ANA_ALL_DF_1
+
+
+
+
+# check early stop
+keyss = list(ANA_DF['logdir'])
+
+for kk in keyss : 
+	tt = list(ANA_ALL_DF[kk]['V_PC'])
+	tt.index(np.max(tt))
+	np.max(tt)
+	
+
+
+
+
+#  각 CV 결과에서 제일 좋게 나왔던거 가져다 본거 (early stop 썼다고 생각하기 )
+def get_max_result(ANA_DF, ANA_ALL_DF, nan_check = 0) :
+	#
+	cv_keys = list(ANA_DF['logdir'])
+	#
+	epc_T_LS_mean = np.mean([min(ANA_ALL_DF[kk]['T_LS'][nan_check:]) for kk in cv_keys])
+	epc_T_LS_std = np.std([min(ANA_ALL_DF[kk]['T_LS'][nan_check:]) for kk in cv_keys])
+	#
+	epc_T_PC_mean = np.mean([max(ANA_ALL_DF[kk]['T_PC'][nan_check:]) for kk in cv_keys])
+	epc_T_PC_std = np.std([max(ANA_ALL_DF[kk]['T_PC'][nan_check:]) for kk in cv_keys])
+	#
+	epc_T_SC_mean = np.mean([max(ANA_ALL_DF[kk]['T_SC'][nan_check:]) for kk in cv_keys])
+	epc_T_SC_std = np.std([max(ANA_ALL_DF[kk]['T_SC'][nan_check:]) for kk in cv_keys])
+	#
+	epc_V_LS_mean = np.mean([min(ANA_ALL_DF[kk]['V_LS'][nan_check:]) for kk in cv_keys])
+	epc_V_LS_std = np.std([min(ANA_ALL_DF[kk]['V_LS'][nan_check:]) for kk in cv_keys])
+	#
+	epc_V_PC_mean = np.mean([max(ANA_ALL_DF[kk]['V_PC'][nan_check:]) for kk in cv_keys])
+	epc_V_PC_std = np.std([max(ANA_ALL_DF[kk]['V_PC'][nan_check:]) for kk in cv_keys])
+	#
+	epc_V_SC_mean = np.mean([max(ANA_ALL_DF[kk]['V_SC'][nan_check:]) for kk in cv_keys])
+	epc_V_SC_std = np.std([max(ANA_ALL_DF[kk]['V_SC'][nan_check:]) for kk in cv_keys])
+	#
+	print('Train')
+	print(np.round([epc_T_LS_mean, epc_T_LS_std], 4))
+	print(np.round([epc_T_PC_mean, epc_T_PC_std], 4))
+	print(np.round([epc_T_SC_mean, epc_T_SC_std], 4))
+	print('Val')
+	print(np.round([epc_V_LS_mean, epc_V_LS_std], 4))
+	print(np.round([epc_V_PC_mean, epc_V_PC_std], 4))
+	print(np.round([epc_V_SC_mean, epc_V_SC_std], 4))
+	#
+	return(epc_V_LS_mean, epc_V_LS_std, epc_V_PC_mean, epc_V_PC_std, epc_V_SC_mean, epc_V_SC_std)
+
+
+
+
+get_max_result(ANA_DF, ANA_ALL_DF)
+Train
+[49.2494  8.7854]
+[0.8906 0.0045]
+[0.8052 0.0075]
+Val
+[132.5444  57.7569]
+[0.7039 0.0781]
+[0.6615 0.072 ]
+
+
+
+# just last 
+np.round( np.mean(, epc_result.loc[999]['V_LS_std']),4 )
+199.2414
+64.4223
+np.round( (epc_result.loc[999]['V_PC_mean'], epc_result.loc[999]['V_PC_std']),4 )
+0.5687
+0.1084
+np.round( (epc_result.loc[999]['V_SC_mean'], epc_result.loc[999]['V_SC_std']),4 )
+0.5446
+0.0877
+
+
+ANA_ALL_DF.keys()
+key1 = '/home01/k040a02/ray_results/PRJ02.23.09.04.M3V8.WORK_418_1.349.MIS2/RAY_MY_train_20330_00000_0_CV=0,G_chem_hdim=32,G_chem_layer=3,G_exp_hdim=32,G_exp_layer=3,batch_size=512,dropout_1=0.1000,dropout__2023-09-13_16-35-35'
+key2 = '/home01/k040a02/ray_results/PRJ02.23.09.04.M3V8.WORK_418_4.349.MIS2/RAY_MY_train_13ab7_00006_6_CV=6,G_chem_hdim=32,G_chem_layer=3,G_exp_hdim=32,G_exp_layer=3,batch_size=512,dropout_1=0.1000,dropout__2023-09-14_06-03-42'
+
+np.round(np.mean([ANA_ALL_DF[a].iloc[999]['V_LS'] for a in ANA_ALL_DF.keys()]),4)
+np.round(np.std([ANA_ALL_DF[a].iloc[999]['V_LS'] for a in ANA_ALL_DF.keys()]),4)
+np.round(np.mean([ANA_ALL_DF[a].iloc[999]['V_PC'] for a in ANA_ALL_DF.keys()]),4)
+np.round(np.std([ANA_ALL_DF[a].iloc[999]['V_PC'] for a in ANA_ALL_DF.keys()]),4)
+np.round(np.mean([ANA_ALL_DF[a].iloc[999]['V_SC'] for a in ANA_ALL_DF.keys()]),4)
+np.round(np.std([ANA_ALL_DF[a].iloc[999]['V_SC'] for a in ANA_ALL_DF.keys()]),4)
+
+
+
+
+
+####################################################
+####################################################
+
+tsne 그리기 위한 노오력 
+
+
+# 0915
+
+# 분명히 뭐때문에 예전에 모델까지 써서 다시 그렸는데 기억이 안남
+# 왜 코드도 안보임...
+# 그때 서버에 있는 코드로 덮어졌나..? 시벌? 
+
+
+
+# 주어진 환경 맞춰서 5CV만 돌릴거라서 수정버전 
+def prepare_data_GCN(CV_num, A_B_C_S_SET_SM, MY_chem_A_feat_RE2, MY_chem_B_feat_RE2, MY_chem_A_adj_RE2, MY_chem_B_adj_RE2, 
+MY_g_EXP_A_RE2, MY_g_EXP_B_RE2, MY_Target_A2, MY_Target_B2, MY_CellBase_RE2, 
+MY_syn_RE2, norm ) : 
+	# 
+	# CV_num = 0
+	test_key = 'CV{}_test'.format(CV_num)
+	# 
+	#
+	ABCS_test = A_B_C_S_SET_SM[A_B_C_S_SET_SM.SM_C_CHECK.isin(CV_ND_INDS[test_key])]
+	#
+	test_ind = list(ABCS_test.index)
+	# 
+	chem_feat_A_test = MY_chem_A_feat_RE2[test_ind]
+	chem_feat_B_test = MY_chem_B_feat_RE2[test_ind]
+	chem_adj_A_test = MY_chem_A_adj_RE2[test_ind]
+	chem_adj_B_test = MY_chem_B_adj_RE2[test_ind]
+	gene_A_test = MY_g_EXP_A_RE2[test_ind]
+	gene_B_test = MY_g_EXP_B_RE2[test_ind]
+	target_A_test = MY_Target_A2[test_ind]
+	target_B_test = MY_Target_B2[test_ind]
+	cell_basal_test = MY_CellBase_RE2[test_ind]
+	syn_test = MY_syn_RE2[test_ind]
+	#
+	test_data = {}
+	#
+	test_data['drug1_feat'] = chem_feat_A_test
+	#
+	test_data['drug2_feat'] = chem_feat_B_test
+	#
+	test_data['drug1_adj'] = chem_adj_A_test
+	#
+	test_data['drug2_adj'] = chem_adj_B_test
+	#
+	test_data['GENE_A'] = gene_A_test
+	#
+	test_data['GENE_B'] = gene_B_test
+	#
+	test_data['TARGET_A'] = target_A_test
+	#
+	test_data['TARGET_B'] = target_B_test
+	#
+	test_data['cell_BASAL'] = cell_basal_test
+	##
+	#            
+	test_data['y'] = syn_test
+	#
+	print(test_data['drug1_feat'].shape, flush=True)
+	return test_data
+
+
+
+
+class DATASET_GCN_W_FT(Dataset):
+	def __init__(self, gcn_drug1_F, gcn_drug2_F, gcn_drug1_ADJ, gcn_drug2_ADJ, 
+	gcn_gene_A, gcn_gene_B, target_A, target_B, cell_basal, gcn_adj, gcn_adj_weight, 
+	syn_ans ):
+		self.gcn_drug1_F = gcn_drug1_F
+		self.gcn_drug2_F = gcn_drug2_F
+		self.gcn_drug1_ADJ = gcn_drug1_ADJ
+		self.gcn_drug2_ADJ = gcn_drug2_ADJ
+		self.gcn_gene_A = gcn_gene_A
+		self.gcn_gene_B = gcn_gene_B
+		self.target_A = target_A
+		self.target_B = target_B
+		self.cell_basal = cell_basal
+		self.gcn_adj = gcn_adj
+		self.gcn_adj_weight = gcn_adj_weight
+		self.syn_ans = syn_ans
+		#
+	#
+	def __len__(self):
+		return len(self.gcn_drug1_F)
+			#
+	def __getitem__(self, index):
+		adj_re_A = self.gcn_drug1_ADJ[index].long().to_sparse().indices()
+		adj_re_B = self.gcn_drug2_ADJ[index].long().to_sparse().indices()
+		#
+		FEAT_A = torch.Tensor(np.array([ self.gcn_gene_A[index].squeeze().tolist() , self.target_A[index].tolist(), self.cell_basal[index].tolist()]).T)
+		FEAT_B = torch.Tensor(np.array([ self.gcn_gene_B[index].squeeze().tolist() , self.target_B[index].tolist(), self.cell_basal[index].tolist()]).T)
+		#
+		return self.gcn_drug1_F[index], self.gcn_drug2_F[index],adj_re_A, adj_re_B, FEAT_A, FEAT_B, self.gcn_adj, self.gcn_adj_weight ,self.syn_ans[index]
+
+
+
+
+
+def graph_collate_fn(batch):
+	drug1_f_list = []
+	drug2_f_list = []
+	drug1_adj_list = []
+	drug2_adj_list = []
+	expA_list = []
+	expB_list = []
+	exp_adj_list = []
+	exp_adj_w_list = []
+	y_list = []
+	EXP_num_nodes_seen = 0
+	DRUG_1_num_nodes_seen = 0
+	DRUG_2_num_nodes_seen = 0
+	#
+	for drug1_f, drug2_f, drug1_adj, drug2_adj, expA, expB, exp_adj, exp_adj_w, y in batch :
+		drug1_f_list.append(drug1_f)
+		drug2_f_list.append(drug2_f)
+		drug1_adj_list.append(drug1_adj+DRUG_1_num_nodes_seen)
+		drug2_adj_list.append(drug2_adj+DRUG_2_num_nodes_seen)
+		expA_list.append(expA)
+		expB_list.append(expB)
+		exp_adj_list.append(exp_adj+EXP_num_nodes_seen)
+		exp_adj_w_list.append(exp_adj_w)
+		y_list.append(torch.Tensor(y))
+		EXP_num_nodes_seen += expA.shape[0]
+		DRUG_1_num_nodes_seen += drug1_f.shape[0]
+		DRUG_2_num_nodes_seen += drug2_f.shape[0]
+	#
+	drug1_f_new = torch.cat(drug1_f_list, 0)
+	drug2_f_new = torch.cat(drug2_f_list, 0)
+	drug1_adj_new = torch.cat(drug1_adj_list, 1)
+	drug2_adj_new = torch.cat(drug2_adj_list, 1)
+	expA_new = torch.cat(expA_list, 0)
+	expB_new = torch.cat(expB_list, 0)
+	exp_adj_new = torch.cat(exp_adj_list, 1)
+	exp_adj_w_new = torch.cat(exp_adj_w_list, 1)
+	y_new = torch.stack(y_list, 0)
+	return drug1_f_new, drug2_f_new, drug1_adj_new, drug2_adj_new, expA_new, expB_new, exp_adj_new, exp_adj_w_new, y_new
+
+
+
+
+def result_pearson(y, pred):
+	pear = stats.pearsonr(y, pred)
+	pear_value = pear[0]
+	pear_p_val = pear[1]
+	print("Pearson correlation is {} and related p_value is {}".format(pear_value, pear_p_val), flush=True)
+
+
+def result_spearman(y, pred):
+	spear = stats.spearmanr(y, pred)
+	spear_value = spear[0]
+	spear_p_val = spear[1]
+	print("Spearman correlation is {} and related p_value is {}".format(spear_value, spear_p_val), flush=True)
+
+
+
+def plot_loss(train_loss, valid_loss, path, plotname):
+	fig = plt.figure(figsize=(10,8))
+	plt.plot(range(1,len(train_loss)+1),train_loss, label='Training Loss')
+	plt.plot(range(1,len(valid_loss)+1),valid_loss,label='Validation Loss')
+	plt.xlabel('epochs')
+	plt.ylabel('loss')
+	plt.ylim(0, math.ceil(max(train_loss+valid_loss))) # 일정한 scale
+	plt.xlim(0, len(train_loss)+1) # 일정한 scale
+	plt.grid(True)
+	plt.legend()
+	plt.tight_layout()
+	fig.savefig('{}/{}.loss_plot.png'.format(path, plotname), bbox_inches = 'tight')
+
+
+
+
+seed = 42
+random.seed(seed)
+torch.manual_seed(seed)
+np.random.seed(seed)
+
+
+# gcn_drug1_F, gcn_drug2_F, gcn_drug1_ADJ, gcn_drug2_ADJ, gcn_exp_A, gcn_exp_B, gcn_tgt_A, gcn_tgt_B, gcn_adj, gcn_adj_weight, syn_ans, cell_info
+norm = 'tanh_norm'
+
+# CV_0
+test_data_0 = prepare_data_GCN(0, A_B_C_S_SET_SM, MY_chem_A_feat_RE2, MY_chem_B_feat_RE2, MY_chem_A_adj_RE2, MY_chem_B_adj_RE2, 
+MY_g_EXP_A_RE2, MY_g_EXP_B_RE2, MY_Target_A2, MY_Target_B2, MY_CellBase_RE2, 
+ MY_syn_RE2, norm)
+
+# CV_1
+test_data_1 = prepare_data_GCN(1, A_B_C_S_SET_SM, MY_chem_A_feat_RE2, MY_chem_B_feat_RE2, MY_chem_A_adj_RE2, MY_chem_B_adj_RE2, 
+MY_g_EXP_A_RE2, MY_g_EXP_B_RE2, MY_Target_A2, MY_Target_B2, MY_CellBase_RE2, 
+ MY_syn_RE2, norm)
+
+# CV_2
+test_data_2 = prepare_data_GCN(2, A_B_C_S_SET_SM, MY_chem_A_feat_RE2, MY_chem_B_feat_RE2, MY_chem_A_adj_RE2, MY_chem_B_adj_RE2, 
+MY_g_EXP_A_RE2, MY_g_EXP_B_RE2, MY_Target_A2, MY_Target_B2, MY_CellBase_RE2, 
+ MY_syn_RE2, norm)
+
+# CV_3
+test_data_3 = prepare_data_GCN(3, A_B_C_S_SET_SM, MY_chem_A_feat_RE2, MY_chem_B_feat_RE2, MY_chem_A_adj_RE2, MY_chem_B_adj_RE2, 
+MY_g_EXP_A_RE2, MY_g_EXP_B_RE2, MY_Target_A2, MY_Target_B2, MY_CellBase_RE2, 
+ MY_syn_RE2, norm)
+
+# CV_4
+test_data_4 = prepare_data_GCN(4, A_B_C_S_SET_SM, MY_chem_A_feat_RE2, MY_chem_B_feat_RE2, MY_chem_A_adj_RE2, MY_chem_B_adj_RE2, 
+MY_g_EXP_A_RE2, MY_g_EXP_B_RE2, MY_Target_A2, MY_Target_B2, MY_CellBase_RE2, 
+ MY_syn_RE2, norm)
+
+
+JY_IDX_WEIGHT_T = torch.Tensor(JY_IDX_WEIGHT).view(1,-1)
+
+
+# DATA check  
+def make_merged_data(CV) :
+	test_data = globals()['test_data_'+str(CV)]
+	#
+	#	
+	T_test = DATASET_GCN_W_FT(
+		torch.Tensor(test_data['drug1_feat']), torch.Tensor(test_data['drug2_feat']), 
+		torch.Tensor(test_data['drug1_adj']), torch.Tensor(test_data['drug2_adj']),
+		torch.Tensor(test_data['GENE_A']), torch.Tensor(test_data['GENE_B']), 
+		torch.Tensor(test_data['TARGET_A']), torch.Tensor(test_data['TARGET_B']), torch.Tensor(test_data['cell_BASAL']), 
+		JY_ADJ_IDX, JY_IDX_WEIGHT_T, 
+		torch.Tensor(test_data['y'])
+		)
+	#
+	return T_test
+
+
+
+# CV 0 
+T_test_0 = make_merged_data(0)
+T_test_1 = make_merged_data(1)
+T_test_2 = make_merged_data(2)
+T_test_3 = make_merged_data(3)
+T_test_4 = make_merged_data(4)
+
+
+
+
+
+class MY_expGCN_parallel_model(torch.nn.Module):
+	def __init__(self, G_layer_chem, G_indim_chem, G_hiddim_chem, 
+	G_layer_exp, G_indim_exp, G_hiddim_exp, 
+	layers_1, layers_2, layers_3, 
+	out_dim, inDrop, drop):
+		super(MY_expGCN_parallel_model, self).__init__()
+		self.G_layer_chem = G_layer_chem
+		self.G_indim_chem = G_indim_chem
+		self.G_hiddim_chem = G_hiddim_chem
+		self.G_layer_exp = G_layer_exp
+		self.G_indim_exp = G_indim_exp
+		self.G_hiddim_exp = G_hiddim_exp
+		self.G_Common_dim = min([G_hiddim_chem,G_hiddim_exp])
+		self.layers_1 = [int(a) for a in layers_1]
+		self.layers_2 = [int(a) for a in layers_2]
+		self.layers_3 = [int(a) for a in layers_3]
+		self.out_dim = out_dim
+		self.inDrop = inDrop
+		self.drop = drop
+		self.tanh = torch.nn.Tanh()
+		self.pool = pyg_nn.global_mean_pool
+		#
+		self.G_convs_1_chem = torch.nn.ModuleList([pyg_nn.GCNConv(self.G_indim_chem, self.G_hiddim_chem)])
+		self.G_convs_1_chem.extend([pyg_nn.GCNConv(self.G_hiddim_chem, self.G_hiddim_chem) for i in range(self.G_layer_chem-2)])
+		self.G_convs_1_chem.extend([pyg_nn.GCNConv(self.G_hiddim_chem, self.G_Common_dim)])
+		self.G_bns_1_chem = torch.nn.ModuleList([torch.nn.BatchNorm1d(self.G_hiddim_chem) for i in range(self.G_layer_chem-1)])
+		##
+		self.G_convs_1_exp = torch.nn.ModuleList([pyg_nn.GCNConv(self.G_indim_exp, self.G_hiddim_exp)])
+		self.G_convs_1_exp.extend([pyg_nn.GCNConv(self.G_hiddim_exp, self.G_hiddim_exp) for i in range(self.G_layer_exp-2)])
+		self.G_convs_1_exp.extend([pyg_nn.GCNConv(self.G_hiddim_exp, self.G_Common_dim)])
+		self.G_bns_1_exp = torch.nn.ModuleList([torch.nn.BatchNorm1d(self.G_hiddim_exp) for i in range(self.G_layer_exp-1)])
+		##
+		self.Convs_1 = torch.nn.ModuleList([torch.nn.Linear(self.G_Common_dim+self.G_Common_dim, self.layers_1[0] )])
+		self.Convs_1.extend([torch.nn.Linear(self.layers_1[a], self.layers_1[a+1]) for a in range(len(self.layers_1)-1)])
+		##
+		self.SNPs = torch.nn.ModuleList([torch.nn.Linear(self.layers_1[-1]+self.layers_2[-1], self.layers_3[0] )])
+		self.SNPs.extend([torch.nn.Linear(self.layers_3[a], self.layers_3[a+1]) for a in range(len(self.layers_3)-1)])
+		self.SNPs.extend([torch.nn.Linear(self.layers_3[-1], self.out_dim)])
+		#
+		self.reset_parameters()
+	#
+	def reset_parameters(self):
+		for conv in self.G_convs_1_chem :
+			conv.reset_parameters()
+		for bns in self.G_bns_1_chem :
+			bns.reset_parameters()
+		for conv in self.G_convs_1_exp :
+			conv.reset_parameters()
+		for bns in self.G_bns_1_exp :
+			bns.reset_parameters()
+		for conv in self.Convs_1 :
+			conv.reset_parameters()
+		for conv in self.SNPs:
+			conv.reset_parameters()
+	#
+	def calc_batch_label (self, syn, feat) :
+		batchnum = syn.shape[0]
+		nodenum = feat.shape[0]/batchnum
+		Num = [a for a in range(batchnum)]
+		Rep = np.repeat(Num, nodenum)
+		batch_labels = torch.Tensor(Rep).long()
+		if torch.cuda.is_available():
+			batch_labels = batch_labels.cuda()
+		return batch_labels
+	#
+	def forward(self, Drug1_F, Drug2_F, Drug1_ADJ, Drug2_ADJ, EXP1, EXP2, EXP_ADJ, EXP_ADJ_WGT, syn ):
+		Drug_batch_label = self.calc_batch_label(syn, Drug1_F)
+		Exp_batch_label = self.calc_batch_label(syn, EXP1)
+		#
+		for G_1_C in range(len(self.G_convs_1_chem)):
+			if G_1_C == len(self.G_convs_1_chem)-1 :
+				Drug1_F = self.G_convs_1_chem[G_1_C](x=Drug1_F, edge_index=Drug1_ADJ)
+				Drug1_F = F.dropout(Drug1_F, p=self.inDrop, training=self.training)
+				Drug1_F = self.pool(Drug1_F, Drug_batch_label )
+				Drug1_F = self.tanh(Drug1_F)
+				G_1_C_out = Drug1_F
+			else :
+				Drug1_F = self.G_convs_1_chem[G_1_C](x=Drug1_F, edge_index=Drug1_ADJ)
+				Drug1_F = self.G_bns_1_chem[G_1_C](Drug1_F)
+				Drug1_F = F.elu(Drug1_F)
+		#
+		for G_2_C in range(len(self.G_convs_1_chem)):
+			if G_2_C == len(self.G_convs_1_chem)-1 :
+				Drug2_F = self.G_convs_1_chem[G_2_C](x=Drug2_F, edge_index=Drug2_ADJ)
+				Drug2_F = F.dropout(Drug2_F, p=self.inDrop, training=self.training)
+				Drug2_F = self.pool(Drug2_F, Drug_batch_label )
+				Drug2_F = self.tanh(Drug2_F)
+				G_2_C_out = Drug2_F
+			else :
+				Drug2_F = self.G_convs_1_chem[G_2_C](x=Drug2_F, edge_index=Drug2_ADJ)
+				Drug2_F = self.G_bns_1_chem[G_2_C](Drug2_F)
+				Drug2_F = F.elu(Drug2_F)
+		#
+		for G_1_E in range(len(self.G_convs_1_exp)):
+			if G_1_E == len(self.G_convs_1_exp)-1 :
+				EXP1 = self.G_convs_1_exp[G_1_E](x=EXP1, edge_index=EXP_ADJ, edge_weight= EXP_ADJ_WGT)
+				EXP1 = F.dropout(EXP1, p=self.inDrop, training=self.training)
+				EXP1 = self.pool(EXP1, Exp_batch_label )
+				EXP1 = self.tanh(EXP1)
+				G_1_E_out = EXP1
+			else :
+				EXP1 = self.G_convs_1_exp[G_1_E](x=EXP1, edge_index=EXP_ADJ, edge_weight= EXP_ADJ_WGT)
+				EXP1 = self.G_bns_1_exp[G_1_E](EXP1)
+				EXP1 = F.elu(EXP1)
+		#
+		for G_2_E in range(len(self.G_convs_1_exp)):
+			if G_2_E == len(self.G_convs_1_exp)-1 :
+				EXP2 = self.G_convs_1_exp[G_2_E](x=EXP2, edge_index=EXP_ADJ, edge_weight= EXP_ADJ_WGT)
+				EXP2 = F.dropout(EXP2, p=self.inDrop, training=self.training)
+				EXP2 = self.pool(EXP2, Exp_batch_label )
+				EXP2 = self.tanh(EXP2)
+				G_2_E_out = EXP2
+			else :
+				EXP2 = self.G_convs_1_exp[G_2_E](x=EXP2, edge_index=EXP_ADJ, edge_weight= EXP_ADJ_WGT)
+				EXP2 = self.G_bns_1_exp[G_2_E](EXP2)
+				EXP2 = F.elu(EXP2)
+		#
+		input_drug1 = torch.concat( (G_1_C_out, G_1_E_out), 1 ) # normalization 추가 해야할것 같은데 
+		input_drug2 = torch.concat( (G_2_C_out, G_2_E_out), 1 )
+		#
+		for L1 in range(len(self.Convs_1)):
+			if L1 != len(self.Convs_1)-1 :
+				input_drug1 = self.Convs_1[L1](input_drug1)
+				input_drug1 = F.dropout(input_drug1, p=self.inDrop, training = self.training)
+				input_drug1 = F.elu(input_drug1)
+			else :
+				input_drug1 = self.Convs_1[L1](input_drug1)
+		#
+		for L2 in range(len(self.Convs_1)):
+			if L2 != len(self.Convs_1)-1 :
+				input_drug2 = self.Convs_1[L2](input_drug2)
+				input_drug2 = F.dropout(input_drug2, p=self.inDrop, training = self.training)
+				input_drug2 = F.elu(input_drug2)
+			else :
+				input_drug2 = self.Convs_1[L2](input_drug2)
+		#
+		X = torch.cat(( input_drug1, input_drug2 ), 1)
+		for L3 in range(len(self.SNPs)):
+			if L3 != len(self.SNPs)-1 :
+				X = self.SNPs[L3](X)
+				X = F.dropout(X, p=self.drop, training = self.training)
+				X = F.elu(X)
+			else :
+				X = self.SNPs[L3](X)
+		return X, G_1_E_out, G_2_E_out
+
+
+
+
+
+
+
+
+def inner_test( TEST_DATA, THIS_MODEL , use_cuda = False) :
+	THIS_MODEL.eval()
+	#
+	ans_list = []
+	pred_list = []
+	#
+	E1_list = []
+	E2_list = []
+	#
+	running_loss = 0
+	# 
+	with torch.no_grad() :
+		for batch_idx_v, (drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, adj_w, y) in enumerate(TEST_DATA) :
+			expA = expA.view(-1,3)#### 다른점 
+			expB = expB.view(-1,3)#### 다른점 
+			adj_w = adj_w.squeeze()
+			output, E1, E2 = THIS_MODEL(drug1_f, drug2_f, drug1_a, drug2_a, expA, expB, adj, adj_w, y)
+			MSE = torch.nn.MSELoss()
+			# update average validation loss 
+			pred_list = pred_list + output.squeeze().tolist()
+			ans_list = ans_list + y.squeeze().tolist()
+			E1_list.append(E1)
+			E2_list.append(E2)
+		#
+	last_loss = running_loss / (batch_idx_v+1)
+	val_sc, _ = stats.spearmanr(pred_list, ans_list)
+	val_pc, _ = stats.pearsonr(pred_list, ans_list)
+	return last_loss, val_pc, val_sc, pred_list, ans_list, E1_list, E2_list    
+
+
+
+
+
+def TEST_CPU (PRJ_PATH, CV_num, my_config, model_path, model_name, model_num) :
+	use_cuda = False
+	#
+	CV_test_dict = [T_test_0, T_test_1, T_test_2, T_test_3, T_test_4]
+	#
+	T_test = CV_test_dict[CV_num]
+	test_loader = torch.utils.data.DataLoader(T_test, batch_size = my_config["config/batch_size"].item(), collate_fn = graph_collate_fn, shuffle =False) # my_config['config/n_workers'].item()
+	#
+	G_chem_layer = my_config['config/G_chem_layer'].item()
+	G_chem_hdim = my_config['config/G_chem_hdim'].item()
+	G_exp_layer = my_config['config/G_exp_layer'].item()
+	G_exp_hdim = my_config['config/G_exp_hdim'].item() 
+	dsn_layers = [int(a) for a in my_config["config/dsn_layer"].split('-') ]
+	snp_layers = [int(a) for a in my_config["config/snp_layer"].split('-') ]
+	inDrop = my_config['config/dropout_1'].item()
+	Drop = my_config['config/dropout_2'].item()
+	#
+	best_model = MY_expGCN_parallel_model(
+				G_chem_layer, T_test.gcn_drug1_F.shape[-1] , G_chem_hdim,
+				G_exp_layer, 3, G_exp_hdim,
+				dsn_layers, dsn_layers, snp_layers, 
+				1,
+				inDrop, Drop
+				)
+	#
+	if torch.cuda.is_available():
+		best_model = best_model.cuda()
+		print('model to cuda', flush = True)
+		if torch.cuda.device_count() > 1 :
+			best_model = torch.nn.DataParallel(best_model)
+			print('model to multi cuda', flush = True)
+	device = "cuda:0" if torch.cuda.is_available() else "cpu"
+	#
+	if torch.cuda.is_available():
+		state_dict = torch.load(os.path.join(model_path, model_name))
+	else:
+		state_dict = torch.load(os.path.join(model_path, model_name), map_location=torch.device('cpu'))
+	#
+	print("state_dict_done", flush = True)
+	if type(state_dict) == tuple:
+		best_model.load_state_dict(state_dict[0])
+	else : 
+		best_model.load_state_dict(state_dict)	#
+	print("state_load_done", flush = True)
+	#
+	#
+	last_loss, val_pc, val_sc, pred_list, ans_list, E1_list, E2_list = inner_test(test_loader, best_model)
+	return  last_loss, val_pc, val_sc, pred_list, ans_list, torch.concat(E1_list), torch.concat(E2_list )
+
+
+
+ANA_DF = pd.read_csv('/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V8_W403_349_MIS2/RAY_ANA_DF.M3V8_W403_349_MIS2.csv')
+
+my_config = ANA_DF.loc[0]
+
+
+
+# old 
+R_1_T_CV0, R_1_1_CV0, R_1_2_CV0, pred_1_CV0, ans_1_CV0, E1_list_CV0, E2_list_CV0  = TEST_CPU(PRJ_PATH, 0, my_config, '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V8_W415_349_MIS2/', 'CV0_FULL', 'FULL')
+R_1_T_CV1, R_1_1_CV1, R_1_2_CV1, pred_1_CV1, ans_1_CV1, E1_list_CV1, E2_list_CV1  = TEST_CPU(PRJ_PATH, 1, my_config, '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V8_W415_349_MIS2/', 'CV1_FULL', 'FULL')
+R_1_T_CV2, R_1_1_CV2, R_1_2_CV2, pred_1_CV2, ans_1_CV2, E1_list_CV2, E2_list_CV2  = TEST_CPU(PRJ_PATH, 2, my_config, '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V8_W415_349_MIS2/', 'CV2_FULL', 'FULL')
+R_1_T_CV3, R_1_1_CV3, R_1_2_CV3, pred_1_CV3, ans_1_CV3, E1_list_CV3, E2_list_CV3  = TEST_CPU(PRJ_PATH, 3, my_config, '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V8_W415_349_MIS2/', 'CV3_FULL', 'FULL')
+R_1_T_CV4, R_1_1_CV4, R_1_2_CV4, pred_1_CV4, ans_1_CV4, E1_list_CV4, E2_list_CV4  = TEST_CPU(PRJ_PATH, 4, my_config, '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V8_W415_349_MIS2/', 'CV4_FULL', 'FULL')
+
+ans_list = ans_1_CV0 + ans_1_CV1+ ans_1_CV2+ ans_1_CV3+ ans_1_CV4
+pred_list = pred_1_CV0 + pred_1_CV1+ pred_1_CV2+ pred_1_CV3+ pred_1_CV4
+
+ABCS_test_CV0 = A_B_C_S_SET_SM[A_B_C_S_SET_SM.SM_C_CHECK.isin(CV_ND_INDS['CV0_test'])]
+ABCS_test_CV1 = A_B_C_S_SET_SM[A_B_C_S_SET_SM.SM_C_CHECK.isin(CV_ND_INDS['CV1_test'])]
+ABCS_test_CV2 = A_B_C_S_SET_SM[A_B_C_S_SET_SM.SM_C_CHECK.isin(CV_ND_INDS['CV2_test'])]
+ABCS_test_CV3 = A_B_C_S_SET_SM[A_B_C_S_SET_SM.SM_C_CHECK.isin(CV_ND_INDS['CV3_test'])]
+ABCS_test_CV4 = A_B_C_S_SET_SM[A_B_C_S_SET_SM.SM_C_CHECK.isin(CV_ND_INDS['CV4_test'])]
+
+
+ABCS_test_CV0['ANS'] = ans_1_CV0
+ABCS_test_CV1['ANS'] = ans_1_CV1
+ABCS_test_CV2['ANS'] = ans_1_CV2
+ABCS_test_CV3['ANS'] = ans_1_CV3
+ABCS_test_CV4['ANS'] = ans_1_CV4
+
+O_ABCS_test_all = pd.concat([
+	ABCS_test_CV0, ABCS_test_CV1, ABCS_test_CV2,
+	ABCS_test_CV3, ABCS_test_CV4])
+
+
+E1 = torch.concat((E1_list_CV0, E1_list_CV1, E1_list_CV2, E1_list_CV3, E1_list_CV4))
+E2 = torch.concat((E2_list_CV0, E2_list_CV1, E2_list_CV2, E2_list_CV3, E2_list_CV4))
+
+O_ABCS_test_all.to_csv(PRJ_PATH+'O_ABCS_test_all.csv')
+torch.save(E1, PRJ_PATH+'E1.pt')
+torch.save(E2, PRJ_PATH+'E2.pt')
+
+
+
+
+
+
+from sklearn.datasets import load_digits
+from sklearn.manifold import TSNE
+
+O_ABCS_test_all['tissue'] = O_ABCS_test_all.CELL.apply(lambda x : '_'.join(x.split('_')[1:]))
+O_ABCS_test_all = O_ABCS_test_all[['CID_CID','CELL','tissue', 'ANS']]
+cell_list = list(set(O_ABCS_test_all.CELL))
+cell_list.sort()
+
+
+cell_array = pd.DataFrame(columns = cell_list, index = cell_list)
+
+for cell_1 in cell_list : 
+	cell_1
+	for cell_2 in cell_list : 
+		ABCS_res_cell_1 = O_ABCS_test_all[O_ABCS_test_all.CELL == cell_1]
+		ABCS_res_cell_2 = O_ABCS_test_all[O_ABCS_test_all.CELL == cell_2]
+		common_n = list(set(ABCS_res_cell_1.CID_CID) & set(ABCS_res_cell_2.CID_CID))
+		print(len(common_n))
+		common_n.sort()
+		std_list = []
+		for cc in common_n : 
+			test_1 = ABCS_res_cell_1[ABCS_res_cell_1.CID_CID==cc]['ANS']
+			test_2 = ABCS_res_cell_2[ABCS_res_cell_2.CID_CID==cc]['ANS']
+			std_res = np.std([test_1, test_2])
+			std_list.append(std_res)
+		cell_cell_res = np.mean(std_list)
+		cell_array.at[cell_1, cell_2] = cell_cell_res
+	
+
+
+
+cell_array.to_csv('/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V8_W415_349_MIS2/TSNE_oneil_array1.csv', sep = '\t')
+
+
+
+# 이거 반복해줘야할듯 
+new_df = []
+for ind in range(len(cell_list)) : 
+	cell_row = cell_array2[ind]
+	new_row_ind = [a for a in range(len(cell_row)) if np.isnan(cell_row[a])]
+	cell_row[new_row_ind] = 0.0
+	new_df.append(cell_row)
+
+
+new_df2 = np.array(new_df)
+
+n_components = 2
+
+
+
+
+
+
+
+
+
+
+
+
+vec_all = torch.concat([E1, E2], axis =1)
+
+
+
+all_cells = list(np.unique(O_ABCS_test_all.CELL))
+
+
+cell_specific_vec = []
+
+
+for cell_name in all_cells : 
+        cell_tmp = O_ABCS_test_all[O_ABCS_test_all.CELL==cell_name]
+        cell_tmp = cell_tmp.sort_values('CID_CID')
+        # cid_cid_list.append(list(cell_tmp['CID_CID']))
+        cell_indd = list(cell_tmp.index)
+        cell_vec = vec_all[cell_indd].view(1,-1).squeeze().tolist()
+        cell_specific_vec.append(cell_vec)
+
+
+
+
+# 다시 우리 중간 layer 쓰는 방법 
+trial = 10
+
+cell_specific_vec_np = np.array(cell_specific_vec)
+n_components = 2
+
+model = TSNE(n_components=n_components)
+X_embedded = model.fit_transform(cell_specific_vec_np)
+
+TSNE_DF = pd.DataFrame(X_embedded)
+TSNE_DF.columns = ['comp1','comp2']
+
+TSNE_DF['cell_lines'] = all_cells
+
+cell_tiss = ['_'.join(a.split('_')[1:]) for a in all_cells]
+TSNE_DF['tissue'] = cell_tiss
+
+cell_strip = [a.split('_')[0] for a in all_cells]
+TSNE_DF['strip'] = cell_strip
+
+TSNE_DF.to_csv('/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V8_W415_349_MIS2/TSNE.modelvec{}.csv'.format(trial), index = False)
+# TSNE_DF = pd.read_csv('/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V6_W217_349_MIS2/TSNE_217_1.modelvec4.csv')
+
+tissue_set = ['CENTRAL_NERVOUS_SYSTEM', 'LUNG', 'BREAST', 'BONE', 'OVARY', 'PROSTATE', 'HAEMATOPOIETIC_AND_LYMPHOID_TISSUE', 'LARGE_INTESTINE', 'SKIN', 'PLEURA', 'KIDNEY' ] # list(set(test_cell_df['tissue']))
+# 여기서만 central 색깔 좀 여리게 바꿔줌 
+color_set = ['#d95e92','#FF7514','#025669','#308446','#84C3BE','#D53032','#4ddcfd','#ffcd36','#ac8cff',"#0000ffff","#7bff68ff"] # "#1E1E1E"
+color_dict = {a : color_set[tissue_set.index(a)] for a in tissue_set}
+
+fig = plt.figure(figsize=(12,8))
+ax = sns.scatterplot(data = TSNE_DF, x = 'comp1', y = 'comp2', hue = 'tissue', legend='full', palette=color_dict, size = 'tissue', sizes=[150]*len(set(cell_tiss)))  # 
+for i in range(TSNE_DF.shape[0]):
+    plt.text(TSNE_DF.comp1[i]-7.0 , TSNE_DF.comp2[i]+4.5, TSNE_DF.strip[i], size = 8 )
+
+plt.legend(loc='upper left',  fontsize = 10) # bbox_to_anchor=(-1.0, 1.0),
+ax.set_xlabel('TSNE 1', fontsize=10)
+ax.set_ylabel('TSNE 2', fontsize=10)
+
+plt.tight_layout()
+path = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V8_W415_349_MIS2'
+
+# 그림 이쁜거 고르려고 노력중 
+
+plotname = 'tsne_vec_{}'.format(trial)
+fig.savefig('{}/{}.png'.format(path, plotname), bbox_inches = 'tight')
+
+plotname = 'tsne_vec_{}'.format(trial)
+fig.savefig('{}/{}.pdf'.format(path, plotname), format="pdf", bbox_inches = 'tight')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import matplotlib.pyplot as plt
+
+tissue_set = ['CENTRAL_NERVOUS_SYSTEM', 'LUNG', 'BREAST', 'BONE', 'OVARY', 'PROSTATE', 'HAEMATOPOIETIC_AND_LYMPHOID_TISSUE', 'LARGE_INTESTINE', 'SKIN', 'PLEURA', 'KIDNEY' ] # list(set(test_cell_df['tissue']))
+# 여기서만 central 색깔 좀 여리게 바꿔줌 
+color_set = ['#d95e92','#FF7514','#025669','#308446','#84C3BE','#D53032','#4ddcfd','#ffcd36','#ac8cff',"#0000ffff","#7bff68ff"] # "#1E1E1E"
+color_dict = {a : color_set[tissue_set.index(a)] for a in tissue_set}
+
+
+# correlation plot 그리기 
+cell_array1 = pd.read_csv('/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V8_W415_349_MIS2/TSNE_oneil_array1.csv', sep = '\t')
+
+corr = cell_array1.corr()
+
+mask = np.triu(np.ones_like(corr, dtype=bool)) # Generate a mask for the upper triangle
+f, ax = plt.subplots(figsize=(11, 9))
+diverging_palette = sns.color_palette("coolwarm", 7)
+diverging_palette = sns.diverging_palette(h_neg=-1, h_pos=1, s=85, l=25, n=5,
+                                          sep=5, center='light', as_cmap=False)
+
+
+cmap = plt.get_cmap('RdBu_r', 11)
+
+sns.heatmap(corr, mask=mask, cmap=cmap, vmin = -1, vmax = 1, center=0,
+            square=True, linewidths=.5, cbar_kws={"shrink": .5})
+
+path = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V8_W415_349_MIS2/'
+plotname = 'corrplot_1_corr'
+plt.savefig('{}/{}.pdf'.format(path, plotname), format="pdf", bbox_inches = 'tight')
+
+
+
+# clustermap 시도  1
+
+cmap = plt.get_cmap('RdBu_r', 11)
+
+gg = sns.clustermap(
+	corr, center=0, cmap=cmap, vmin=-1, vmax=1,
+	figsize=(20,20),
+	row_cluster=True, col_cluster = True, 
+	metric = 'correlation', method = 'complete',
+	dendrogram_ratio=0.2, yticklabels=False) 
+
+
+path = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V8_W415_349_MIS2/'
+plotname = 'corrplot_2_corr'
+plt.savefig('{}/{}.pdf'.format(path, plotname), format="pdf", bbox_inches = 'tight')
+plt.close()
+
+
+
+# clustermap 시도  2
+
+corr_col = list(corr.index)
+tissue_list = ['_'.join(x.split('_')[1:]) for x in corr_col]
+row_colors = [color_dict[tt] for tt in tissue_list]
+
+cmap = plt.get_cmap('RdBu_r', 11)
+
+gg = sns.clustermap(
+	corr, center=0, cmap=cmap, vmin=-1, vmax=1,
+	figsize=(20,20),
+	row_cluster=True, col_cluster = True, 
+	metric = 'correlation', method = 'complete',
+        row_colors = row_colors,
+	dendrogram_ratio=0.2) 
+
+
+path = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V8_W415_349_MIS2/'
+plotname = 'corrplot_2_corr'
+plt.savefig('{}/{}.pdf'.format(path, plotname), format="pdf", bbox_inches = 'tight')
+plt.close()
+
+
+
+
+# clustermap 시도  3
+cell_array_re = cell_array1.iloc[:,1:]
+cell_array_re.index = list(cell_array_re.columns)
+
+
+corr_col = list(cell_array_re.columns)
+tissue_list = ['_'.join(x.split('_')[1:]) for x in corr_col]
+row_colors = [color_dict[tt] for tt in tissue_list]
+
+cmap = plt.get_cmap('PuBu', 30) # 
+
+gg = sns.clustermap(
+	cell_array_re, cmap=cmap, vmin=0, vmax=6, # center=0, c
+	figsize=(20,20),
+	row_cluster=True, col_cluster = True, 
+	metric = 'correlation', method = 'complete',
+        row_colors = row_colors,
+	dendrogram_ratio=0.2) 
+
+
+path = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V8_W415_349_MIS2/'
+plotname = 'corrplot_3_dist'
+plt.savefig('{}/{}.pdf'.format(path, plotname), format="pdf", bbox_inches = 'tight')
+plt.close()
+
+
+
+
+
+
+
+# clustermap 시도  4
+
+corr_col = list(corr.index)
+tissue_list = ['_'.join(x.split('_')[1:]) for x in corr_col]
+row_colors = [color_dict[tt] for tt in tissue_list]
+
+cmap = plt.get_cmap('RdBu_r', 11)
+
+gg = sns.clustermap(
+	corr, center=0, cmap=cmap, vmin=-1, vmax=1,
+	figsize=(20,20),
+	row_cluster=True, col_cluster = True, 
+	metric = 'euclidean', method = 'complete',
+        row_colors = row_colors,
+	dendrogram_ratio=0.2) 
+
+
+
+path = '/st06/jiyeonH/11.TOX/DR_SPRING/trials/M3V8_W415_349_MIS2/'
+plotname = 'corrplot_4_corr'
+plt.savefig('{}/{}.pdf'.format(path, plotname), format = "pdf", bbox_inches = 'tight')
+plt.close()
+
+
+
+
+
+
+
+
+
+
 
 
 

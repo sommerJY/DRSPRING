@@ -664,7 +664,7 @@ def prepare_data_GCN_cidout(CV_num, A_B_C_S_SET_SM, drug_A_arrS, drug_B_arrS,
 MY_g_EXP_A_RE2, MY_g_EXP_B_RE2, MY_Target_A2, MY_Target_B2, MY_CellBase_RE2,
 MY_syn_RE2 ) :
 		# 
-		cid_list = globals()['CID_list{}'.format(CV_num)]
+		cid_list = globals()['CID_list{}'.format(CV_num+1)]
 		#train_key = 'CV{}_train'.format(CV_num)
 		#test_key = 'CV{}_test'.format(CV_num)
 		# 
@@ -922,8 +922,11 @@ gs_df_2 = pd.read_csv(T_path+'RF_train_CV2.csv')
 gs_df_3 = pd.read_csv(T_path+'RF_train_CV3.csv')
 gs_df_4 = pd.read_csv(T_path+'RF_train_CV4.csv')
 
+gs_df_tot = pd.DataFrame({'df0':gs_df_0.test_mean,'df1':gs_df_1.test_mean,'df2':gs_df_2.test_mean, 'df3':gs_df_3.test_mean, 'df4':gs_df_4.test_mean})
+
 test_mean = np.mean([gs_df_0.test_mean, gs_df_1.test_mean, gs_df_2.test_mean, gs_df_3.test_mean, gs_df_4.test_mean], 0)
-np.max(test_mean)
+list(test_mean).index(np.max(test_mean))
+
 
 
 
@@ -950,7 +953,7 @@ for cv in range(5) :
 	train_data, test_data = prepare_data_GCN(cv, A_B_C_S_SET_SM, drug_A_arrS, drug_B_arrS, MY_g_EXP_A_RE2, MY_g_EXP_B_RE2, MY_Target_A2, MY_Target_B2, MY_CellBase_RE2, MY_syn_RE2 )
 	X_train, X_test, y_train, y_test = np.array(train_data['Merged_features']), np.array(test_data['Merged_features']), np.array(train_data['y']), np.array(test_data['y'])
 	y_train = np.ravel(y_train) ; y_test = np.ravel(y_test)
-	model_final = RandomForestRegressor(n_estimators=1024, max_features=256)
+	model_final = RandomForestRegressor(n_estimators=1024, max_features=512, n_jobs = 16)
 	model_final.fit(X_train, y_train)
 	y_pred = model_final.predict(X_test)
 	Pcor_0, Scor_0, mse_0 = get_res(y_test, y_pred)
@@ -1008,7 +1011,7 @@ for cell_num in range(0,34) :
 	train_data, test_data = prepare_data_GCN_cellout(cell_num, A_B_C_S_SET_SM, drug_A_arrS, drug_B_arrS, MY_g_EXP_A_RE2, MY_g_EXP_B_RE2, MY_Target_A2, MY_Target_B2, MY_CellBase_RE2, MY_syn_RE2 )
 	X_train, X_test, y_train, y_test = np.array(train_data['Merged_features']), np.array(test_data['Merged_features']), np.array(train_data['y']), np.array(test_data['y'])
 	y_train = np.ravel(y_train) ; y_test = np.ravel(y_test)
-	model_final = RandomForestRegressor(n_estimators=1024, max_features=256)
+	model_final = RandomForestRegressor(n_estimators=1024, max_features=512, n_jobs = 16)
 	model_final.fit(X_train, y_train)
 	y_pred = model_final.predict(X_test)
 	Pcor_0, Scor_0, mse_0 = get_res(y_test, y_pred)
@@ -1064,7 +1067,7 @@ for cv_num in range(0,5) :
 	train_data, test_data = prepare_data_GCN_cidout(cv_num, A_B_C_S_SET_SM, drug_A_arrS, drug_B_arrS, MY_g_EXP_A_RE2, MY_g_EXP_B_RE2, MY_Target_A2, MY_Target_B2, MY_CellBase_RE2, MY_syn_RE2 )
 	X_train, X_test, y_train, y_test = np.array(train_data['Merged_features']), np.array(test_data['Merged_features']), np.array(train_data['y']), np.array(test_data['y'])
 	y_train = np.ravel(y_train) ; y_test = np.ravel(y_test)
-	model_final = RandomForestRegressor(n_estimators=1024, max_features=256)
+	model_final = RandomForestRegressor(n_estimators=1024, max_features=512, n_jobs = 16)
 	model_final.fit(X_train, y_train)
 	y_pred = model_final.predict(X_test)
 	Pcor_0, Scor_0, mse_0 = get_res(y_test, y_pred)
@@ -1121,7 +1124,7 @@ for tissue in tissue_list :
 	train_data, test_data = prepare_data_GCN_tisout(tissue, A_B_C_S_SET_SM, drug_A_arrS, drug_B_arrS, MY_g_EXP_A_RE2, MY_g_EXP_B_RE2, MY_Target_A2, MY_Target_B2, MY_CellBase_RE2, MY_syn_RE2 )
 	X_train, X_test, y_train, y_test = np.array(train_data['Merged_features']), np.array(test_data['Merged_features']), np.array(train_data['y']), np.array(test_data['y'])
 	y_train = np.ravel(y_train) ; y_test = np.ravel(y_test)
-	model_final = RandomForestRegressor(n_estimators=1024, max_features=256, n_jobs = 16)
+	model_final = RandomForestRegressor(n_estimators=1024, max_features=512, n_jobs = 16)
 	model_final.fit(X_train, y_train)
 	y_pred = model_final.predict(X_test)
 	Pcor_0, Scor_0, mse_0 = get_res(y_test, y_pred)
@@ -1247,8 +1250,10 @@ gs_df_2 = pd.read_csv(T_path+'XGB_train_CV2.csv')
 gs_df_3 = pd.read_csv(T_path+'XGB_train_CV3.csv')
 gs_df_4 = pd.read_csv(T_path+'XGB_train_CV4.csv')
 
+gs_df_tot = pd.DataFrame({'df0':gs_df_0.test_mean,'df1':gs_df_1.test_mean,'df2':gs_df_2.test_mean, 'df3':gs_df_3.test_mean, 'df4':gs_df_4.test_mean})
+
 test_mean = np.mean([gs_df_0.test_mean, gs_df_1.test_mean, gs_df_2.test_mean, gs_df_3.test_mean, gs_df_4.test_mean], 0)
-np.max(test_mean)
+list(test_mean).index(np.max(test_mean))
 
 
 
@@ -1336,7 +1341,7 @@ for cell_num in range(0,34) :
 	train_data, test_data = prepare_data_GCN_cellout(cell_num, A_B_C_S_SET_SM, drug_A_arrS, drug_B_arrS, MY_g_EXP_A_RE2, MY_g_EXP_B_RE2, MY_Target_A2, MY_Target_B2, MY_CellBase_RE2, MY_syn_RE2 )
 	X_train, X_test, y_train, y_test = np.array(train_data['Merged_features']), np.array(test_data['Merged_features']), np.array(train_data['y']), np.array(test_data['y'])
 	y_train = np.ravel(y_train) ; y_test = np.ravel(y_test)
-	model_final = xgb.XGBRegressor(n_estimators=1024, learning_rate=0.1, n_jobs = 8)
+	model_final = xgb.XGBRegressor(n_estimators=1024, learning_rate=0.1, n_jobs = 16)
 	model_final.fit(X_train, y_train)
 	y_pred = model_final.predict(X_test)
 	Pcor_0, Scor_0, mse_0 = get_res(y_test, y_pred)
@@ -1643,6 +1648,7 @@ gs_df_2 = pd.read_csv(T_path+'SVR_train_CV2.csv')
 gs_df_3 = pd.read_csv(T_path+'SVR_train_CV3.csv')
 gs_df_4 = pd.read_csv(T_path+'SVR_train_CV4.csv')
 
+gs_df_tot = pd.DataFrame({'df0':gs_df_0.test_mean,'df1':gs_df_1.test_mean,'df2':gs_df_2.test_mean, 'df3':gs_df_3.test_mean, 'df4':gs_df_4.test_mean})
 
 test_mean = np.mean([gs_df_0.test_mean, gs_df_1.test_mean, gs_df_2.test_mean, gs_df_3.test_mean, gs_df_4.test_mean], 0)
 list(test_mean).index(np.max(test_mean))
@@ -1689,11 +1695,11 @@ for cv in range(5) :
 
 RF_result.to_csv(T_path+'leaveCombi.csv')
 
-np.round(np.mean(RF_result.mse), 4)
-np.round(np.std(RF_result.mse), 4)
+print(np.round(np.mean(RF_result.mse), 4))
+print(np.round(np.std(RF_result.mse), 4))
 
-len(pred_results)
-len(ans_list)
+print(len(pred_results))
+print(len(ans_list))
 
 mse = np.mean((np.array(ans_list) - np.array(pred_results)) ** 2)
 se_mse = np.sqrt(2 * mse * mse / len(pred_results))
@@ -1702,13 +1708,13 @@ CfI = stats.t.interval(alpha=0.90, df=len(pred_results)-1,
 				loc=mse,
 				scale=se_mse)
 
-np.round(CfI, 4)
+print(np.round(CfI, 4))
 
-np.round(np.mean(RF_result.Pcor), 4)
-np.round(np.std(RF_result.Pcor), 4)
+print(np.round(np.mean(RF_result.Pcor), 4))
+print(np.round(np.std(RF_result.Pcor), 4))
 
-np.round(np.mean(RF_result.Scor), 4)
-np.round(np.std(RF_result.Scor), 4)
+print(np.round(np.mean(RF_result.Scor), 4))
+print(np.round(np.std(RF_result.Scor), 4))
 
 RF_result2 = pd.DataFrame({'pred' : pred_results, 'ans' : ans_list})
 RF_result2.to_csv(T_path+'leaveCombi_value.csv')
@@ -1731,7 +1737,7 @@ RF_result = pd.DataFrame(columns = ['Pcor','Scor','mse'])
 pred_results = []
 ans_list = []
 
-for cell_num in range(0,30) :
+for cell_num in range(0,34) :
 	print(cell_num)
 	train_data, test_data = prepare_data_GCN_cellout(cell_num, A_B_C_S_SET_SM, drug_A_arrS, drug_B_arrS, MY_g_EXP_A_RE2, MY_g_EXP_B_RE2, MY_Target_A2, MY_Target_B2, MY_CellBase_RE2, MY_syn_RE2 )
 	X_train, X_test, y_train, y_test = np.array(train_data['Merged_features']), np.array(test_data['Merged_features']), np.array(train_data['y']), np.array(test_data['y'])
@@ -1753,11 +1759,11 @@ for cell_num in range(0,30) :
 
 RF_result.to_csv(T_path+'leaveCell.csv')
 
-np.round(np.mean(RF_result.mse), 4)
-np.round(np.std(RF_result.mse), 4)
+print(np.round(np.mean(RF_result.mse), 4))
+print(np.round(np.std(RF_result.mse), 4))
 
-len(pred_results)
-len(ans_list)
+print(len(pred_results))
+print(len(ans_list))
 
 mse = np.mean((np.array(ans_list) - np.array(pred_results)) ** 2)
 se_mse = np.sqrt(2 * mse * mse / len(pred_results))
@@ -1766,13 +1772,13 @@ CfI = stats.t.interval(alpha=0.90, df=len(pred_results)-1,
 				loc=mse,
 				scale=se_mse)
 
-np.round(CfI, 4)
+print(np.round(CfI, 4))
 
-np.round(np.mean(RF_result.Pcor), 4)
-np.round(np.std(RF_result.Pcor), 4)
+print(np.round(np.mean(RF_result.Pcor), 4))
+print(np.round(np.std(RF_result.Pcor), 4))
 
-np.round(np.mean(RF_result.Scor), 4)
-np.round(np.std(RF_result.Scor), 4)
+print(np.round(np.mean(RF_result.Scor), 4))
+print(np.round(np.std(RF_result.Scor), 4))
 
 RF_result2 = pd.DataFrame({'pred' : pred_results, 'ans' : ans_list})
 RF_result2.to_csv(T_path+'leaveCell_value.csv')
@@ -1810,11 +1816,11 @@ for cv_num in range(5) :
 
 RF_result.to_csv(T_path+'leaveCID.csv')
 
-np.round(np.mean(RF_result.mse), 4)
-np.round(np.std(RF_result.mse), 4)
+print(np.round(np.mean(RF_result.mse), 4))
+print(np.round(np.std(RF_result.mse), 4))
 
-len(pred_results)
-len(ans_list)
+print(len(pred_results))
+print(len(ans_list))
 
 mse = np.mean((np.array(ans_list) - np.array(pred_results)) ** 2)
 se_mse = np.sqrt(2 * mse * mse / len(pred_results))
@@ -1823,13 +1829,14 @@ CfI = stats.t.interval(alpha=0.90, df=len(pred_results)-1,
 				loc=mse,
 				scale=se_mse)
 
-np.round(CfI, 4)
+print(np.round(CfI, 4))
 
-np.round(np.mean(RF_result.Pcor), 4)
-np.round(np.std(RF_result.Pcor), 4)
+print(np.round(np.mean(RF_result.Pcor), 4))
+print(np.round(np.std(RF_result.Pcor), 4))
 
-np.round(np.mean(RF_result.Scor), 4)
-np.round(np.std(RF_result.Scor), 4)
+print(np.round(np.mean(RF_result.Scor), 4))
+print(np.round(np.std(RF_result.Scor), 4))
+
 
 
 RF_result2 = pd.DataFrame({'pred' : pred_results, 'ans' : ans_list})
@@ -1871,11 +1878,11 @@ for tissue in tissue_list :
 
 RF_result.to_csv(T_path+'leaveTis.csv')
 
-np.round(np.mean(RF_result.mse), 4)
-np.round(np.std(RF_result.mse), 4)
+print(np.round(np.mean(RF_result.mse), 4))
+print(np.round(np.std(RF_result.mse), 4))
 
-len(pred_results)
-len(ans_list)
+print(len(pred_results))
+print(len(ans_list))
 
 mse = np.mean((np.array(ans_list) - np.array(pred_results)) ** 2)
 se_mse = np.sqrt(2 * mse * mse / len(pred_results))
@@ -1884,13 +1891,13 @@ CfI = stats.t.interval(alpha=0.90, df=len(pred_results)-1,
 				loc=mse,
 				scale=se_mse)
 
-np.round(CfI, 4)
+print(np.round(CfI, 4))
 
-np.round(np.mean(RF_result.Pcor), 4)
-np.round(np.std(RF_result.Pcor), 4)
+print(np.round(np.mean(RF_result.Pcor), 4))
+print(np.round(np.std(RF_result.Pcor), 4))
 
-np.round(np.mean(RF_result.Scor), 4)
-np.round(np.std(RF_result.Scor), 4)
+print(np.round(np.mean(RF_result.Scor), 4))
+print(np.round(np.std(RF_result.Scor), 4))
 
 
 RF_result2 = pd.DataFrame({'pred' : pred_results, 'ans' : ans_list})
@@ -2071,6 +2078,7 @@ ans_list = []
 
 for cell_num in range(34) :
 	print(cell_num)
+	print(with_DS_CELL[cell_num])
 	train_data, test_data = prepare_data_GCN_cellout(cell_num, A_B_C_S_SET_SM, drug_A_arrS, drug_B_arrS, MY_g_EXP_A_RE2, MY_g_EXP_B_RE2, MY_Target_A2, MY_Target_B2, MY_CellBase_RE2, MY_syn_RE2 )
 	X_train, X_test, y_train, y_test = np.array(train_data['Merged_features']), np.array(test_data['Merged_features']), np.array(train_data['y']), np.array(test_data['y'])
 	scaler = StandardScaler()
