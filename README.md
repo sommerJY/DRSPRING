@@ -33,7 +33,8 @@ pip install torch-geometric==2.0.4
 ## Training model
 **(1) Module_1 (PDIGEC)**
 ```
-python PDIGEC.py /home/minK/ssse/final/final_data/  
+python PDIGEC.py [training data directory]
+python PDIGEC.py ./final_data/  
 ```
 
 **(2) Module_2 (PDSS)**
@@ -59,6 +60,7 @@ python PDIGEC.py ./final_data/ --mode 'new_data' --saved_model ./final_data/mode
 --smiles 'new_drug_0815.csv'
 ```
 
+
 If you want to get gene expression predicted value of 1393 ccle cell lines that we used, try this code!
 All you need to provide is cid and smiles id in csv file by --smiles.
 ```
@@ -66,9 +68,11 @@ python PDIGEC.py ./final_data/ --mode 'new_data_cellline_all' --saved_model ./fi
 --smiles 'new_drug_0815.csv'
 ```
 
+
+
 **(2) Module_2 (PDSS)**
 1) In case you just give just new smiles of two drugs, we automatically present all predicted scores of 92 cells we used in training.
-   Also, this mode requires the Module 1 derived files of each input SMILES.
+   Also, this mode requires the Module 1 resulted files of each input SMILES.
 
 ```
 python PDSS.py [result directory] --mode 'new_data' --saved_model [pretrained model] --DrugAsmiles [SMILES A] --DrugBsmiles [SMILES B] --M1_DrugA [Module 1 result of SMILES A] --M1_DrugB [Module 1 result of SMILES B]
