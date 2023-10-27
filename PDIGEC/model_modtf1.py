@@ -200,7 +200,7 @@ def testing_model(data, save_file, saved_model,basal, device,learning_rate,drop_
     model.eval()
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
     criterion = nn.MSELoss()
-    test_df= pd.read_csv("./final_data/raw/test.csv")  
+    test_df= pd.read_csv("./final_data/raw/test_tf.csv")  
     gi_info_lm_list = test_df.iloc[:,5:354].columns.to_list()
     ccle_info_file = "./final_data/raw/ccle_lincs_convert.csv"
     ccle_info = pd.read_csv(ccle_info_file, low_memory=False)

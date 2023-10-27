@@ -366,7 +366,7 @@ class FuNewh3dttfHSDB_L3Dataset(InMemoryDataset):
     #
     @property
     def raw_file_names(self): 
-        return  [self.new_drug_cellline, self.new_smiles2, 'HSDB_network.csv', 'ccle_lincs_convert.csv','target_lm349_all.csv', self.new_basal,'test.csv']
+        return  [self.new_drug_cellline, self.new_smiles2, 'HSDB_network.csv', 'ccle_lincs_convert.csv','target_lm349_all.csv', self.new_basal,'test_tf.csv']
     #
     @property
     def processed_file_names(self):
@@ -444,7 +444,7 @@ class FuNewallh3dttfHSDB_L3Dataset(InMemoryDataset):
     #
     @property
     def raw_file_names(self): 
-        return  [self.new_smiles2, 'HSDB_network.csv', 'ccle_lincs_convert.csv','target_lm349_all.csv', self.new_basal,'test.csv']
+        return  [self.new_smiles2, 'HSDB_network.csv', 'ccle_lincs_convert.csv','target_lm349_all.csv', self.new_basal,'test_tf.csv']
     #
     @property
     def processed_file_names(self):
