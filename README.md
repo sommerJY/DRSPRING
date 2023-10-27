@@ -48,6 +48,8 @@ python PDSS.py ~/DRSPRING/PDSS/result --mode 'train' --early_stopping 'es'
 ```
 
 
+
+
 ## Use our trained model to predict your data
 We support Drugs experiment from CCLE 22Q1 10xx cell line, check cell line list in lincs_wth_ccle_org_all.csv file. If you want train or test cell line that are not in CCLE ver?, you have to provide Cell line's basal expression to the model to use it. Add --basal option to use new cell line. Make sure drug_cell, smiles, basal files are all in ./final_data/raw/.
 
@@ -67,6 +69,8 @@ All you need to provide is cid and smiles id in csv file by --smiles.
 python PDIGEC.py ./final_data/ --mode 'new_data_cellline_all' --saved_model ./final_data/model_tvt.pt \
 --smiles 'new_drug_0815.csv'
 ```
+
+Both methods will make result file 'test_predicted_expression.csv' under the 'final_data' directory.
 
 
 
