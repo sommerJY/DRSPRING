@@ -51,12 +51,12 @@ python PDSS.py ./results --mode 'train' --early_stopping 'es'
 
 
 ## Use our trained model to predict your data
-We support cell line specific basal expression data from CCLE 22Q1.(check cell line names in lincs_wth_ccle_org_all.csv). If you want to train or test cell lines that are not in CCLE 22Q1, you have to provide your own cell line's basal expression to use our model. Add --basal option to use new cell line, and make sure all your input files are all in raw/ directory.
+We support cell line specific basal expression data from CCLE 22Q1.(check cell line names in lincs_wth_ccle_org_all.csv). If you want to train or test cell lines that are not in CCLE 22Q1, you have to provide your own cell line's basal expression to use our model. Add `--basal` option to use new cell line, and make sure all your input files are all in raw/ directory.
 
 **(1) Module_1 (PDIGEC)**
 
 We support new drug-gene expression prediction for user input chemicals with ccle cell line, experiment doses, experiment dosage time.
-Check the format of 'new_drug_cellline.csv' and 'new_drug.csv' files in raw/ directory. 
+Check the format of `'new_drug_cellline.csv'` and `'new_drug.csv'` files in `raw/` directory. 
 ```
 python PDIGEC.py [saving directory] --mode 'new_data' --saved_model [M1 trained model] --drug_cell [user input drug-cell combination] --smiles [user input drug canonical smiles] --jobname [user input jobname]
 python PDIGEC.py ./results --mode 'new_data' --saved_model ./raw/M1_model_tvt.pt \
@@ -68,7 +68,7 @@ python PDIGEC.py ./results --mode 'new_data' --saved_model ./raw/M1_model_tvt.pt
 
 If you want to get drug induced gene expression predicted value of all 1393 ccle cell lines that we used, try this code!
 All you need to provide is PubChem CID and SMILES as csv file.
-Check the format of 'new_drug.csv' file in raw/ directory. 
+Check the format of `'new_drug.csv'` file in `raw/` directory. 
 ```
 python PDIGEC.py [saving directory] --mode 'new_data_cellline_all' --saved_model [M1 trained model] --smiles [user input drug canonical smiles] --jobname [user input jobname]
 python PDIGEC.py ./final_data/ --mode 'new_data_cellline_all' --saved_model ./raw/M1_model_tvt.pt \
@@ -76,7 +76,7 @@ python PDIGEC.py ./final_data/ --mode 'new_data_cellline_all' --saved_model ./ra
 --jobname 'M1_result'
 ```
 
-Both methods will make result file under the 'results/' directory with user named output. 
+Both methods will make result file under the `'results/'` directory with user named output. 
 
 
 
