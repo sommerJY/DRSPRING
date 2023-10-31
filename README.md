@@ -58,7 +58,12 @@ We support cell line specific basal expression data from CCLE 22Q1.(check cell l
 We support new drug-gene expression prediction for user input chemicals with ccle cell line, experiment doses, experiment dosage time.
 Check the format of `'new_drug_cellline.csv'` and `'new_drug.csv'` files in `raw/` directory. 
 ```
-python PDIGEC.py [saving directory] --mode 'new_data' --saved_model [M1 trained model] --drug_cell [user input drug-cell combination] --smiles [user input drug canonical smiles] --jobname [user input jobname]
+python PDIGEC.py [saving directory] --mode 'new_data' --saved_model [M1 trained model] \
+--drug_cell [user input drug-cell combination] \
+--smiles [user input drug canonical smiles] \
+--jobname [user input jobname]
+
+(Example)
 python PDIGEC.py ./results --mode 'new_data' --saved_model ./raw/M1_model_tvt.pt \
 --drug_cell 'new_drug_cellline.csv' \
 --smiles 'new_drug.csv'
@@ -70,7 +75,11 @@ If you want to get drug induced gene expression predicted value of all 1393 ccle
 All you need to provide is PubChem CID and SMILES as csv file.
 Check the format of `'new_drug.csv'` file in `raw/` directory. 
 ```
-python PDIGEC.py [saving directory] --mode 'new_data_cellline_all' --saved_model [M1 trained model] --smiles [user input drug canonical smiles] --jobname [user input jobname]
+python PDIGEC.py [saving directory] --mode 'new_data_cellline_all' --saved_model [M1 trained model] \
+--smiles [user input drug canonical smiles] \
+--jobname [user input jobname]
+
+(Example)
 python PDIGEC.py ./final_data/ --mode 'new_data_cellline_all' --saved_model ./raw/M1_model_tvt.pt \
 --smiles 'new_drug.csv'
 --jobname 'M1_result'
@@ -85,15 +94,29 @@ Both methods will make result file under the `'results/'` directory with user na
    Also, this mode requires the Module 1 resulted files of each input SMILES.
 
 ```
-python PDSS.py [result directory] --mode 'new_data' --saved_model [pretrained model] --DrugAsmiles [SMILES A] --DrugBsmiles [SMILES B] --M1_DrugA [Module 1 result of SMILES A] --M1_DrugB [Module 1 result of SMILES B]
-python PDSS.py ~/DRSPRING/PDSS/result --mode 'new_data' --saved_model ~/DRSPRING/PDSS/result/MODEL.pt --DrugAsmiles 'C1C(N(C2=C(N1)N=C(NC2=O)N)C=O)CNC3=CC=C(C=C3)C(=O)NC(CCC(=O)O)C(=O)O' --DrugBsmiles 'C1=C(C(=O)NC(=O)N1)F' --M1_DrugA '~/DRSPRING/PDIGEC/M1_expression_A.csv' --M1_DrugB '~/DRSPRING/PDIGEC/M1_expression_B.csv'
+python PDSS.py [result directory] --mode 'new_data' --saved_model [pretrained model] \
+--DrugAsmiles [SMILES file of Drug A] --DrugBsmiles [SMILES file of Drug B] \
+--M1_DrugA [Module 1 result of SMILES A] --M1_DrugB [Module 1 result of SMILES B]
+
+(Example)
+python PDSS.py ./result --mode 'new_data' --saved_model ~/DRSPRING/PDSS/result/MODEL.pt \
+--DrugAsmiles ./raw/DrugA_SMILES.csv --DrugBsmiles ./raw/DrugB_SMILES.csv \
+--M1_DrugA ./results/M1_expression_A.csv --M1_DrugB ./results/M1_expression_B.csv
 ```
 
 2) In case you give new smiles of two drugs and new CCLE data, you should additionally provide new data directory.
 This also requires the Module 1 derived files of each input SMILES.
 ```
-python PDSS.py [result directory] --mode 'new_data' --saved_model [pretrained model] --DrugAsmiles [SMILES A] --DrugBsmiles [SMILES B] --M1_DrugA [Module 1 result of SMILES A] --M1_DrugB [Module 1 result of SMILES B] --Basal_Cell [User provided new CCLE data]
-python PDSS.py ~/DRSPRING/PDSS/result --mode 'new_data' --saved_model ~/DRSPRING/PDSS/result/MODEL.pt --DrugAsmiles 'C1C(N(C2=C(N1)N=C(NC2=O)N)C=O)CNC3=CC=C(C=C3)C(=O)NC(CCC(=O)O)C(=O)O' --DrugBsmiles 'C1=C(C(=O)NC(=O)N1)F' --M1_DrugA '~/DRSPRING/PDIGEC/M1_expression_A.csv' --M1_DrugB '~/DRSPRING/PDIGEC/M1_expression_B.csv' --Basal_Cell '~/DRSPRING/data/new_cell.csv'
+python PDSS.py [result directory] --mode 'new_data' --saved_model [pretrained model] \
+--DrugAsmiles [SMILES file of Drug A] --DrugBsmiles [SMILES file of Drug B] \
+--M1_DrugA [Module 1 result of SMILES A] --M1_DrugB [Module 1 result of SMILES B] \
+--Basal_Cell [User provided new CCLE data]
+
+(Example)
+python PDSS.py ~/DRSPRING/PDSS/result --mode 'new_data' --saved_model ~/DRSPRING/PDSS/result/MODEL.pt \
+--DrugAsmiles ./raw/DrugA_SMILES.csv --DrugBsmiles ./raw/DrugB_SMILES.csv \
+--M1_DrugA ./results/M1_expression_A.csv --M1_DrugB ./results/M1_expression_B.csv
+--Basal_Cell '~/raw/new_cell.csv'
 ```
 
 
