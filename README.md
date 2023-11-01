@@ -33,7 +33,7 @@ pip install torch-geometric==2.0.4
 ## Training model
 **(1) Module_1 (PDIGEC)**
 ```
-python PDIGEC.py [training data directory]
+python PDIGEC.py [result directory]
 python PDIGEC.py ./results
 ```
 
@@ -64,7 +64,7 @@ python PDIGEC.py [saving directory] --mode 'new_data' --saved_model [M1 trained 
 --jobname [user input jobname]
 
 (Example)
-python PDIGEC.py ./results --mode 'new_data' --saved_model ./raw/M1_model.pt \
+python PDIGEC.py ./results --mode 'new_data' --saved_model ./results/M1_model.pt \
 --drug_cell 'new_drug_cellline.csv' \
 --smiles 'new_drug.csv'
 --jobname 'M1_result'
@@ -80,7 +80,7 @@ python PDIGEC.py [saving directory] --mode 'new_data_cellline_all' --saved_model
 --jobname [user input jobname]
 
 (Example)
-python PDIGEC.py ./results --mode 'new_data_cellline_all' --saved_model ./raw/M1_model.pt \
+python PDIGEC.py ./results --mode 'new_data_cellline_all' --saved_model ./results/M1_model.pt \
 --smiles 'new_drug.csv' \
 --jobname 'M1_result'
 ```
