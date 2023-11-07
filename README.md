@@ -99,9 +99,9 @@ python PDSS.py [result directory] --mode 'new_data' --saved_model [pretrained mo
 --ACID [CID of drug A] --BCID [CID of drug B]
 
 (Example)
-python PDSS.py ./result --mode 'new_data' --saved_model ./results/M2_model.pt \
+python PDSS.py 'M2_result.csv' --mode 'new_data' --saved_model ./results/M2_model.pt \
 --InputSM ./raw/new_drugAB.csv --InputEXP ./results/M1_resultAB_predicted_expression.csv \
---ACID 135402009 --BCID 3385
+--ACID 0000 --BCID 0000
 ```
 
 
@@ -113,11 +113,11 @@ python PDSS.py [result directory] --mode 'new_data' --saved_model [pretrained mo
 --ACID [CID of drug A] --BCID [CID of drug B] \
 --Basal_Cell [User provided new CCLE data]
 
-# 아직 고치는중... 일단 basal cell line 으로 쓸거 depmap 에서 구해와야함 
+# still working! 
 (Example)
 python PDSS.py ~/DRSPRING/PDSS/result --mode 'new_data' --saved_model ./results/M2_model.pt \
 --InputSM ./raw/new_drugAB.csv --InputEXP ./results/M1_resultAB_predicted_expression.csv \
---ACID 135402009 --BCID 3385
+--ACID 0000 --BCID 0000
 --Basal_Cell '~/raw/new_cell.csv'
 ```
 
