@@ -47,8 +47,11 @@ from scipy.sparse import coo_matrix
 from scipy import sparse
 from scipy import stats
 
+now_path = os.getcwd()
+sys.path.append(now_path+'/utils')
+
 from M2_Model import *
-from prep_input import *
+from M2_prep_input import *
 
 
 parser = argparse.ArgumentParser()

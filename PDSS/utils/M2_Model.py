@@ -406,12 +406,27 @@ def pred_simple_synergy (save_path, my_config, saved_model, SM_A, SM_B, CELL):
 
 
 
+# 차라리 민지꺼가 여러개를 한 파일에 넣는 구조라면...!!!!! 
+# SM__file = '/st06/jiyeonH/11.TOX/DR_SPRING/TO_GIT_231107/raw/new_drugAB.csv'
+
+def read_smiles_file(SM__file, CID) :
+	SM_csv = pd.read_csv(SM__file, header = None)
+	try : 
+		ind = SM_csv[SM_csv[0]==CID].index.item()
+		SMILES = SM_csv.at[ind, 1]
+		return SMILES
+	except :
+		print("Please check your input CID and SMILES")
+	
 
 
 
 
 
-def pred_cell_synergy (save_path, my_config, saved_model, SM_A, SM_B, M1_A , M1_B, new_ccle = None):
+
+
+
+def pred_cell_synergy (save_path, my_config, saved_model, CID_A, CID_B, M1_A , M1_B, new_ccle = None):
 	G_chem_layer = my_config['G_chem_layer']
 	G_chem_hdim = my_config['G_chem_hdim']
 	G_exp_layer = my_config['G_exp_layer']
@@ -444,6 +459,9 @@ def pred_cell_synergy (save_path, my_config, saved_model, SM_A, SM_B, M1_A , M1_
 	best_model.eval()
 	#
 	single = torch.Tensor([[0]])
+	#
+	SM_A = pd.read_smiles_file(CID_A)
+	SM_B = pd.read_smiles_file(CID_B)
 	#
 	if new_ccle == None : 
 		result_cell_dict = make_input_by_cell(SM_A, SM_B, M1_A , M1_B)
