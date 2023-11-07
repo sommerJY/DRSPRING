@@ -95,27 +95,29 @@ Both methods will make result file under the `'results/'` directory with user na
 
 ```
 python PDSS.py [result directory] --mode 'new_data' --saved_model [pretrained model] \
---DrugAsmiles [SMILES file of Drug A] --DrugBsmiles [SMILES file of Drug B] \
---M1_DrugA [Module 1 result of SMILES A] --M1_DrugB [Module 1 result of SMILES B]
+--InputSM [user input drug canonical smiles] --InputEXP [Module 1 result of Input] \
+--ACID [CID of drug A] --BCID [CID of drug B]
 
 (Example)
-python PDSS.py ./result --mode 'new_data' --saved_model ~/DRSPRING/PDSS/result/MODEL.pt \
---DrugAsmiles ./raw/DrugA_SMILES.csv --DrugBsmiles ./raw/DrugB_SMILES.csv \
---M1_DrugA ./results/M1_expression_A.csv --M1_DrugB ./results/M1_expression_B.csv
+python PDSS.py ./result --mode 'new_data' --saved_model ./results/M2_model.pt \
+--InputSM ./raw/new_drugAB.csv --InputEXP ./results/M1_resultAB_predicted_expression.csv \
+--ACID 135402009 --BCID 3385
 ```
+
 
 2) In case you give new smiles of two drugs and new CCLE data, you should additionally provide new data directory.
 This also requires the Module 1 derived files of each input SMILES.
 ```
 python PDSS.py [result directory] --mode 'new_data' --saved_model [pretrained model] \
---DrugAsmiles [SMILES file of Drug A] --DrugBsmiles [SMILES file of Drug B] \
---M1_DrugA [Module 1 result of SMILES A] --M1_DrugB [Module 1 result of SMILES B] \
+--InputSM [user input drug canonical smiles] --InputEXP [Module 1 result of Input] \
+--ACID [CID of drug A] --BCID [CID of drug B] \
 --Basal_Cell [User provided new CCLE data]
 
+# 아직 고치는중... 일단 basal cell line 으로 쓸거 depmap 에서 구해와야함 
 (Example)
-python PDSS.py ~/DRSPRING/PDSS/result --mode 'new_data' --saved_model ~/DRSPRING/PDSS/result/MODEL.pt \
---DrugAsmiles ./raw/DrugA_SMILES.csv --DrugBsmiles ./raw/DrugB_SMILES.csv \
---M1_DrugA ./results/M1_expression_A.csv --M1_DrugB ./results/M1_expression_B.csv
+python PDSS.py ~/DRSPRING/PDSS/result --mode 'new_data' --saved_model ./results/M2_model.pt \
+--InputSM ./raw/new_drugAB.csv --InputEXP ./results/M1_resultAB_predicted_expression.csv \
+--ACID 135402009 --BCID 3385
 --Basal_Cell '~/raw/new_cell.csv'
 ```
 
