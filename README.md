@@ -49,7 +49,7 @@ python PDSS.py ./results --mode 'train'
 
 
 ## Use our trained model to predict your data
-We support cell line specific basal expression data from CCLE 22Q1.(check cell line names in `lincs_wth_ccle_org_all.csv`). If you want to train or test cell lines that are not in CCLE 22Q1, you have to provide your own cell line's basal expression to use our model. Add `--basal` option to use new cell line, and make sure all your input files are all in raw/ directory.
+We support cell line specific basal expression data from CCLE 22Q1.(check cell line names in `lincs_wth_ccle_org_all.csv`). If you want to train or test cell lines that are not in CCLE 22Q1, you have to provide your own cell line's basal expression to use our model. Add `--basal` option to use new cell line, and make sure all your input files are all in `raw/` directory.
 
 **(1) Module_1 (PDIGEC)**
 
