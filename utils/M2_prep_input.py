@@ -299,7 +299,7 @@ def make_input_by_cell (CID_A, CID_B, M1_EXP,  new_ccle = None):
 			pre_c_dict[precell] =  make_simple_input_data(CID_A, CID_B, M1_EXP, precell)
 			print('\n')
 	else :
-		new_ccle_df = pd.read_csv(new_ccle, index_col = 0)
+		new_ccle_df = pd.read_csv(new_ccle, index_col = 1)
 		cell_list = list(new_ccle_df.index)
 		check_name = [cell for cell in cell_list if type(cell) ==str]
 		new_ccle_df = new_ccle_df.loc[check_name]
