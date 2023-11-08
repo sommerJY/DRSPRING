@@ -39,12 +39,10 @@ python PDIGEC.py ./results
 
 **(2) Module_2 (PDSS)**
 
-In case you want to use early stopping in training module, you can use the option `--early_stopping`
-
 The example code is presented below : 
 ```
-python PDSS.py [result directory] --mode 'train' --early_stopping 'es'
-python PDSS.py ./results --mode 'train' --early_stopping 'es'
+python PDSS.py [result directory] --mode 'train'
+python PDSS.py ./results --mode 'train'
 ```
 
 
@@ -114,7 +112,6 @@ python PDSS.py [result file name] --mode 'new_data' --saved_model [pretrained mo
 --Basal_Cell [User provided new CCLE data]
 
 # still working! 
-(Example)
 python PDSS.py 'M2_result.csv' --mode 'new_data' --saved_model ./results/M2_model.pt \
 --InputSM ./raw/new_drugAB.csv --InputEXP ./results/M1_resultAB_predicted_expression.csv \
 --ACID 0000 --BCID 0000
