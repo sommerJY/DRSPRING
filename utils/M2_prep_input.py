@@ -15,30 +15,38 @@ import networkx as nx
 import random
 
 import copy
+import pubchempy as pcp
+
+import os 
+now_path = os.getcwd()
+# now_path = '/st06/jiyeonH/11.TOX/DR_SPRING/TO_GIT_231107'
+
 
 # read pre - required files 
 
 def read_all_data() :
-	MY_G = nx.read_gpickle("./data/myGraph.gpickle")
-	LINCS_DATA = pd.read_csv('./data/10_24_sig_cell_mean.0620.csv')
-	LINCS_EXP = torch.load('./data/10_24_sig_cell_mean.0620.pt')
-	TARGET_DATA = pd.read_csv('./data/TARGET_CID_ENTREZ.csv', '\t')
-	BASAL_DATA = pd.read_csv('./data/CCLE_BASAL.csv')
-	return MY_G, LINCS_DATA, LINCS_EXP, TARGET_DATA, BASAL_DATA
+	MY_G = nx.read_gpickle(now_path+"/raw/myGraph.gpickle")
+	LINCS_DATA = pd.read_csv(now_path+'/raw/10_24_sig_cell_mean.0620.csv') # stripped_cell_line_name 이랑 long_id 자른거랑 같고, cell_iname 에서 빠진거 없음
+	LINCS_EXP = torch.load(now_path+'/raw/10_24_sig_cell_mean.0620.pt')
+	TARGET_DATA = pd.read_csv(now_path+'/raw/M1_target_lm349_all.csv', sep = '\t')
+	BASAL_DATA1 = pd.read_csv(now_path+'/raw/M1_lincs_wth_ccle_org_all.csv')
+	BASAL_DATA2 = pd.read_csv(now_path+'/raw/M1_ccle_lincs_convert.csv')
+	BASAL_itot = {BASAL_DATA2.at[i,'cell_iname'] : BASAL_DATA2.at[i,'ccle_name'] for i in range(BASAL_DATA2.shape[0])}
+	BASAL_ttoi = {BASAL_DATA2.at[i,'ccle_name'] : BASAL_DATA2.at[i,'cell_iname'] for i in range(BASAL_DATA2.shape[0])}
+	return MY_G, LINCS_DATA, LINCS_EXP, TARGET_DATA, BASAL_DATA1, BASAL_DATA2, BASAL_itot, BASAL_ttoi
 
 
 
-MY_G, LINCS_DATA, LINCS_EXP, TARGET_DATA, BASAL_DATA = read_all_data()
+MY_G, LINCS_DATA, LINCS_EXP, TARGET_DATA, BASAL_DATA1, BASAL_DATA2, BASAL_itot, BASAL_ttoi = read_all_data()
 ENTREZ_ORDER = [1676, 1677, 1738, 501, 5019, 622, 3157, 39, 1019, 1021, 51495, 79071, 230, 5211, 1022, 902, 891, 983, 55256, 58478, 5925, 3098, 22934, 51071, 64080, 226, 5255, 5257, 5261, 3988, 4864, 2184, 2954, 51382, 533, 9133, 30, 6342, 1633, 4860, 1111, 11200, 4088, 7048, 1026, 1647, 8312, 8321, 1950, 1956, 7043, 1029, 10298, 56924, 3628, 8821, 178, 2548, 836, 840, 4067, 695, 581, 4331, 5836, 2131, 9653, 1017, 16, 2058, 1027, 5898, 5900, 595, 1978, 6009, 5223, 6597, 6599, 5747, 5829, 22926, 7494, 3251, 7157, 2673, 51005, 4850, 9924, 2778, 5290, 2353, 3725, 2222, 50814, 1846, 1848, 3108, 3122, 6772, 6774, 54205, 4616, 6850, 6117, 6118, 6119, 6500, 7027, 2770, 2771, 10007, 3930, 3978, 57804, 835, 843, 3033, 211, 5498, 1643, 5366, 637, 5287, 1870, 2956, 355, 5982, 5985, 6194, 3280, 4851, 5106, 6499, 80349, 427, 64781, 8837, 5427, 5111, 1398, 1399, 5583, 5588, 3551, 5566, 2597, 3303, 3312, 4792, 4200, 2810, 6777, 6616, 6804, 8900, 54512, 1605, 6443, 6812, 890, 148022, 9641, 207, 993, 5058, 5096, 8324, 4482, 5110, 1385, 998, 1212, 1213, 1891, 55825, 6251, 7016, 55748, 2690, 22908, 5289, 5373, 7264, 5525, 5529, 10525, 9695, 4780, 9817, 79094, 9134, 3553, 4893, 7099, 10775, 60528, 2064, 3315, 7867, 3162, 644, 5603, 5331, 5236, 572, 8503, 2042, 2048, 4891, 5899, 4846, 51070, 8884, 1282, 6696, 10797, 2356, 4690, 8440, 5720, 5721, 2065, 26520, 29928, 10245, 10559, 23443, 51024, 5827, 142, 9261, 3329, 4605, 55012, 332, 6390, 23530, 25805, 5889, 670, 874, 3454, 672, 291, 5580, 5770, 5792, 665, 1845, 10434, 6697, 5347, 958, 10051, 9918, 4638, 6709, 1445, 5788, 7020, 1277, 10398, 6810, 2582, 4791, 5971, 6908, 9519, 8349, 85236, 1635, 2745, 4609, 2946, 4775, 4776, 51021, 9801, 51116, 6182, 1981, 873, 7159, 23368, 5601, 1759, 4793, 2037, 9455, 124583, 5440, 9533, 387, 23463, 7852, 10221, 8061, 3398, 7416, 10682, 30849, 8678, 23659, 5321, 8720, 10165, 466, 4836, 823, 1123, 392, 8869, 1786, 1788, 596, 11157, 23658, 10206, 4313, 7077, 79947, 10329, 11041, 329, 5708, 5710, 128, 55620, 200081, 10174, 9517, 3611, 3028, 3909, 3480, 4208, 5607, 8573, 11284, 5423, 102, 351, 5092, 10695, 5641, 10557, 2958, 2961]
 
 
 #  0 ) graph generation 
 
 
-git_data = '/st06/jiyeonH/11.TOX/DR_SPRING/TO_GIT/'
 
-def define_graph ():
-	MY_G = nx.read_gpickle("./data/myGraph.gpickle")
+def define_graph():
+	MY_G = nx.read_gpickle(now_path+"/raw/myGraph.gpickle")
 	G_ADJ = nx.adjacency_matrix(MY_G)
 	G_ADJ_tmp = torch.LongTensor(G_ADJ.toarray())
 	G_ADJ_IDX = G_ADJ_tmp.to_sparse().indices()
@@ -132,6 +140,10 @@ def make_rdkit_var(SMILES) :
 
 # 2) get exp data 
 
+# M1_file = '/st06/jiyeonH/11.TOX/DR_SPRING/TO_GIT_231107/results/M1_resultAB_predicted_expression.csv'
+# CID = 135402009
+# CELL = 'A375'
+
 
 def get_EXP_DATA(CID, CELL, M1_file) :
 	LINCS_DATA = globals()['LINCS_DATA']
@@ -140,15 +152,15 @@ def get_EXP_DATA(CID, CELL, M1_file) :
 		M1_DATA = pd.read_csv(M1_file)
 		ord = [list(M1_DATA.entrez_id).index(a) for a in ENTREZ_ORDER]
 		M1_DATA_re = M1_DATA.iloc[ord]
-		lincs_tmp = LINCS_DATA[(LINCS_DATA.CID == CID) & (LINCS_DATA.CCLE_Name == CELL)]
-		long_id = str(CID) + '__' + str(CELL)
+		lincs_tmp = LINCS_DATA[(LINCS_DATA.CID == int(CID)) & (LINCS_DATA.stripped_cell_line_name == CELL)] 
+		M1_id = str(CID) + '__' + str(CELL)
 		#
 		if lincs_tmp.shape[0] == 1 : # 데이터 있을때의 얘기 
 			lincs_index = lincs_tmp.index.item()
 			exp_result = LINCS_EXP[lincs_index]
 			print('exist in LINCS')
-		elif long_id in M1_DATA_re.columns :
-			exp_result = torch.Tensor(M1_DATA_re[long_id]).view(349,1)
+		elif M1_id in M1_DATA_re.columns :
+			exp_result = torch.Tensor(M1_DATA_re[M1_id]).view(349,1)
 			print('made with module 1')
 		else :
 			exp_result = torch.Tensor([0]*349).view(349,1)
@@ -156,7 +168,7 @@ def get_EXP_DATA(CID, CELL, M1_file) :
 		#
 		return exp_result
 	except :
-		print("Please make M1 Data!")
+		print("Please make M1 Data first!")
 
 
 #####################################################
@@ -166,17 +178,20 @@ def get_EXP_DATA(CID, CELL, M1_file) :
 
 def get_targets(CID): # 
 	TARGET_DATA = globals()['TARGET_DATA']
-	target_cids = list(set(TARGET_DATA.CID))
+	ord = ['CID'] + [str(a) for a in ENTREZ_ORDER]
+	TARGET_DATA_re = TARGET_DATA[ord]
+	target_cids = list(set(TARGET_DATA_re.CID))
 	target_cids.sort()
 	gene_ids = ENTREZ_ORDER
-	#
-	if CID in target_cids:
-		tmp_df2 = TARGET_DATA[TARGET_DATA.CID == CID]
-		targets = list(set(tmp_df2.EntrezID))
-		vec = [1 if a in targets else 0 for a in gene_ids ]
+		#
+	if int(CID) in target_cids:
+		tmp_df2 = TARGET_DATA_re[TARGET_DATA_re.CID == int(CID)]
+		vec = [1 if a > 1 else a for a in list(tmp_df2.iloc[0,1:])]
 	else :
+		#print('no target data')
 		vec = [0] * 349
 	return torch.Tensor(vec)
+
 
 
 #####################################################
@@ -185,27 +200,27 @@ def get_targets(CID): #
 
 # 4) 이미 있는 CCLE 사용 원할 시 
 def get_CCLE(CELL, BASAL_DATA) : 
-	BASAL_DATA = globals()['BASAL_DATA']
+	BASAL_DATA = globals()['BASAL_DATA1']
 	ENTREZ_ORDER_str = [str(a) for a in ENTREZ_ORDER]
-	if CELL in list(BASAL_DATA.DrugCombCCLE) : 
-		ccle_exp_df = BASAL_DATA[BASAL_DATA.DrugCombCCLE==CELL][ENTREZ_ORDER_str]
+	if CELL in list(BASAL_DATA.cell_iname) : 
+		ccle_exp_df = BASAL_DATA[BASAL_DATA.cell_iname==CELL][ENTREZ_ORDER_str]
 		ccle_result = torch.Tensor(list(ccle_exp_df.T.iloc[:,0])).view(349,1)
 	else : 
 		print("no data in our ccle")
-		ccle_result = [0]*349
+		ccle_result = torch.Tensor([0]*349).view(349,1)
 	#
 	return ccle_result
 
 
 
 
-# 5) 새 CCLE 값 받는걸로 진행하는 경우
+# 5) New ccle value 
 def get_New_CCLE(new_ccle_df, new_ccle_name) : 
 	ENTREZ_ORDER_str = [str(a) for a in ENTREZ_ORDER]
 	try : 
 		new_ccle_df.columns = [str(int(a)) for a in new_ccle_df.columns]
 		new_ccle_df = new_ccle_df[ENTREZ_ORDER_str]
-		ccle_result = torch.Tensor(list(new_ccle_df.T.iloc[:,0])).view(349,1)
+		ccle_result = torch.Tensor(list(new_ccle_df.loc[new_ccle_name])).view(349,1)
 		return ccle_result
 	except:
 		print('New CCLE data value error')
@@ -239,34 +254,28 @@ def check_CID(SMILES) :
 
 
 
-def make_simple_input_data(SM_A, SM_B, M1_A, M1_B, CELL, new_ccle_df = None):
+def make_simple_input_data(CID_A, CID_B, M1_EXP, CELL, new_ccle_df = None):
 	#
 	print('Make data for {}'.format(CELL))
 	MY_G, G_ADJ_IDX, G_IDX_WEIGHT, _ = define_graph()
 	#
-	print(SM_A)
-	drug1_f, drug1_a = make_rdkit_var(SM_A)
-	print(SM_B)
-	drug2_f, drug2_a = make_rdkit_var(SM_B)
-	#
-	CID_A = check_CID(SM_A)
-	CID_B = check_CID(SM_B)
-	#CID_A = 135403648
-	#CID_B = 3385 # 9887053
-	#
 	print('Drug A EXP')
-	expA = get_EXP_DATA(CID_A, CELL, M1_A)
+	expA = get_EXP_DATA(CID_A, CELL, M1_EXP)
 	print('Drug B EXP')
-	expB = get_EXP_DATA(CID_B, CELL, M1_B)
+	expB = get_EXP_DATA(CID_B, CELL, M1_EXP)
 	#
 	targetA = get_targets(CID_A)
 	targetB = get_targets(CID_B)
 	#
-	BASAL_DATA = globals()['BASAL_DATA']
-	if CELL in list(BASAL_DATA.DrugCombCCLE) :
-		basal = get_CCLE(CELL, BASAL_DATA)
-	else :
-		basal = get_New_CCLE(new_ccle_df, CELL)
+	BASAL_DATA = globals()['BASAL_DATA1']
+	#
+	try : 
+		if CELL in list(BASAL_DATA.cell_iname) :
+			basal = get_CCLE(CELL, BASAL_DATA)
+		else :
+			basal = get_New_CCLE(new_ccle_df, CELL)
+	except : 
+		print("Cell name error.")
 	#
 	FEAT_A = torch.Tensor(np.array([ expA.squeeze().tolist() , targetA.squeeze().tolist(), basal.squeeze().tolist()]).T)
 	FEAT_A = FEAT_A.view(-1,3)
@@ -276,17 +285,18 @@ def make_simple_input_data(SM_A, SM_B, M1_A, M1_B, CELL, new_ccle_df = None):
 	adj = copy.deepcopy(G_ADJ_IDX).long()
 	adj_w = torch.Tensor(G_IDX_WEIGHT).squeeze()
 	#
-	return drug1_f, drug2_f, drug1_a, drug2_a, FEAT_A, FEAT_B, adj, adj_w
+	return FEAT_A, FEAT_B, adj, adj_w
 
 
 
-def make_input_by_cell (SM_A, SM_B, M1_A , M1_B, new_ccle = None):
+def make_input_by_cell (CID_A, CID_B, M1_EXP,  new_ccle = None):
 	pre_c_dict = {}
 	#
 	if new_ccle == None :
 		cell_list = ['HCC1500_BREAST', 'G361_SKIN', 'UACC62_SKIN', 'SKOV3_OVARY', 'T47D_BREAST', 'SKMEL30_SKIN', 'RPMI8226_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE', 'KPL1_BREAST', 'MDAMB468_BREAST', 'A498_KIDNEY', 'EKVX_LUNG', 'RPMI7951_SKIN', 'MDAMB175VII_BREAST', 'UO31_KIDNEY', 'MDAMB436_BREAST', 'NCIH522_LUNG', 'OV90_OVARY', 'SKMEL2_SKIN', 'LOXIMVI_SKIN', 'WM115_SKIN', 'NCIH460_LUNG', '786O_KIDNEY', 'NCIH1650_LUNG', 'NIHOVCAR3_OVARY', 'A2780_OVARY', 'UWB1289_OVARY', 'A673_BONE', 'NCIH226_LUNG', 'COLO829_SKIN', 'HCT15_LARGE_INTESTINE', 'BT474_BREAST', 'PA1_OVARY', 'SF268_CENTRAL_NERVOUS_SYSTEM', 'OVCAR5_OVARY', 'SKMES1_LUNG', 'CAOV3_OVARY', 'SW620_LARGE_INTESTINE', 'KM12_LARGE_INTESTINE', 'COLO800_SKIN', 'U251MG_CENTRAL_NERVOUS_SYSTEM', 'HCC1419_BREAST', 'HOP92_LUNG', 'A101D_SKIN', 'HS578T_BREAST', 'CAMA1_BREAST', 'UACC257_SKIN', 'LOVO_LARGE_INTESTINE', 'A549_LUNG', 'SNB75_CENTRAL_NERVOUS_SYSTEM', 'SW837_LARGE_INTESTINE', 'MCF7_BREAST', 'A427_LUNG', 'IGROV1_OVARY', 'NCIH520_LUNG', 'IPC298_SKIN', 'MEWO_SKIN', 'RKO_LARGE_INTESTINE', 'OVCAR4_OVARY', 'ZR751_BREAST', 'OVCAR8_OVARY', 'HCT116_LARGE_INTESTINE', 'COLO792_SKIN', 'MSTO211H_PLEURA', 'CAKI1_KIDNEY', 'SR786_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE', 'K562_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE', 'VCAP_PROSTATE', 'HT144_SKIN', 'MDAMB231_BREAST', 'T98G_CENTRAL_NERVOUS_SYSTEM', 'ES2_OVARY', 'SF539_CENTRAL_NERVOUS_SYSTEM', 'RVH421_SKIN', 'UACC812_BREAST', 'HT29_LARGE_INTESTINE', 'UHO1_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE', 'BT549_BREAST', 'L1236_HAEMATOPOIETIC_AND_LYMPHOID_TISSUE', 'NCIH2122_LUNG', 'A375_SKIN', 'SKMEL28_SKIN', 'MALME3M_SKIN', 'NCIH23_LUNG', 'SF295_CENTRAL_NERVOUS_SYSTEM', 'PC3_PROSTATE', 'SKMEL5_SKIN', 'MDAMB361_BREAST', 'ACHN_KIDNEY', 'MELHO_SKIN', 'DLD1_LARGE_INTESTINE', 'A2058_SKIN', 'HOP62_LUNG']	
-		for precell in cell_list :
-			pre_c_dict[precell] = make_simple_input_data(SM_A, SM_B, M1_A, M1_B, precell)
+		cell_list2 = [BASAL_ttoi[cell] for cell in cell_list]
+		for precell in cell_list2 :
+			pre_c_dict[precell] =  make_simple_input_data(CID_A, CID_B, M1_EXP, precell)
 			print('\n')
 	else :
 		new_ccle_df = pd.read_csv(new_ccle, index_col = 0)
@@ -294,7 +304,7 @@ def make_input_by_cell (SM_A, SM_B, M1_A , M1_B, new_ccle = None):
 		check_name = [cell for cell in cell_list if type(cell) ==str]
 		new_ccle_df = new_ccle_df.loc[check_name]
 		for precell in cell_list :
-			pre_c_dict[precell] = make_simple_input_data(SM_A, SM_B, M1_A, M1_B, precell, new_ccle_df)
+			pre_c_dict[precell] =  make_simple_input_data(CID_A, CID_B, M1_EXP, precell, new_ccle_df)
 			print('\n')
 	#
 	return pre_c_dict
@@ -471,17 +481,17 @@ def get_loss_weight(T_train) :
 def make_merged_data() :
 	MY_G, G_ADJ_IDX, G_IDX_WEIGHT, _ = define_graph()
 	#
-	A_B_C_S_SET_SM = pd.read_csv('~/DRSPRING/PDSS/data/' + 'final_dataset.csv')
-	MY_chem_A_feat_RE2 = torch.load('~/DRSPRING/PDSS/data/'+'Chem_A_feat.pt')
-	MY_chem_B_feat_RE2 = torch.load('~/DRSPRING/PDSS/data/'+'Chem_B_feat.pt')
-	MY_chem_A_adj_RE2 = torch.load('~/DRSPRING/PDSS/data/'+'Chem_A_adj.pt')
-	MY_chem_B_adj_RE2 = torch.load('~/DRSPRING/PDSS/data/'+'Chem_B_adj.pt')
-	MY_g_EXP_A_RE2 = torch.load('~/DRSPRING/PDSS/data/'+'EXP_A.pt')
-	MY_g_EXP_B_RE2 = torch.load('~/DRSPRING/PDSS/data/'+'EXP_B.pt')
-	MY_Target_A2 = torch.load('~/DRSPRING/PDSS/data/'+'TARGET_A.pt')
-	MY_Target_B2 = torch.load('~/DRSPRING/PDSS/data/'+'TARGET_B.pt')
-	MY_CellBase_RE2 = torch.load('~/DRSPRING/PDSS/data/'+'BASAL.pt')
-	MY_syn_RE2 = torch.load('~/DRSPRING/PDSS/data/'+'SYN.pt')
+	A_B_C_S_SET_SM = pd.read_csv(now_path + '/raw/toy_M2_final_dataset.csv')
+	MY_chem_A_feat_RE2 = torch.load(now_path + '/raw/toy_M2_Chem_A_feat.pt')
+	MY_chem_B_feat_RE2 = torch.load(now_path+'/raw/toy_M2_Chem_B_feat.pt')
+	MY_chem_A_adj_RE2 = torch.load(now_path+'/raw/toy_M2_Chem_A_adj.pt')
+	MY_chem_B_adj_RE2 = torch.load(now_path+'/raw/toy_M2_Chem_B_adj.pt')
+	MY_g_EXP_A_RE2 = torch.load(now_path+'/raw/toy_M2_EXP_A.pt')
+	MY_g_EXP_B_RE2 = torch.load(now_path+'/raw/toy_M2_EXP_B.pt')
+	MY_Target_A2 = torch.load(now_path+'/raw/toy_M2_TARGET_A.pt')
+	MY_Target_B2 = torch.load(now_path+'/raw/toy_M2_TARGET_B.pt')
+	MY_CellBase_RE2 = torch.load(now_path+'/raw/toy_M2_BASAL.pt')
+	MY_syn_RE2 = torch.load(now_path+'/raw/toy_M2_SYN.pt')
 	#
 	train_data, val_data, test_data = prepare_data_GCN(
 		A_B_C_S_SET_SM, MY_chem_A_feat_RE2, MY_chem_B_feat_RE2, MY_chem_A_adj_RE2, MY_chem_B_adj_RE2, 

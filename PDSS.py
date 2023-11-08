@@ -55,14 +55,14 @@ from M2_prep_input import *
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("save_file", type=str, help='path to save')    # extra value
+parser.add_argument("save_file", type=str, help='result name to save')    # extra value
 parser.add_argument("--mode", type=str, default='train', help='select mode')  # extra value
 parser.add_argument("--saved_model", type=str, default=None, help='saved model location')  # extra value
 parser.add_argument("--early_stopping", type=str, default=None, help='whether to perform early stopping')  # extra value
-parser.add_argument("--DrugAsmiles", type=str, default=None, help='put drug A smiles file here')   # extra value
-parser.add_argument("--DrugBsmiles", type=str, default=None, help='put drug B smiles file here')   # extra value
-parser.add_argument("--M1_DrugA", type=str, default=None, help='put M1 derived drug A Result name here')   # extra value
-parser.add_argument("--M1_DrugB", type=str, default=None, help='put M1 derived drug B Result name here')   # extra value
+parser.add_argument("--InputSM", type=str, default=None, help='put input drug smiles file here')   # extra value
+parser.add_argument("--InputEXP", type=str, default=None, help='put M1 derived drug result file here')   # extra value
+parser.add_argument("--ACID", type=str, default=None, help='put drug A CID here')   # extra value
+parser.add_argument("--BCID", type=str, default=None, help='put drug B CID here')   # extra value
 parser.add_argument("--Basal_Cell", type=str, default=None, help='put new cell line basal expression')   # extra value
 
 args = parser.parse_args()
@@ -87,12 +87,12 @@ start_time = datetime.now()
 
 config = {
 	'max_epoch': int(1000),
-	'G_chem_layer' : int(3), 
-	'G_chem_hdim' : int(16), 
-	'G_exp_layer' : int(4), 
+	'G_chem_layer' : int(2)+1, 
+	'G_chem_hdim' : int(32), 
+	'G_exp_layer' : int(2)+1, 
 	'G_exp_hdim' : int(32),
-	'dsn_layer' : '128-64-32', 
-	'snp_layer' : '32-16-8', 
+	'dsn_layer' : '256-128-64', 
+	'snp_layer' : '16-8-4', 
 	'dropout_1' : float(0.1),
 	'dropout_2' : float(0.1),
 	'batch_size' : int(16),
@@ -103,15 +103,14 @@ config = {
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-
 if args.mode=='train':
 	training_model(args.save_file, T_train, T_val, T_test, args.early_stopping, device, config)
 	print("Finished training and saved the model")
 elif args.mode=='new_data':
 	if args.Basal_Cell == None :
-		pred_cell_synergy(args.save_file, config, args.saved_model, args.DrugAsmiles, args.DrugBsmiles, args.M1_DrugA, args.M1_DrugB, None)
+		pred_cell_synergy(args.save_file, config, args.saved_model, args.InputSM, args.InputEXP, args.ACID, args.BCID, None)
 	else :
-		pred_cell_synergy(args.save_file, config, args.saved_model, args.DrugAsmiles, args.DrugBsmiles, args.M1_DrugA, args.M1_DrugB, args.Basal_Cell)
+		pred_cell_synergy(args.save_file, config, args.saved_model, args.InputSM, args.InputEXP, args.ACID, args.BCID, args.Basal_Cell)
 	print("Finished testing!")
 
 end_time = datetime.now()

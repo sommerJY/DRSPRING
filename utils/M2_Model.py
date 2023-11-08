@@ -7,12 +7,16 @@ from torch_geometric.loader import DataLoader
 import numpy as np
 import pandas as pd
 import random
-from prep_input import *
+
 from scipy import stats
 import os
 import datetime
 from datetime import *
 
+
+now_path = os.getcwd()
+sys.path.append(now_path+'/utils')
+from M2_prep_input import *
 
 seed = 42
 np.random.seed(seed=seed)
@@ -256,8 +260,8 @@ def inner_val( VAL_DATA, THIS_MODEL, device) :
 			loss = MSE(output, y) 
 			# 
 			running_loss = running_loss + loss.item()
-			pred_list = pred_list + output.squeeze().tolist()
-			ans_list = ans_list + y.squeeze().tolist()
+			pred_list = pred_list + output.squeeze(1).tolist()
+			ans_list = ans_list + y.squeeze(1).tolist()
 	#
 	last_loss = running_loss / (batch_idx_v+1)
 	val_sc, _ = stats.spearmanr(pred_list, ans_list)
@@ -266,7 +270,7 @@ def inner_val( VAL_DATA, THIS_MODEL, device) :
 
 
 
-def training_model(save_path, T_train, T_val, T_test, es, device, config_dict) :
+def training_model(save_name, T_train, T_val, T_test, es, device, config_dict) :
 	n_epochs = config_dict['max_epoch']
 	# 
 	dsn_layers = [int(a) for a in config_dict["dsn_layer"].split('-') ]
@@ -334,13 +338,13 @@ def training_model(save_path, T_train, T_val, T_test, es, device, config_dict) :
 				test_loss, test_pc, test_sc, THIS_MODEL, ans_list, pred_list = inner_val(test_loader, THIS_MODEL, device)
 				test_dict = {'ANS' : ans_list, 'PRED' : pred_list}
 				test_dict_DF = pd.DataFrame(test_dict)
-				torch.save(THIS_MODEL.state_dict(), os.path.join(save_path, 'MODEL.pt'))
+				torch.save(THIS_MODEL.state_dict(), os.path.join(now_path, 'results/', 'M2_model.pt'))
 			#
 			if early_stop.is_stop()==True:
 				print('Early Stopping in epoch {}'.format(epoch))
 				print("Best Test Pearson is : {:.4f}".format(test_pc))
-				result_dict_DF.to_csv(os.path.join(save_path, 'train_result_table.csv'))
-				test_dict_DF.to_csv(os.path.join(save_path, 'test_result_table.csv'))
+				#result_dict_DF.to_csv(os.path.join(save_path, 'train_result_table.csv'))
+				#test_dict_DF.to_csv(os.path.join(save_path, 'test_result_table.csv'))
 				break
 		#
 		if epoch == n_epochs-1 : 
@@ -354,66 +358,21 @@ def training_model(save_path, T_train, T_val, T_test, es, device, config_dict) :
 			print("Best Test Pearson is : {:.4f}".format(test_pc))
 			test_dict = {'ANS' : ans_list, 'PRED' : pred_list}
 			test_dict_DF = pd.DataFrame(test_dict)
-			torch.save(THIS_MODEL.state_dict(), os.path.join(save_path, 'MODEL.pt'))
-			test_dict_DF.to_csv(os.path.join(save_path, 'test_result_table.csv'))
-			result_dict_DF.to_csv(os.path.join(save_path, 'train_result_table.csv'))
+			torch.save(THIS_MODEL.state_dict(), os.path.join(now_path, 'results/', 'M2_model.pt'))
+			#test_dict_DF.to_csv(os.path.join(save_path, 'test_result_table.csv'))
+			#result_dict_DF.to_csv(os.path.join(save_path, 'train_result_table.csv'))
 
 
 
 
 
-def pred_simple_synergy (save_path, my_config, saved_model, SM_A, SM_B, CELL):
-	G_chem_layer = my_config['G_chem_layer']
-	G_chem_hdim = my_config['G_chem_hdim']
-	G_exp_layer = my_config['G_exp_layer']
-	G_exp_hdim = my_config['G_exp_hdim']
-	dsn_layers = [int(a) for a in my_config["dsn_layer"].split('-') ]
-	snp_layers = [int(a) for a in my_config["snp_layer"].split('-') ]
-	inDrop = my_config['dropout_1']
-	Drop = my_config['dropout_2']
-	#      
-	best_model = Module_2(
-				G_chem_layer, 64 , G_chem_hdim,
-				G_exp_layer, 3, G_exp_hdim,
-				dsn_layers, dsn_layers, snp_layers, 
-				1,
-				inDrop, Drop
-				) 
-	#
-	device = "cuda:0" if torch.cuda.is_available() else "cpu"
-	if torch.cuda.is_available():
-		state_dict = torch.load(saved_model) #### change ! 
-	else:
-		state_dict = torch.load(saved_model, map_location=torch.device('cpu'))
-	# 
-	# 
-	if type(state_dict) == tuple:
-		best_model.load_state_dict(state_dict[0])
-	else : 
-		best_model.load_state_dict(state_dict)
-	#
-	#
-	best_model.to(device)
-	best_model.eval()
-	#
-	single = torch.Tensor([[0]])
-	drug1_f, drug2_f, drug1_a, drug2_a, FEAT_A, FEAT_B, adj, adj_w = make_simple_input_data(SM_A, SM_B, CELL)
-	output_1 = best_model(drug1_f, drug2_f, drug1_a, drug2_a, FEAT_A, FEAT_B, adj, adj_w, single) 
-	output_2 = best_model(drug2_f, drug1_f, drug2_a, drug1_a, FEAT_B, FEAT_A, adj, adj_w, single) 
-	result_value = np.round(np.mean([output_1.item(), output_2.item()]),4)
-	print('Expected Loewe Score is : {}'.format(result_value))
-	print('\n')
 
-
-
-# 차라리 민지꺼가 여러개를 한 파일에 넣는 구조라면...!!!!! 
-# SM__file = '/st06/jiyeonH/11.TOX/DR_SPRING/TO_GIT_231107/raw/new_drugAB.csv'
-
-def read_smiles_file(SM__file, CID) :
-	SM_csv = pd.read_csv(SM__file, header = None)
+def read_smiles_file(SM_file, CID) :
+	SM_csv = pd.read_csv(SM_file, header = None)
+	SM_csv.columns = ['CID', 'SM']
 	try : 
-		ind = SM_csv[SM_csv[0]==CID].index.item()
-		SMILES = SM_csv.at[ind, 1]
+		ind = SM_csv[SM_csv.CID==int(CID)].index.item()
+		SMILES = SM_csv.at[ind, 'SM']
 		return SMILES
 	except :
 		print("Please check your input CID and SMILES")
@@ -426,7 +385,7 @@ def read_smiles_file(SM__file, CID) :
 
 
 
-def pred_cell_synergy (save_path, my_config, saved_model, CID_A, CID_B, M1_A , M1_B, new_ccle = None):
+def pred_cell_synergy (save_name, my_config, saved_model, SM_file, M1_EXP, CID_A, CID_B, new_ccle = None):
 	G_chem_layer = my_config['G_chem_layer']
 	G_chem_hdim = my_config['G_chem_hdim']
 	G_exp_layer = my_config['G_exp_layer']
@@ -460,24 +419,30 @@ def pred_cell_synergy (save_path, my_config, saved_model, CID_A, CID_B, M1_A , M
 	#
 	single = torch.Tensor([[0]])
 	#
-	SM_A = pd.read_smiles_file(CID_A)
-	SM_B = pd.read_smiles_file(CID_B)
+	SM_A = read_smiles_file(SM_file, CID_A)
+	SM_B = read_smiles_file(SM_file, CID_B)
+	#
+	print(SM_A)
+	print(SM_B)
+	#
+	drug1_f, drug1_a = make_rdkit_var(SM_A)
+	drug2_f, drug2_a = make_rdkit_var(SM_B)
 	#
 	if new_ccle == None : 
-		result_cell_dict = make_input_by_cell(SM_A, SM_B, M1_A , M1_B)
+		result_cell_dict = make_input_by_cell(CID_A, CID_B, M1_EXP)
 	else :
-		result_cell_dict = make_input_by_cell(SM_A, SM_B, M1_A , M1_B, new_ccle)
+		result_cell_dict = make_input_by_cell(CID_A, CID_B, M1_EXP, new_ccle)
 	#
 	result_DF = pd.DataFrame(columns = ['Cell Line', 'Score'])
 	for CELL in result_cell_dict.keys() :
-		drug1_f, drug2_f, drug1_a, drug2_a, FEAT_A, FEAT_B, adj, adj_w = result_cell_dict[CELL]
+		FEAT_A, FEAT_B, adj, adj_w = result_cell_dict[CELL]
 		output_1 = best_model(drug1_f, drug2_f, drug1_a, drug2_a, FEAT_A, FEAT_B, adj, adj_w, single) 
 		output_2 = best_model(drug2_f, drug1_f, drug2_a, drug1_a, FEAT_B, FEAT_A, adj, adj_w, single) 
 		result_value = np.round(np.mean([output_1.item(), output_2.item()]),4)
 		tmp_DF = pd.DataFrame({'Cell Line' : [CELL], 'Score' : [result_value]})
 		result_DF = pd.concat([result_DF, tmp_DF])
 	#
-	result_DF.to_csv( os.path.join(save_path, 'Result_by_cells.csv'), index = False)
+	result_DF.to_csv( os.path.join(now_path,'results/',save_name), index = False)
 	print('saved results!')
 	print('\n')
 
