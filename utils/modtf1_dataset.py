@@ -350,10 +350,6 @@ def from_newsmiles_transfer_HSDB_L3(smiles: str, maxNumAtoms, with_hydrogen: boo
 
 
 
-def ppprint(ddata):
-    print(ddata)
-
-
 
 ################    
 class FuNewh3dttfHSDB_L3Dataset(InMemoryDataset):
@@ -380,12 +376,12 @@ class FuNewh3dttfHSDB_L3Dataset(InMemoryDataset):
         data_df[['sig_id','pert_type']] = np.NaN
         data_df.pert_id = data_df.pert_id.astype(int).astype(str)
         ccle_lincs_df = pd.read_csv(self.raw_paths[3])
-        if self.new_basal == 'lincs_wth_ccle_org_all.csv' and len(data_df[data_df.cell_id.isin(ccle_lincs_df['cell_iname'])])>0:
+        if self.new_basal == 'M1_lincs_wth_ccle_org_all.csv' and len(data_df[data_df.cell_id.isin(ccle_lincs_df['cell_iname'])])>0:
             data_df2 = pd.merge(ccle_lincs_df, data_df,left_on='cell_iname',right_on='cell_id')
             data_df3 = data_df2.drop(columns = ['ccle_name','cell_id'])
             data_df = data_df3.rename(columns={'cell_iname' : 'cell_id'})
             data_df = data_df[['pert_id','cell_id','pert_idose','pert_itime','sig_id','pert_type']]
-        if self.new_basal == 'lincs_wth_ccle_org_all.csv' and len(data_df[data_df.cell_id.isin(ccle_lincs_df['ccle_name'])])>0:
+        if self.new_basal == 'M1_lincs_wth_ccle_org_all.csv' and len(data_df[data_df.cell_id.isin(ccle_lincs_df['ccle_name'])])>0:
             data_df2 = pd.merge(ccle_lincs_df, data_df,left_on='ccle_name',right_on='cell_id')
             data_df3 = data_df2.drop(columns = ['ccle_name','cell_id'])
             data_df = data_df3.rename(columns={'cell_iname' : 'cell_id'})
@@ -404,7 +400,9 @@ class FuNewh3dttfHSDB_L3Dataset(InMemoryDataset):
         df_full_num = under_number(df_full, maxNumAtoms)
         test_df = pd.read_csv(self.raw_paths[6])
         test_df.pert_id = test_df.pert_id.astype(str)
+        # ppprint(test_df)
         df_full_test = pd.merge(drug_df, test_df, how='inner')
+        # ppprint(df_full_test)
         lincs_wth_ccle_org_all2_filt = lincs_wth_ccle_org_all2[['cell_id']+df_full_test.iloc[:,7:356].columns.to_list()]
         df_full_num_filt = df_full_num[df_full_num.cell_id.isin(lincs_wth_ccle_org_all2_filt.cell_id)].reset_index(drop=True,inplace=False)  # 2977
         df_full_ccle = pd.merge(df_full_num_filt[['sig_id', 'pert_id', 'pert_type', 'cell_id', 'pert_idose']], lincs_wth_ccle_org_all2_filt,how='left', on = "cell_id")

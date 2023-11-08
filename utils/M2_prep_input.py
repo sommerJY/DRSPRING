@@ -26,8 +26,8 @@ now_path = os.getcwd()
 
 def read_all_data() :
 	MY_G = nx.read_gpickle(now_path+"/raw/myGraph.gpickle")
-	LINCS_DATA = pd.read_csv(now_path+'/raw/10_24_sig_cell_mean.0620.csv') # stripped_cell_line_name 이랑 long_id 자른거랑 같고, cell_iname 에서 빠진거 없음
-	LINCS_EXP = torch.load(now_path+'/raw/10_24_sig_cell_mean.0620.pt')
+	LINCS_DATA = pd.read_csv(now_path+'/raw/10_24_sig_cell_mean.2311.csv') # stripped_cell_line_name 이랑 long_id 자른거랑 같고, cell_iname 에서 빠진거 없음
+	LINCS_EXP = torch.load(now_path+'/raw/10_24_sig_cell_mean.2311.pt')
 	TARGET_DATA = pd.read_csv(now_path+'/raw/M1_target_lm349_all.csv', sep = '\t')
 	BASAL_DATA1 = pd.read_csv(now_path+'/raw/M1_lincs_wth_ccle_org_all.csv')
 	BASAL_DATA2 = pd.read_csv(now_path+'/raw/M1_ccle_lincs_convert.csv')
