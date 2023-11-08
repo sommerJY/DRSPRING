@@ -51,7 +51,7 @@ python PDSS.py ./results --mode 'train' --early_stopping 'es'
 
 
 ## Use our trained model to predict your data
-We support cell line specific basal expression data from CCLE 22Q1.(check cell line names in lincs_wth_ccle_org_all.csv). If you want to train or test cell lines that are not in CCLE 22Q1, you have to provide your own cell line's basal expression to use our model. Add `--basal` option to use new cell line, and make sure all your input files are all in raw/ directory.
+We support cell line specific basal expression data from CCLE 22Q1.(check cell line names in `lincs_wth_ccle_org_all.csv`). If you want to train or test cell lines that are not in CCLE 22Q1, you have to provide your own cell line's basal expression to use our model. Add `--basal` option to use new cell line, and make sure all your input files are all in raw/ directory.
 
 **(1) Module_1 (PDIGEC)**
 
@@ -94,29 +94,31 @@ Both methods will make result file under the `'results/'` directory with user na
    Also, this mode requires the Module 1 resulted files of each input SMILES.
 
 ```
-python PDSS.py [result directory] --mode 'new_data' --saved_model [pretrained model] \
---DrugAsmiles [SMILES file of Drug A] --DrugBsmiles [SMILES file of Drug B] \
---M1_DrugA [Module 1 result of SMILES A] --M1_DrugB [Module 1 result of SMILES B]
+python PDSS.py [result file name] --mode 'new_data' --saved_model [pretrained model] \
+--InputSM [user input drug canonical smiles] --InputEXP [Module 1 result of Input] \
+--ACID [CID of drug A] --BCID [CID of drug B]
 
 (Example)
-python PDSS.py ./result --mode 'new_data' --saved_model ~/DRSPRING/PDSS/result/MODEL.pt \
---DrugAsmiles ./raw/DrugA_SMILES.csv --DrugBsmiles ./raw/DrugB_SMILES.csv \
---M1_DrugA ./results/M1_expression_A.csv --M1_DrugB ./results/M1_expression_B.csv
+python PDSS.py 'M2_result.csv' --mode 'new_data' --saved_model ./results/M2_model.pt \
+--InputSM ./raw/new_drugAB.csv --InputEXP ./results/M1_resultAB_predicted_expression.csv \
+--ACID 0000 --BCID 0000
 ```
+
 
 2) In case you give new smiles of two drugs and new CCLE data, you should additionally provide new data directory.
 This also requires the Module 1 derived files of each input SMILES.
 ```
-python PDSS.py [result directory] --mode 'new_data' --saved_model [pretrained model] \
---DrugAsmiles [SMILES file of Drug A] --DrugBsmiles [SMILES file of Drug B] \
---M1_DrugA [Module 1 result of SMILES A] --M1_DrugB [Module 1 result of SMILES B] \
+python PDSS.py [result file name] --mode 'new_data' --saved_model [pretrained model] \
+--InputSM [user input drug canonical smiles] --InputEXP [Module 1 result of Input] \
+--ACID [CID of drug A] --BCID [CID of drug B] \
 --Basal_Cell [User provided new CCLE data]
 
+# still working! 
 (Example)
-python PDSS.py ~/DRSPRING/PDSS/result --mode 'new_data' --saved_model ~/DRSPRING/PDSS/result/MODEL.pt \
---DrugAsmiles ./raw/DrugA_SMILES.csv --DrugBsmiles ./raw/DrugB_SMILES.csv \
---M1_DrugA ./results/M1_expression_A.csv --M1_DrugB ./results/M1_expression_B.csv
---Basal_Cell '~/raw/new_cell.csv'
+python PDSS.py 'M2_result.csv' --mode 'new_data' --saved_model ./results/M2_model.pt \
+--InputSM ./raw/new_drugAB.csv --InputEXP ./results/M1_resultAB_predicted_expression.csv \
+--ACID 0000 --BCID 0000
+--Basal_Cell ./raw/new_cell.csv
 ```
 
 
