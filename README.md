@@ -30,7 +30,9 @@ pip install torch-geometric==2.0.4
 
 ## Additional Data
 Due to the large file capacity, the necessary input files are provided through Google Drive.
-Link : will be prepared soon!
+
+Link : (This will be prepared soon)
+
 Unpack all downloaded data in `raw` directory for further procedure. 
 
 
