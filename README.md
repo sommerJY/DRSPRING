@@ -116,7 +116,7 @@ python PDSS.py [result file name] --mode 'new_data' --saved_model [pretrained mo
 --ACID [CID of drug A] --BCID [CID of drug B] \
 --Basal_Cell [User provided new CCLE data]
 
-# still working! 
+
 python PDSS.py 'M2_result.csv' --mode 'new_data' --saved_model ./results/M2_model.pt \
 --InputSM ./raw/new_drugAB.csv --InputEXP ./results/M1_resultAB_predicted_expression.csv \
 --ACID 0000 --BCID 0000
